@@ -9,3 +9,9 @@ title: "홈"
 - 📚 알고리즘 정리
 - 💻 프로젝트 회고
 - 📝 기술 블로그 포스트
+
+# 카테고리별 글 목록
+
+- [알고리즘](/category/algorithm/)
+- [프로젝트 회고](/category/project/)
+- [기타](/category/etc/)
