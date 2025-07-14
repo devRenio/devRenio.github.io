@@ -2,6 +2,8 @@ title: Renio's Dev Blog
 description: "학습 기록 블로그"
 author: Renio
 email: eunho9684@naver.com
-theme: minima
+remote_theme: jekyll/minima
+plugins:
+  - jekyll-remote-theme
 markdown: kramdown
 collections: []
