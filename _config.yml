@@ -1,21 +1,25 @@
-title: Abhishek Nagekar
-description: Web & Security Engineer
-site_title: '@abhn - Abhishek Nagekar'
+title: Renio's Blog
+description: "학습 기록 블로그"
+author: Renio
+site_title: "Renio's Blog"
+lang: ko-KR
+timezone: Asia/Seoul
+url: "https://devRenio.github.io"
 
 # Build settings
 markdown: kramdown
 exclude: [vendor/ruby]
 
 # Personalization
-github_username: abhn
+github_username: devRenio
 blog_url: https://www.nagekar.com
-email: abhishek@nagekar.com
-keybase_username: abhn
-twitter_username: abhn_
-reddit_username: abhn
+email: eunho9684@naver.com
+keybase_username: Renio
+twitter_username: Renio
+reddit_username: Renio
 
 # absolute or relative
 profile_picture: assets/images/pp.jpg
 
 # Google Analytics ID
-google_analytics: 
+google_analytics:
