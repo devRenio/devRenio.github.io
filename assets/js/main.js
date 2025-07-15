@@ -3,17 +3,14 @@ $(document).ready(function () {
   general_utils();
 });
 
-$(".skillbar").each(function () {
-  const percent = parseInt($(this).attr("data-percent")) / 100;
-  const fullWidth = $(this).width(); // skillbar 전체 width
-  const targetWidth = fullWidth * percent;
+$(document).ready(function () {
+  blog_posts();
+  general_utils();
 
-  $(this).find(".skillbar-bar").animate(
-    {
-      width: targetWidth,
-    },
-    1000
-  );
+  $(".skillbar").each(function () {
+    const percent = $(this).attr("data-percent");
+    $(this).find(".skillbar-bar").animate({ width: percent }, 1000);
+  });
 });
 
 function blog_posts() {
