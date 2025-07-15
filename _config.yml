@@ -23,3 +23,6 @@ profile_picture: assets/images/pp.jpg
 
 # Google Analytics ID
 google_analytics:
+
+plugins:
+  - jekyll-sitemap

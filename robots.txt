@@ -1,2 +1,4 @@
-User-agent: * 
-Disallow: 
+User-agent: *
+Allow: /
+
+Sitemap: https://devRenio.github.io/sitemap.xml
