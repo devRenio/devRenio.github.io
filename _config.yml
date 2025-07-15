@@ -4,7 +4,7 @@ author: Renio
 site_title: "Renio's Blog"
 lang: ko-KR
 timezone: Asia/Seoul
-url: "https://devRenio.github.io"
+url: "https://devRenio.github.io/"
 
 # Build settings
 markdown: kramdown
