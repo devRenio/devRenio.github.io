@@ -6,6 +6,11 @@ lang: ko-KR
 timezone: Asia/Seoul
 url: "https://devRenio.github.io/"
 
+collections:
+  blog:
+    output: true
+    permalink: /blog/:title/
+
 # Build settings
 markdown: kramdown
 exclude: [vendor/ruby]

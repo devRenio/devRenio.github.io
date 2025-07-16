@@ -1,0 +1,18 @@
+---
+layout: blog
+title: Blog
+---
+
+<section class="blog-posts">
+  <ul>
+    {% assign blog_pages = site.pages | where_exp: "p", "p.path contains
+    'posts/'" %} {% assign sorted_pages = blog_pages | sort: "date" | reverse %}
+    {% for post in sorted_pages %}
+    <li class="blog-entry">
+      <h2><a href="{{ post.url }}">{{ post.title }}</a></h2>
+      <p>{{ post.excerpt | strip_html | truncate: 150 }}</p>
+      <small>{{ post.date | date: "%Y-%m-%d" }}</small>
+    </li>
+    {% endfor %}
+  </ul>
+</section>

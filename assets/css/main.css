@@ -362,6 +362,25 @@ img {
   margin: 15px 0 20px;
 }
 
+.blog-container {
+  max-width: 800px;
+  margin: auto;
+  padding: 2rem;
+}
+
+.blog-entry {
+  margin-bottom: 2rem;
+}
+
+.blog-entry h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.blog-entry p {
+  color: #555;
+}
+
 .slightly-smaller-text {
   font-size: 14.4px;
   font-size: 0.9rem;
