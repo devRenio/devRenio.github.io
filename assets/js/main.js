@@ -3,21 +3,11 @@ $(document).ready(function () {
   general_utils();
 });
 
-$(document).ready(function () {
-  blog_posts();
-  general_utils();
-
-  $(".skillbar").each(function () {
-    const percent = $(this).attr("data-percent");
-    $(this).find(".skillbar-bar").animate({ width: percent }, 1000);
-  });
-});
-
 function blog_posts() {
   // keeping it static, can be fetched from a blog dynamically as well
   let posts = [
     {
-      url: "_posts/25.07.16.html",
+      url: "/posts/25.07.16.html",
       title: "First post",
     },
   ];
@@ -70,6 +60,12 @@ function blog_posts() {
   post_html.push(post_template);
 
   $("#rss-feeds").html(post_html.join(""));
+
+  $(".skillbar").each(function () {
+    const percent = $(this).attr("data-percent");
+    $(this).find(".skillbar-bar").css("width", "0%");
+    $(this).find(".skillbar-bar").animate({ width: percent }, 1000);
+  });
 }
 
 function blog_link_click(url) {
