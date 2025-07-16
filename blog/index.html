@@ -17,11 +17,9 @@ paginate: 5
 
   <div class="pagination">
     {% if paginator.previous_page %}
-    <a class="page-link" href="{{ paginator.previous_page_path }}"
-      >&laquo; 이전</a
-    >
+    <a href="{{ paginator.previous_page_path }}">&laquo; 이전</a>
     {% endif %} {% if paginator.next_page %}
-    <a class="page-link" href="{{ paginator.next_page_path }}">다음 &raquo;</a>
+    <a href="{{ paginator.next_page_path }}">다음 &raquo;</a>
     {% endif %}
   </div>
 </section>

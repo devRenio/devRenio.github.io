@@ -12,10 +12,21 @@
       <a href="/blog">Renio's Blog</a>
     </div>
     <div class="blog-punchline" style="margin-bottom: 15px">Kong Eunho</div>
-    <ul class="blog-sections">
-      <li><a href="#about">About</a></li>
-      <li><a href="#projects">Projects</a></li>
-      <li><a href="#posts">Posts</a></li>
+    <ul class="category-list">
+      <li>
+        <button class="category-toggle">📁 개발</button>
+        <ul class="subcategory-list">
+          <li><a href="/blog/dev/frontend">프론트엔드</a></li>
+          <li><a href="/blog/dev/backend">백엔드</a></li>
+        </ul>
+      </li>
+      <li>
+        <button class="category-toggle">📁 일상</button>
+        <ul class="subcategory-list">
+          <li><a href="/blog/life/diary">다이어리</a></li>
+          <li><a href="/blog/life/study">공부기록</a></li>
+        </ul>
+      </li>
     </ul>
   </div>
 
@@ -23,3 +34,5 @@
 </div>
 
 <footer class="footer footer-text">Renio's Blog &copy; 2025</footer>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="/assets/js/main.js"></script>
