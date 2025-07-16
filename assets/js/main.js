@@ -19,7 +19,7 @@ function blog_posts() {
 
     if (post.tags) {
       tags = post.tags.map((tag) => {
-        return `<a href="https://www.nagekar.com/tags#${tag}">${tag}</a>`;
+        return `<a href="">${tag}</a>`;
       });
     }
 
@@ -43,7 +43,7 @@ function blog_posts() {
 
   // for the more posts link
   let post_template = `
-    <div class="blog-post more-blogs" onclick="blog_link_click('https://www.nagekar.com');">
+    <div class="blog-post more-blogs" onclick="blog_link_click('');">
 
         <div class="blog-link">
 

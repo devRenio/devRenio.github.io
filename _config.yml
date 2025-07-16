@@ -12,7 +12,7 @@ exclude: [vendor/ruby]
 
 # Personalization
 github_username: devRenio
-blog_url: https://www.nagekar.com
+blog_url: ""
 email: eunho9684@naver.com
 keybase_username: Renio
 twitter_username: Renio
