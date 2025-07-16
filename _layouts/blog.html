@@ -1,17 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>{{ page.title }}</title>
-    <link rel="stylesheet" href="/assets/css/main.css" />
-    <!-- 다른 CSS 링크 필요 시 추가 -->
-  </head>
-  <body>
-    {% include nav.html %}
-    <main class="blog-container">
-      <h1>{{ page.title }}</h1>
-      {{ content }}
-    </main>
-    {% include footer.html %}
-  </body>
-</html>
+<head>
+  <link rel="stylesheet" href="/assets/css/blog.css" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+</head>
+
+<div class="blog-wrapper">
+  <div class="blog-sidebar">
+    <a href="/blog/" class="blog_profile-pic-link"
+      ><img src="../assets/images/pp.jpg" class="blog_profile-pic"
+    /></a>
+    <div class="blog-title" style="margin-bottom: 5px">
+      <a href="/blog">Renio's Blog</a>
+    </div>
+    <div class="blog-punchline" style="margin-bottom: 15px">Kong Eunho</div>
+    <ul class="blog-sections">
+      <li><a href="#about">About</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#posts">Posts</a></li>
+    </ul>
+  </div>
+
+  <div class="blog-main">{{ content }}</div>
+</div>
+
+<footer class="footer footer-text">Renio's Blog &copy; 2025</footer>

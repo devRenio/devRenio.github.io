@@ -1,0 +1,142 @@
+/* 전체 배경 */
+body {
+  margin: 0;
+  padding: 0;
+  background: url("/assets/images/background.png") repeat fixed;
+  font-family: "PT Sans", sans-serif;
+}
+
+/* 중앙 흰색 박스 */
+.blog-wrapper {
+  display: flex;
+  width: 100%;
+  margin-bottom: 7px;
+  background-color: #fcfbf5;
+  min-height: 94%;
+}
+
+/* 왼쪽 사이드바 */
+.blog-sidebar {
+  width: 400px;
+  color: #fff;
+  padding: 1.5rem;
+  padding-left: 5.5rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  background: url(../images/background.png);
+  background-repeat: repeat;
+  background-attachment: fixed;
+  background-size: auto;
+}
+
+.blog-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+.blog-title a {
+  transition: color 0.5s ease;
+  font-size: 2rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.blog-title a:hover {
+  color: rgb(255, 248, 213);
+}
+
+.blog-punchline {
+  font-size: 1rem;
+  color: #ccc;
+}
+
+.blog-sections {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.blog-sections li {
+  margin: 0.5rem 0;
+}
+
+.blog-sections a {
+  color: #fff;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.blog-sections a:hover {
+  color: rgb(255, 243, 178);
+}
+
+.blog-main {
+  flex: 1;
+  padding: 2rem;
+  box-sizing: border-box;
+  color: #000;
+}
+
+.blog_profile-pic {
+  border-radius: 50%;
+  width: 150px;
+  height: 150px;
+  border: solid 2px white;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  -webkit-transition: all 0.7s ease;
+  transition: all 0.7s ease;
+}
+
+.blog_profile-pic:hover {
+  -webkit-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 0px 16px 0 rgba(255, 255, 255, 0.5);
+}
+
+.category-list {
+  list-style: none;
+  padding: 0;
+}
+
+.category-list > li {
+  margin-bottom: 1rem;
+}
+
+.category-toggle {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.category-toggle:hover {
+  color: rgb(255, 243, 178);
+}
+
+.subcategory-list {
+  list-style: none;
+  padding-left: 1rem;
+  margin-top: 0.5rem;
+  display: none;
+  transition: all 0.4s ease;
+}
+
+.subcategory-list.show {
+  display: block;
+}
+
+.blog-entry {
+  background-color: #fff8dc;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  transition: box-shadow 0.3s ease;
+}
+
+.blog-entry:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}

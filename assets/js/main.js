@@ -1,6 +1,11 @@
 $(document).ready(function () {
   blog_posts();
   general_utils();
+
+  $(".category-toggle").on("click", function () {
+    const subList = $(this).next(".subcategory-list");
+    subList.slideToggle(300).toggleClass("show");
+  });
 });
 
 function blog_posts() {
