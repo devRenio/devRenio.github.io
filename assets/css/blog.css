@@ -20,7 +20,7 @@ body {
   width: 400px;
   color: #fff;
   padding: 1.5rem;
-  padding-left: 5.5rem;
+  padding-left: 6%;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -72,10 +72,25 @@ body {
 }
 
 .blog-main {
-  flex: 1;
-  padding: 2rem;
-  box-sizing: border-box;
+  width: 700px;
+  margin-top: 2%;
+  margin-left: 7%;
+  margin-right: 7%;
   color: #000;
+  text-align: justify;
+}
+
+.blog-page-title {
+  font-size: 2.5em;
+  color: #000;
+  font-weight: bold;
+  margin-bottom: 0.5em;
+}
+
+.blog-meta {
+  font-size: 0.9em;
+  color: #666;
+  margin-bottom: 1.5em;
 }
 
 .blog_profile-pic {

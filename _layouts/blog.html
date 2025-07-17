@@ -30,7 +30,15 @@
     </ul>
   </div>
 
-  <div class="blog-main">{{ content }}</div>
+  <div class="blog-main">
+    <p class="blog-page-title">{{ page.title }}</p>
+    <p class="blog-meta">
+      {{ page.date | date: "%Y년 %m월 %d일 %H시" }} {% if page.categories %}
+      <br />
+      카테고리 - {{ page.categories | join: ", " }} {% endif %}
+    </p>
+    {{ content }}
+  </div>
 </div>
 
 <footer class="footer footer-text">Renio's Blog &copy; 2025</footer>
