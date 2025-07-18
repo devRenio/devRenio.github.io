@@ -8,11 +8,16 @@ paginate: 5
 <section class="blog-posts">
   <ul>
     {% for post in paginator.posts %}
-    <li class="blog-entry">
-      <h2><a href="{{ post.url }}">{{ post.title }}</a></h2>
-      <p>{{ post.excerpt | strip_html | truncate: 150 }}</p>
-      <small>{{ post.date | date: "%Y-%m-%d" }}</small>
-    </li>
+    <a href="{{ post.url }}" class="blog-entry-link"
+      ><li class="blog-entry">
+        <h2>{{ post.title }}</h2>
+        <hr
+          style="height: 0.3px; background-color: rgb(33, 33, 32); border: none"
+        />
+        <p>{{ post.excerpt | strip_html | truncate: 150 }}</p>
+        <small>{{ post.date | date: "%Y-%m-%d" }}</small>
+      </li></a
+    >
     {% endfor %}
   </ul>
 

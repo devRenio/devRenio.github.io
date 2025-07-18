@@ -19,7 +19,7 @@ body {
 .blog-sidebar {
   width: 400px;
   color: #fff;
-  padding: 1.5rem;
+  padding-top: 1.5rem;
   padding-left: 6%;
   box-sizing: border-box;
   display: flex;
@@ -90,13 +90,14 @@ body {
 .blog-meta {
   font-size: 0.9em;
   color: #666;
-  margin-bottom: 1.5em;
+  margin-bottom: 2em;
 }
 
 .blog_profile-pic {
   border-radius: 50%;
   width: 150px;
   height: 150px;
+  padding: 0;
   border: solid 2px white;
   margin-top: 20px;
   margin-bottom: 20px;
@@ -162,15 +163,22 @@ body {
 }
 
 .blog-entry {
+  list-style: none;
   background-color: #fff8dc;
   padding: 1rem;
   margin-bottom: 1rem;
+  margin-left: -6%;
   border-radius: 8px;
+  width: 100%;
   transition: box-shadow 0.3s ease;
 }
 
 .blog-entry:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.blog-entry-link {
+  text-decoration: none;
 }
 
 .pagination {
@@ -216,4 +224,33 @@ body {
   margin: 0 5px;
   color: #999;
   font-size: 16px;
+}
+
+.fixed-button {
+  position: fixed;
+  bottom: 40px;
+  left: 5%;
+  width: 50px;
+  height: 50px;
+  line-height: 50px;
+  text-align: center;
+  font-size: 20px;
+  background-color: #fff8d5;
+  color: #222;
+  border-radius: 50%;
+  border: 0px solid #000;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  text-decoration: none;
+  z-index: 999;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.fixed-button:hover {
+  transform: scale(1.1);
+  background-color: #fff0a8;
+}
+
+.home-button {
+  padding-top: 12px;
+  padding-right: 3px;
 }

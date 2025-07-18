@@ -17,6 +17,8 @@ collections:
 
 # Build settings
 markdown: kramdown
+kramdown:
+  input: GFM
 exclude: [vendor/ruby]
 
 # Personalization
