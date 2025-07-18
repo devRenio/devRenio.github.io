@@ -1,11 +1,6 @@
 $(document).ready(function () {
   blog_posts();
   general_utils();
-
-  $(".category-toggle").on("click", function () {
-    const subList = $(this).next(".subcategory-list");
-    subList.slideToggle(300).toggleClass("show");
-  });
 });
 
 function blog_posts() {
@@ -63,5 +58,39 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.querySelectorAll(".fade-section").forEach((section) => {
     observer.observe(section);
+  });
+});
+
+document.querySelectorAll(".category-toggle").forEach((button) => {
+  const list = button.nextElementSibling;
+
+  // 초기 스타일 설정
+  list.style.overflow = "hidden";
+  list.style.height = "0px";
+  list.style.transition = "height 0.3s ease";
+
+  let isOpen = false;
+
+  button.addEventListener("click", () => {
+    if (isOpen) {
+      // 접는 동작
+      list.style.height = list.scrollHeight + "px"; // 트랜지션을 위해 높이 고정
+      requestAnimationFrame(() => {
+        list.style.height = "0px"; // 줄이기 시작
+        list.classList.remove("open"); // 클래스 제거 (여백 없어짐)
+      });
+    } else {
+      // 펼치는 동작
+      list.style.height = list.scrollHeight + "px"; // 펼치기
+
+      list.addEventListener("transitionend", function handler() {
+        list.style.height = "auto"; // 높이를 자동으로
+        list.removeEventListener("transitionend", handler);
+      });
+
+      list.classList.add("open"); // 클래스 추가 (여백 적용)
+    }
+
+    isOpen = !isOpen;
   });
 });

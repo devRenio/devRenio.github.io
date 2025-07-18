@@ -18,33 +18,6 @@ let render_projects = (slug) => {
       description: "Python project for the Memorization at Samuel School.",
       categories: ["featured", "python"],
     },
-    {
-      image: "assets/images/memorization.png",
-      link: "https://github.com/devRenio/Bible-verse-memorization",
-      title: "Bible-verse-memorization",
-      demo: "",
-      technologies: ["Python"],
-      description: "Python project for the Memorization at Samuel School.",
-      categories: ["featured", "python"],
-    },
-    {
-      image: "assets/images/memorization.png",
-      link: "https://github.com/devRenio/Bible-verse-memorization",
-      title: "Bible-verse-memorization",
-      demo: "",
-      technologies: ["Python"],
-      description: "Python project for the Memorization at Samuel School.",
-      categories: ["featured", "python"],
-    },
-    {
-      image: "assets/images/memorization.png",
-      link: "https://github.com/devRenio/Bible-verse-memorization",
-      title: "Bible-verse-memorization",
-      demo: "",
-      technologies: ["Python"],
-      description: "Python project for the Memorization at Samuel School.",
-      categories: ["featured", "python"],
-    },
   ];
 
   let projects = [];

@@ -110,38 +110,55 @@ body {
   box-shadow: 0 0px 16px 0 rgba(255, 255, 255, 0.5);
 }
 
-.category-list {
+/* 부드러운 슬라이드 토글을 위한 기본값 */
+.subcategory-list {
   list-style: none;
-  padding: 0;
+  overflow: hidden;
+  height: 0;
+  transition: height 0.35s ease;
+  background-color: rgba(255, 255, 255, 0.06); /* 반투명 흰 배경 */
+  padding-left: 1rem;
+  border-left: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  margin-top: -5px;
 }
 
-.category-list > li {
-  margin-bottom: 1rem;
+.subcategory-list.open {
+  margin-bottom: 15px;
+}
+
+/* 링크 꾸미기 */
+.subcategory-list li a {
+  display: block;
+  padding: 0.3rem 0;
+  color: #f0e6d2; /* 크림톤 글자색 */
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.subcategory-list li a:hover {
+  background-color: rgba(255, 248, 213, 0.1);
+  color: #fff8d5;
 }
 
 .category-toggle {
   background: none;
   border: none;
-  color: #fff;
+  color: #fff8dc;
   font-size: 1.1rem;
   cursor: pointer;
-  transition: color 0.3s ease;
+  margin-bottom: 15px;
+  transition: color 0.2s ease;
 }
 
 .category-toggle:hover {
   color: rgb(255, 243, 178);
 }
 
-.subcategory-list {
+.category-list {
   list-style: none;
-  padding-left: 1rem;
-  margin-top: 0.5rem;
-  display: none;
-  transition: all 0.4s ease;
-}
-
-.subcategory-list.show {
-  display: block;
+  margin-left: -40px;
 }
 
 .blog-entry {
@@ -154,4 +171,49 @@ body {
 
 .blog-entry:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.pagination {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.page-number {
+  display: inline-block;
+  font-size: 16px;
+  margin-bottom: 15px;
+  padding: 6px 10px;
+  text-decoration: none;
+  border: 1px solid #fff8d5;
+  border-radius: 4px;
+  background-color: none;
+  color: #222;
+  transition: transform 0.2s ease;
+}
+
+.page-number.current {
+  background-color: none;
+  font-size: 16px;
+  color: #222;
+  font-weight: bold;
+  cursor: default;
+}
+
+.prev-next-button {
+  display: inline-block; /* ✅ 핵심 */
+  font-size: 16px;
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+
+.page-number:hover,
+.prev-next-button:hover {
+  transform: scale(1.2);
+}
+
+.page-ellipsis {
+  display: inline-block;
+  margin: 0 5px;
+  color: #999;
+  font-size: 16px;
 }
