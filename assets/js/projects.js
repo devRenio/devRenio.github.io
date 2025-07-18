@@ -18,6 +18,33 @@ let render_projects = (slug) => {
       description: "Python project for the Memorization at Samuel School.",
       categories: ["featured", "python"],
     },
+    {
+      image: "assets/images/memorization.png",
+      link: "https://github.com/devRenio/Bible-verse-memorization",
+      title: "Bible-verse-memorization",
+      demo: "",
+      technologies: ["Python"],
+      description: "Python project for the Memorization at Samuel School.",
+      categories: ["featured", "python"],
+    },
+    {
+      image: "assets/images/memorization.png",
+      link: "https://github.com/devRenio/Bible-verse-memorization",
+      title: "Bible-verse-memorization",
+      demo: "",
+      technologies: ["Python"],
+      description: "Python project for the Memorization at Samuel School.",
+      categories: ["featured", "python"],
+    },
+    {
+      image: "assets/images/memorization.png",
+      link: "https://github.com/devRenio/Bible-verse-memorization",
+      title: "Bible-verse-memorization",
+      demo: "",
+      technologies: ["Python"],
+      description: "Python project for the Memorization at Samuel School.",
+      categories: ["featured", "python"],
+    },
   ];
 
   let projects = [];
@@ -28,7 +55,31 @@ let render_projects = (slug) => {
       .filter((project) => project.categories.includes(slug))
       .map(project_mapper);
   }
-  projects_area.hide().html(projects).fadeIn();
+  projects_area
+    .hide()
+    .html(projects)
+    .fadeIn(() => {
+      // ✅ ScrollTrigger 초기화
+      ScrollTrigger.refresh();
+
+      // ✅ 애니메이션 실행
+      gsap.fromTo(
+        ".card.shadowDepth1",
+        { opacity: 0, y: 40 },
+        {
+          opacity: 1,
+          y: 0,
+          stagger: 0.3,
+          duration: 1,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: ".projects-wrapper",
+            start: "top 85%",
+            once: true,
+          },
+        }
+      );
+    });
 };
 
 let project_mapper = (project) => {
