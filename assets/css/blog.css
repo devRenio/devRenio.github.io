@@ -90,7 +90,10 @@ body {
 .blog-meta {
   font-size: 0.9em;
   color: #666;
-  margin-bottom: 2em;
+}
+
+.blog-meta-hr {
+  margin-bottom: 1.5em;
 }
 
 .blog_profile-pic {

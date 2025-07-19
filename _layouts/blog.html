@@ -45,8 +45,9 @@
     <p class="blog-meta">
       {{ page.date | date: "%Y년 %m월 %d일 %H시" }} {% if page.categories %}
       <br />
-      카테고리 - {{ page.categories | join: ", " }} {% endif %}
+      카테고리 - {{ page.categories | join: ", " }}{% endif %}
     </p>
+    <hr class="blog-meta-hr" />
     {{ content }}
   </div>
 </div>

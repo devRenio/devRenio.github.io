@@ -15,7 +15,7 @@ paginate: 5
           style="height: 0.3px; background-color: rgb(33, 33, 32); border: none"
         />
         <p>{{ post.excerpt | strip_html | truncate: 150 }}</p>
-        <small>{{ post.date | date: "%Y-%m-%d" }}</small>
+        <small>{{ post.date | date: "%Y-%m-%d %H시" }}</small>
       </li></a
     >
     {% endfor %}
