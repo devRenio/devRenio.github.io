@@ -3,8 +3,16 @@
   {% include head.html %}
 
   <body>
-    {% include nav.html %} {% include about.html %} {% include skills.html %} {%
-    include projects.html %} {% include blogs.html %} {% include extra.html %}
-    {% include footer.html %} {% include scripts.html %}
+    <div id="smooth-wrapper">
+      <button id="to-top-btn" class="scroll-fake-fixed">▲</button>
+      <button id="to-blog-btn" class="scroll-fake-fixed">
+        <i class="fas fa-comment"></i>
+      </button>
+      <div id="smooth-content">
+        {% include nav.html %} {% include about.html %} {% include skills.html
+        %} {% include projects.html %} {% include blogs.html %} {% include
+        extra.html %} {% include footer.html %} {% include scripts.html %}
+      </div>
+    </div>
   </body>
 </html>
