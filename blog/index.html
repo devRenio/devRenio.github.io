@@ -3,21 +3,22 @@ layout: blog
 paginate: 5
 ---
 
-<p style="font-size: 17px"><b>최근 포스트</b></p>
+<p id="category-title" style="font-size: 17px"><b>최근 포스트</b></p>
+
 <hr />
 <section class="blog-posts">
   <ul>
     {% for post in paginator.posts %}
-    <a href="{{ post.url }}" class="blog-entry-link"
-      ><li class="blog-entry">
+    <li class="blog-entry" data-categories="{{ post.categories | join: ',' }}">
+      <a href="{{ post.url }}" class="blog-entry-link">
         <h2>{{ post.title }}</h2>
         <hr
           style="height: 0.3px; background-color: rgb(33, 33, 32); border: none"
         />
         <p>{{ post.excerpt | strip_html | truncate: 150 }}</p>
         <small>{{ post.date | date: "%Y-%m-%d %H시" }}</small>
-      </li></a
-    >
+      </a>
+    </li>
     {% endfor %}
   </ul>
 

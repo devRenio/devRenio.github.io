@@ -11,36 +11,43 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // 카테고리 토글 애니메이션
-  document.querySelectorAll(".category-toggle").forEach((button) => {
-    const list = button.nextElementSibling;
-    list.style.overflow = "hidden";
-    list.style.height = "0px";
-    list.style.transition = "height 0.3s ease";
-
-    let isOpen = false;
-
-    button.addEventListener("click", () => {
-      if (isOpen) {
-        list.style.height = list.scrollHeight + "px";
-        requestAnimationFrame(() => {
-          list.style.height = "0px";
-          list.classList.remove("open");
-        });
-      } else {
-        list.style.height = list.scrollHeight + "px";
-
-        list.addEventListener("transitionend", function handler() {
-          list.style.height = "auto";
-          list.removeEventListener("transitionend", handler);
-        });
-
-        list.classList.add("open");
+  document.querySelectorAll(".category-toggle-wrapper").forEach((wrapper) => {
+    wrapper.addEventListener("click", function (e) {
+      if (e.target.tagName.toLowerCase() === "a") return; // 링크 클릭은 무시
+      const targetId = wrapper.getAttribute("data-target");
+      const target = document.getElementById(targetId);
+      if (target) {
+        target.style.display =
+          target.style.display === "none" || target.style.display === ""
+            ? "block"
+            : "none";
       }
-
-      isOpen = !isOpen;
     });
   });
+
+  const selected = new URLSearchParams(window.location.search).get("category");
+  document.querySelectorAll(".category-list > li > a").forEach((link) => {
+    if (link.href.includes(`category=${selected}`)) {
+      link.classList.add("active-category");
+      const toggle = link.previousElementSibling;
+      if (toggle && toggle.classList.contains("category-toggle")) {
+        toggle.classList.add("open");
+        const ul = link.nextElementSibling;
+        if (ul && ul.classList.contains("subcategory-list")) {
+          ul.style.display = "block";
+        }
+      }
+    }
+  });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  const params = new URLSearchParams(window.location.search);
+  const selected = params.get("category");
+  const titleEl = document.getElementById("category-title");
+  if (selected && titleEl) {
+    titleEl.innerHTML = `<b>카테고리 - ${selected}</b>`;
+  }
 });
 
 function blog_posts() {
@@ -93,3 +100,23 @@ function blog_posts() {
 function blog_link_click(url) {
   window.location = url;
 }
+
+$(document).ready(function () {
+  $(".category-toggle").click(function () {
+    $(this).nextAll(".subcategory-list").first().slideToggle(200);
+    $(this).text($(this).text() === "▼" ? "▲" : "▼");
+  });
+
+  const params = new URLSearchParams(window.location.search);
+  const selected = params.get("category");
+
+  if (selected) {
+    $(".blog-entry").each(function () {
+      const categories = $(this).data("categories");
+      const categoryArray = categories ? categories.split(",") : [];
+      if (!categoryArray.includes(selected)) {
+        $(this).hide();
+      }
+    });
+  }
+});

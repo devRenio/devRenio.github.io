@@ -114,30 +114,23 @@ body {
   box-shadow: 0 0px 16px 0 rgba(255, 255, 255, 0.5);
 }
 
-/* 부드러운 슬라이드 토글을 위한 기본값 */
 .subcategory-list {
-  list-style: none;
-  overflow: hidden;
-  height: 0;
-  transition: height 0.35s ease;
-  background-color: rgba(255, 255, 255, 0.06); /* 반투명 흰 배경 */
-  padding-left: 1rem;
-  border-left: 2px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  margin-top: -5px;
+  margin-left: 20px;
+  margin-bottom: 1.2rem;
+  margin-top: -0.3rem;
+  display: none;
 }
 
 .subcategory-list.open {
   margin-bottom: 15px;
 }
 
-/* 링크 꾸미기 */
 .subcategory-list li a {
   display: block;
   padding: 0.3rem 0;
   color: #f0e6d2; /* 크림톤 글자색 */
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
@@ -150,7 +143,7 @@ body {
   background: none;
   border: none;
   color: #fff8dc;
-  font-size: 1.1rem;
+  font-size: 0.9rem;
   cursor: pointer;
   margin-bottom: 15px;
   transition: color 0.2s ease;
@@ -163,6 +156,46 @@ body {
 .category-list {
   list-style: none;
   margin-left: -40px;
+}
+
+.category-list > li > a {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #fff8dc;
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  text-decoration: none;
+  display: inline-block;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.category-list > li > a:hover {
+  background-color: rgba(255, 248, 213, 0.1);
+  color: #fff8d5;
+}
+
+/* 🔹 선택된 카테고리 강조 */
+.category-list > li > a.active-category {
+  background-color: rgba(255, 248, 213, 0.3);
+  color: #fff8d5;
+  border-left: 3px solid #fff8d5;
+}
+
+/* 🔹 토글 아이콘 위치 조정 및 회전 애니메이션 */
+.category-toggle {
+  margin-right: 6px;
+  transition: transform 0.2s ease;
+}
+
+.category-toggle.open {
+  transform: rotate(90deg);
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .blog-entry {
