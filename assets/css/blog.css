@@ -117,13 +117,7 @@ body {
 .subcategory-list {
   list-style: none;
   margin-left: 20px;
-  margin-bottom: 1.2rem;
-  margin-top: -0.3rem;
   display: none;
-}
-
-.subcategory-list.open {
-  margin-bottom: 15px;
 }
 
 .subcategory-list li a {
@@ -154,9 +148,29 @@ body {
   color: rgb(255, 243, 178);
 }
 
+.category-toggle {
+  display: inline-block;
+  vertical-align: middle;
+  font-size: 0.8rem;
+  line-height: 1;
+  padding: 0;
+  margin-right: 5px;
+  position: relative;
+  top: 9px;
+}
+
+.category-list li > a {
+  display: inline-block;
+  vertical-align: middle;
+}
+
 .category-list {
   list-style: none;
   margin-left: -40px;
+}
+
+.category-list-li {
+  margin-bottom: 0.7rem;
 }
 
 .category-list > li > a {
