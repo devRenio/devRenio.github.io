@@ -120,3 +120,107 @@ $(document).ready(function () {
     });
   }
 });
+
+const pageSize = 5;
+let currentPage = 1;
+
+function applyPaginationAndFilter(category) {
+  const posts = Array.from(document.querySelectorAll(".blog-entry"));
+  const postList = document.querySelector(".blog-posts ul");
+  const paginationContainer = document.querySelector(".pagination");
+
+  const filteredPosts = category
+    ? posts.filter((post) => {
+        const categories = post.dataset.categories.split(",");
+        return categories.includes(category);
+      })
+    : posts;
+
+  const totalPages = Math.ceil(filteredPosts.length / pageSize);
+  posts.forEach((p) => (p.style.display = "none"));
+  filteredPosts
+    .slice((currentPage - 1) * pageSize, currentPage * pageSize)
+    .forEach((p) => (p.style.display = "block"));
+
+  if (paginationContainer) paginationContainer.innerHTML = "";
+  if (totalPages <= 1) return;
+
+  const createPageBtn = (label, page = null, isCurrent = false) => {
+    const el = document.createElement("a");
+    el.href = "#";
+    el.textContent = label;
+    el.className = isCurrent ? "page-number current" : "page-number";
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (page !== null) {
+        currentPage = page;
+        applyPaginationAndFilter(category);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    });
+    return el;
+  };
+
+  const createEllipsis = () => {
+    const span = document.createElement("span");
+    span.className = "page-ellipsis";
+    span.textContent = "...";
+    return span;
+  };
+
+  // ◀ Prev
+  const prevBtn = document.createElement("a");
+  prevBtn.href = "#";
+  prevBtn.innerText = "◀";
+  prevBtn.className = "prev-next-button";
+  prevBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (currentPage > 1) {
+      currentPage--;
+      applyPaginationAndFilter(category);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  });
+  paginationContainer.appendChild(prevBtn);
+
+  const windowSize = 2;
+  let start = Math.max(1, currentPage - windowSize);
+  let end = Math.min(totalPages, currentPage + windowSize);
+
+  // 첫 페이지
+  if (start > 1) {
+    paginationContainer.appendChild(createPageBtn("1", 1));
+    if (start > 2) paginationContainer.appendChild(createEllipsis());
+  }
+
+  // 중앙 번호들
+  for (let i = start; i <= end; i++) {
+    paginationContainer.appendChild(createPageBtn(i, i, i === currentPage));
+  }
+
+  // 마지막 페이지
+  if (end < totalPages) {
+    if (end < totalPages - 1) paginationContainer.appendChild(createEllipsis());
+    paginationContainer.appendChild(createPageBtn(totalPages, totalPages));
+  }
+
+  // ▶ Next
+  const nextBtn = document.createElement("a");
+  nextBtn.href = "#";
+  nextBtn.innerText = "▶";
+  nextBtn.className = "prev-next-button";
+  nextBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (currentPage < totalPages) {
+      currentPage++;
+      applyPaginationAndFilter(category);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  });
+  paginationContainer.appendChild(nextBtn);
+}
+
+// URL 파라미터에서 category 가져오기
+const urlParams = new URLSearchParams(window.location.search);
+const initialCategory = urlParams.get("category");
+applyPaginationAndFilter(initialCategory || null);

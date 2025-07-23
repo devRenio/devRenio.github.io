@@ -50,7 +50,82 @@
       카테고리 - {{ page.categories | join: ", " }}{% endif %}
     </p>
     <hr class="blog-meta-hr" />
-    {{ content }}<br /><br /><br />
+    {{ content }} {% if page.previous or page.next %}
+    <div
+      class="post-navigation"
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: stretch;
+        margin-top: 4rem;
+        padding: 1rem 0;
+        border-top: 1px solid #ccc;
+        border-bottom: 1px solid #ccc;
+      "
+    >
+      <!-- 이전 포스트 -->
+      {% if page.previous %}
+      <a
+        href="{{ page.previous.url }}"
+        class="nav-box post_btn"
+        style="text-align: left; width: 30%; text-decoration: none"
+      >
+        <strong style="display: block; font-size: 0.9em; margin-bottom: 0.3em"
+          >◀ 이전 글</strong
+        >
+        <small>{{ page.previous.categories | join: ", " }}</small>
+        <div style="font-size: 1.2rem; font-weight: bold">
+          {{ page.previous.title }}
+        </div>
+        <small>{{ page.previous.date | date: "%Y-%m-%d" }}</small>
+      </a>
+      {% else %}
+      <div
+        class="nav-box"
+        style="width: 30%; opacity: 0.4; pointer-events: none"
+      ></div>
+      {% endif %}
+
+      <!-- 목록으로 -->
+      <a
+        href="/blog"
+        class="post_btn"
+        style="
+          text-align: center;
+          width: 30%;
+          text-decoration: none;
+          font-weight: bold;
+          font-size: 1.3rem;
+          line-height: 4rem;
+        "
+        >목록으로</a
+      >
+
+      <!-- 다음 포스트 -->
+      {% if page.next %}
+      <a
+        href="{{ page.next.url }}"
+        class="nav-box post_btn"
+        style="text-align: right; width: 30%; text-decoration: none"
+      >
+        <strong style="display: block; font-size: 0.9em; margin-bottom: 0.3em"
+          >다음 글 ▶</strong
+        >
+        <small>{{ page.next.categories | join: ", " }}</small>
+        <div style="font-size: 1.2rem; font-weight: bold">
+          {{ page.next.title }}
+        </div>
+        <small>{{ page.next.date | date: "%Y-%m-%d" }}</small>
+      </a>
+      {% else %}
+      <div
+        class="nav-box"
+        style="width: 30%; opacity: 0.4; pointer-events: none"
+      ></div>
+      {% endif %}
+    </div>
+    <br />
+    {% endif %}
   </div>
 </div>
 

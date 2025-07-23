@@ -8,7 +8,7 @@ paginate: 5
 <hr />
 <section class="blog-posts">
   <ul>
-    {% for post in paginator.posts %}
+    {% for post in site.posts %}
     <li class="blog-entry" data-categories="{{ post.categories | join: ',' }}">
       <a href="{{ post.url }}" class="blog-entry-link">
         <h2>{{ post.title }}</h2>
@@ -22,42 +22,6 @@ paginate: 5
     {% endfor %}
   </ul>
 
-  <div class="pagination">
-    {% assign total = paginator.total_pages %} {% assign current =
-    paginator.page %} {% assign prev = paginator.previous_page_path %} {% assign
-    next = paginator.next_page_path %} {% assign start = current | minus: 2 %}
-    {% assign end = current | plus: 2 %}
-
-    <!-- 이전 버튼 -->
-    <a href="{{ prev | default: '#' }}" class="prev-next-button">◀</a>
-
-    <!-- 첫 페이지 + 앞쪽 생략점 -->
-    {% if start > 1 %}
-    <a href="/blog" class="page-number">1</a>
-    {% assign gap = start | minus: 1 %} {% if gap > 1 %}
-    <span class="page-ellipsis">...</span>
-    {% endif %} {% endif %}
-
-    <!-- 중앙 페이지 번호 출력 -->
-    {% for i in (1..total) %} {% if i >= start and i <= end %} {% if i ==
-    current %}
-    <span class="page-number current">{{ i }}</span>
-    {% else %}
-    <a
-      href="{% if i == 1 %}/blog{% else %}/blog/page{{ i }}{% endif %}"
-      class="page-number"
-      >{{ i }}</a
-    >
-    {% endif %} {% endif %} {% endfor %}
-
-    <!-- 뒤쪽 생략점 + 마지막 페이지 -->
-    {% if end < total %} {% assign gap = total | minus: end %} {% if gap > 1 %}
-    <span class="page-ellipsis">...</span>
-    {% endif %}
-    <a href="/blog/page{{ total }}" class="page-number">{{ total }}</a>
-    {% endif %}
-
-    <!-- 다음 버튼 -->
-    <a href="{{ next | default: '#' }}" class="prev-next-button">▶</a>
-  </div>
+  <div class="pagination"></div>
+  <br />
 </section>
