@@ -5,42 +5,7 @@
 </head>
 
 <div class="blog-wrapper">
-  <div class="blog-sidebar">
-    <a href="/" class="fixed-button" aria-label="홈으로">◀</a>
-
-    <a href="/blog/" class="blog_profile-pic-link"
-      ><img src="/assets/images/pp.jpg" class="blog_profile-pic"
-    /></a>
-    <div class="blog-title" style="margin-bottom: 5px">
-      <a href="/blog">Renio's Blog</a>
-    </div>
-    <div class="blog-punchline" style="margin-bottom: 15px">Kong Eunho</div>
-    <ul class="category-list">
-      <li class="category-list-li">
-        <button class="category-toggle">▼</button
-        ><a href="/blog?category=TIL">TIL</a>
-        <ul class="subcategory-list">
-          <li>
-            <button class="category-toggle">▼</button
-            ><a href="/blog?category=sqld">sqld</a>
-            <ul class="subcategory-list">
-              <li>
-                <a href="/blog?category=1_데이터_모델링의_이해"
-                  >1 데이터 모델링의 이해</a
-                >
-              </li>
-            </ul>
-          </li>
-          <li><a href="/blog?category=flutter">flutter</a></li>
-        </ul>
-      </li>
-      <li class="category-list-li">
-        <button class="category-toggle">▼</button
-        ><a href="/blog?category=PROJECT">PROJECT</a>
-        <ul class="subcategory-list"></ul>
-      </li>
-    </ul>
-  </div>
+  {% include blog_sidebar.html %}
 
   <div class="blog-main">
     <p class="blog-page-title">{{ page.title }}</p>
