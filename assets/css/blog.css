@@ -324,3 +324,11 @@ body {
 .post_btn:hover {
   background-color: #fffae0;
 }
+
+.category-link {
+  color: #666;
+  text-decoration: none;
+}
+.category-link:hover {
+  text-decoration: underline;
+}
