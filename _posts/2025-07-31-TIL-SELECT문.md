@@ -1,0 +1,114 @@
+---
+layout: blog
+title: 3.2 SELECT문
+date: 2025-07-31 23:00:00 +0900
+categories: [TIL, sqld, 3_SQL_기본]
+permalink: /blog/posts/25-07-31-TIL/
+---
+
+### 3.2.1 SELECT
+
+**SELECT** : 데이터를 조회하는 명령어. WHERE절을 통해 특정 조건의 열만 조회할 수 있다. 테이블에 대한 별명(Alias)을 부여할 수도 있다.
+
+**SELECT 칼럼1 [[, 칼럼2] ... ] FROM 테이블1 [[, 테이블2] ... ];**<br>
+테이블1, 테이블2로부터 칼럼1, 칼럼2 등을 조회한다. 칼럼명이 유일할 때에는 칼럼명만 표기해도 되나, 서로 다른 테이블에 있는 같은 이름의 칼럼을 표기할 때는 칼럼명 앞에 테이블명과 점(.)을 붙여야 한다. (TABLE.COLUMN)
+<br>
+
+**예제** :
+
+**SELECT 회원번호, 회원명 FROM 회원;**<br>
+-- 회원 테이블의 회원번호, 회원명 칼럼 조회
+
+**SELECT \* FROM 회원;**<br>
+-- 회원 테이블의 모든 칼럼 조회
+
+**SELECT A.회원번호, B.예약번호 FROM 회원 A, 예약 B WHERE A.회원명 = B.예약자;**<br>
+-- 회원 테이블에 A, 예약 테이블에 B라는 별명 부여.<br>
+-- 회원 테이블의 회원명과 예약 테이블의 예약자가 같은 행의 회원번호와 예약번호를 조회.
+
+**SELECT 회원번호 AS ID, 회원명 FROM 회원;**<br>
+-- 회원번호 칼럼에 대해 ID라는 별명을 부여하여 조회, AS는 생략 가능.
+<br><br>
+
+### 3.2.2 산술연산자
+
+**산술연산자** : 더하기, 곱하기 등 산술연산을 수행. 칼럼에 산술연산을 시행하면 동일한 행에서 칼럼 대 칼럼의 연산을 수행한다(단일행 연산).
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>연산자</th>
+      <th>설명</th>
+      <th>우선순위</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>()</td>
+      <td>계산할 식을 묶는다.</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>*</td>
+      <td>곱셈</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>/</td>
+      <td>나눗셈</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>%</td>
+      <td>mod 연산(나머지 연산)</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>+</td>
+      <td>덧셈</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <td>-</td>
+      <td>뺄셈</td>
+      <td>3</td>
+    </tr>
+  </tbody>
+</table>
+
+**SELECT 수학, 영어, 수학+영어 AS 총점, (수학+영어) / 2 AS 평균 FROM 성적;**<br>
+-- 성적 테이블에서 수학과 영어의 합을 구하여 총점이라는 별명 부여.<br>
+-- 수학과 영어의 평균을 구하여 평균이라는 별명 부여.<br>
+-- 수학, 영어, 총점, 평균 조회.
+<br><br>
+
+### 3.2.3 합성연산자
+
+**합성연산자** : **\|\|**로 표현하며, 문자열을 연결할 때 사용한다. 문자열 값 또는 문자열 형의 칼럼에 사용 가능하다. 칼럼에 사용하면 칼럼 대 칼럼의 연산을 수행한다(단일행 연산).
+
+**SELECT FNAME || ' ' || LNAME AS FULL_NAME FROM MEMBER;**<br>
+-- MEMBER 테이블에서 FNAME 칼럼과 LNAME 칼럼의 값을 공백을 중심으로 합성하여 FULL_NAME 칼럼으로 조회.
+
+<style>
+table {
+  border-collapse: collapse;
+  width: 75%;
+  margin: 16px 0;
+  font-size: 14px;
+}
+th, td {
+  border: 1px solid #ccc;
+  padding: 8px 12px;
+  text-align: center;
+}
+td {
+    width: 25%;
+}
+thead {
+  background-color: #fffddbff;
+  font-weight: bold;
+}
+.red {
+    color: red;
+}
+</style>
