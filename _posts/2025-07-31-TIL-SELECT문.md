@@ -88,27 +88,3 @@ permalink: /blog/posts/25-07-31-TIL/
 
 **SELECT FNAME || ' ' || LNAME AS FULL_NAME FROM MEMBER;**<br>
 -- MEMBER 테이블에서 FNAME 칼럼과 LNAME 칼럼의 값을 공백을 중심으로 합성하여 FULL_NAME 칼럼으로 조회.
-
-<style>
-table {
-  border-collapse: collapse;
-  width: 75%;
-  margin: 16px 0;
-  font-size: 14px;
-}
-th, td {
-  border: 1px solid #ccc;
-  padding: 8px 12px;
-  text-align: center;
-}
-td {
-    width: 25%;
-}
-thead {
-  background-color: #fffddbff;
-  font-weight: bold;
-}
-.red {
-    color: red;
-}
-</style>
