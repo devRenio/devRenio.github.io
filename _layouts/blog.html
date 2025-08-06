@@ -109,6 +109,14 @@
     width: 75%;
     margin: 16px 0;
     font-size: 14px;
+    table-layout: fixed;
+  }
+  caption {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 5px;
+    margin-left: 5px;
+    text-align: left;
   }
   th,
   td {
@@ -117,7 +125,10 @@
     text-align: center;
   }
   td {
-    width: 25%;
+    width: auto;
+  }
+  td.grey {
+    color: grey;
   }
   thead {
     background-color: #fffddbff;

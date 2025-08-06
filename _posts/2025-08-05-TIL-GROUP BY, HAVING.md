@@ -21,14 +21,14 @@ TEST 테이블에서 ID별로 그룹핑을 수행한 뒤 ID별 NUM의 합계를 
 <table style="width:75%" border="1">
   <thead>
     <tr>
-      <th>함수</th>
-      <th>설명</th>
+      <th style="width:30%">함수</th>
+      <th style="width:70%">설명</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td style="width:30%">COUNT</td>
-      <td style="width:70%">칼럼에서 값이 존재하는 행의 개수를 반환.</td>
+      <td>COUNT</td>
+      <td>칼럼에서 값이 존재하는 행의 개수를 반환.</td>
     </tr>
     <tr>
       <td>SUM</td>
