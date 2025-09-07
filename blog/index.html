@@ -3,37 +3,45 @@ layout: blog
 paginate: 5
 ---
 
-<div
-  class="blog-search"
-  style="
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 6px;
-    margin: 0 0 10px 0;
-  "
->
+<div class="blog-search" style="margin: 0 0 1.5rem 0; text-align: right">
   <input
     id="post-search-input"
     type="search"
-    placeholder="제목/본문 검색"
+    placeholder="제목/본문 검색..."
     style="
-      width: 220px;
-      padding: 6px 8px;
-      font-size: 13px;
+      width: 240px;
+      padding: 8px 12px;
+      font-size: 14px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      background-color: #fff;
+      color: #333;
       box-sizing: border-box;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      margin-right: 8px;
     "
     aria-label="포스트 검색"
   />
   <button
     id="post-search-btn"
     type="button"
-    style="padding: 6px 10px; font-size: 13px"
+    style="
+      padding: 8px 16px;
+      font-size: 14px;
+      color: #000;
+      background-color: #fcfbf5;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    "
   >
     검색
   </button>
-
-  <div id="no-results" style="display: none; margin-left: 6px; color: #999">
+  <div
+    id="no-results"
+    style="display: none; margin-top: 8px; color: #999; font-size: 13px"
+  >
     검색 결과가 없습니다.
   </div>
 </div>
@@ -52,8 +60,11 @@ paginate: 5
         <hr
           style="height: 0.3px; background-color: rgb(33, 33, 32); border: none"
         />
-        <p>{{ post.excerpt | strip_html | truncate: 150 }}</p>
-        <small>{{ post.date | date: "%Y-%m-%d %H시" }}</small>
+        <p style="margin-bottom: 0.2em; margin-top: 0">
+          {{ post.excerpt | strip_html | truncate: 150 }}
+        </p>
+        <small>{{ post.date | date: "%Y-%m-%d %H시" }}</small><br />
+        <small>{{ post.categories | join: ", " }}</small>
       </a>
     </li>
     {% endfor %}
@@ -65,6 +76,14 @@ paginate: 5
 
 <script>
   (function () {
+    var isInitialLoad = true;
+    // category 파라미터가 있으면 초기 로드 아님으로 간주
+    try {
+      var paramsForCategory = new URLSearchParams(window.location.search);
+      if (paramsForCategory.get("category")) {
+        isInitialLoad = false;
+      }
+    } catch (_) {}
     var input = document.getElementById("post-search-input");
     if (!input) return;
 
@@ -172,17 +191,32 @@ paginate: 5
       var matched = getMatched();
       var total = matched.length;
       var totalPages = Math.max(1, Math.ceil(total / pageSize));
-      currentPage = Math.min(Math.max(1, page), totalPages);
+      currentPage = Math.min(Math.max(1, page), totalPages); // 모두 숨기고 애니메이션 상태 초기화
 
-      // 모두 숨기고
       entries.forEach(function (li) {
         li.style.display = "none";
+
+        // ▼▼▼▼▼ [수정] 이 부분을 추가하세요 ▼▼▼▼▼
+        // 애니메이션 효과를 확실히 제거하여 다음 애니메이션과의 충돌을 방지합니다.
+        li.style.transition = "none";
+        // ▲▲▲▲▲ [수정] 이 부분을 추가하세요 ▲▲▲▲▲
+
+        li.style.opacity = "0";
+        li.style.transform = "translateY(20px)";
       });
 
       var start = (currentPage - 1) * pageSize;
       var end = start + pageSize;
-      matched.slice(start, end).forEach(function (li) {
+      var visibleItems = matched.slice(start, end); // 순차적으로 나타나는 애니메이션
+
+      visibleItems.forEach(function (li, index) {
         li.style.display = "";
+        setTimeout(function () {
+          // 여기서 새로운 transition을 적용합니다.
+          li.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+          li.style.opacity = "1";
+          li.style.transform = "translateY(0)";
+        }, index * 100); // 100ms씩 지연
       });
 
       if (countEl) countEl.textContent = String(total);
@@ -191,34 +225,53 @@ paginate: 5
     }
 
     function filter() {
+      isInitialLoad = false;
       var q = normalize(input.value);
       var visible = 0;
 
-      entries.forEach(function (li) {
-        var title = normalize((li.querySelector("h2") || {}).textContent);
-        var body = normalize((li.querySelector("p") || {}).textContent);
-        var match = !q || title.indexOf(q) !== -1 || body.indexOf(q) !== -1;
-        li.setAttribute("data-match", match ? "1" : "0");
-        if (match) visible++;
-      });
+      // 로딩 효과 시작
+      var searchBtn = document.getElementById("post-search-btn");
+      if (searchBtn) {
+        searchBtn.style.opacity = "0.6";
+        searchBtn.disabled = true;
+      }
 
-      if (q) {
-        if (titleEl) titleEl.innerHTML = "<b>검색 결과</b>";
-        if (countEl) {
-          countEl.textContent = String(visible);
+      // 검색 처리 (약간의 지연으로 로딩 효과 강조)
+      setTimeout(function () {
+        entries.forEach(function (li) {
+          var title = normalize((li.querySelector("h2") || {}).textContent);
+          var body = normalize((li.querySelector("p") || {}).textContent);
+          var match = !q || title.indexOf(q) !== -1 || body.indexOf(q) !== -1;
+          li.setAttribute("data-match", match ? "1" : "0");
+          if (match) visible++;
+        });
+
+        if (q) {
+          if (titleEl) titleEl.innerHTML = "<b>검색 결과</b>";
+          if (countEl) {
+            countEl.textContent = String(visible);
+          }
+          if (noResultsEl) noResultsEl.style.display = visible ? "none" : "";
+        } else {
+          if (titleEl) titleEl.innerHTML = "<b>최근 포스트</b>";
+          if (noResultsEl) noResultsEl.style.display = "none";
         }
-        if (noResultsEl) noResultsEl.style.display = visible ? "none" : "";
-      } else {
-        if (titleEl) titleEl.innerHTML = "<b>최근 포스트</b>";
-        if (noResultsEl) noResultsEl.style.display = "none";
-      }
 
-      renderPage(1);
-      try {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      } catch (_) {
-        window.scrollTo(0, 0);
-      }
+        renderPage(1);
+
+        // 버튼 복원
+        if (searchBtn) {
+          searchBtn.style.opacity = "1";
+          searchBtn.textContent = "검색";
+          searchBtn.disabled = false;
+        }
+
+        try {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        } catch (_) {
+          window.scrollTo(0, 0);
+        }
+      }, 300); // 300ms 로딩 효과
     }
 
     var btn = document.getElementById("post-search-btn");
@@ -242,11 +295,43 @@ paginate: 5
     } catch (e) {}
 
     // 초기 로드 시 전체 기준으로 페이지네이션 구성
-    if (!input.value) {
-      entries.forEach(function (li) {
-        li.setAttribute("data-match", "1");
+    if (isInitialLoad) {
+      setTimeout(function () {
+        // setTimeout 내부에서 한 번 더 체크하여, 찰나의 순간에 필터가 클릭되는 경우를 방지합니다.
+        if (!isInitialLoad) return;
+
+        entries.forEach(function (li) {
+          li.setAttribute("data-match", "1");
+        });
+        renderPage(1);
+        isInitialLoad = false; // 최초 실행 후 플래그를 false로 변경해 재실행을 막습니다.
+      }, 10);
+    }
+
+    // 검색창 호버 효과 추가
+    var searchInput = document.getElementById("post-search-input");
+    var searchBtn = document.getElementById("post-search-btn");
+
+    if (searchInput) {
+      searchInput.addEventListener("focus", function () {
+        this.style.borderColor = "#f5e6a3";
+        this.style.boxShadow = "0 0 0 2px rgba(245, 230, 163, 0.3)";
       });
-      renderPage(1);
+      searchInput.addEventListener("blur", function () {
+        this.style.borderColor = "#ddd";
+        this.style.boxShadow = "none";
+      });
+    }
+
+    if (searchBtn) {
+      searchBtn.addEventListener("mouseenter", function () {
+        this.style.backgroundColor = "#fffae0";
+        this.style.transform = "scale(1.02)";
+      });
+      searchBtn.addEventListener("mouseleave", function () {
+        this.style.backgroundColor = "#fcfbf5";
+        this.style.transform = "scale(1)";
+      });
     }
   })();
 </script>
