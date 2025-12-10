@@ -109,37 +109,43 @@
         white-space: nowrap; /* 줄바꿈 방지 */
       }
       .time-num {
-        font-size: 20rem; /* 아주 크게 */
+        font-size: 18rem; /* 아주 크게 */
         font-weight: 700;
         font-variant-numeric: tabular-nums;
         letter-spacing: -6px;
       }
       .time-unit {
-        font-size: 20rem; /* 숫자보다 더 크게 */
+        font-size: 18rem; /* 숫자보다 더 크게 */
         font-weight: 900;
       }
+      /* 전체화면 버튼 스타일 (Floating) */
+      #fullscreen-btn {
+        position: fixed; /* 화면에 고정 */
+        bottom: 20px; /* 아래에서 20px 띄움 */
+        right: 20px; /* 오른쪽에서 20px 띄움 */
+        z-index: 1000; /* 다른 요소보다 위에 배치 */
 
-      /* 모바일 대응 (비율은 유지하되 글자 크기만 줄임) */
-      @media (max-width: 768px) {
-        .area {
-          padding: 15px;
-        }
-        #date-month-day {
-          font-size: 1.5rem;
-        }
-        #day {
-          font-size: 2.5rem;
-        }
-        #period {
-          font-size: 4rem;
-        }
-        .time-num {
-          font-size: 5.5rem;
-          letter-spacing: -2px;
-        }
-        .time-unit {
-          font-size: 7rem;
-        }
+        background: rgba(128, 128, 128, 0.2); /* 회색 반투명 배경 */
+        color: var(--text-color); /* 현재 테마 글자색 따라감 */
+        border: 1px solid rgba(255, 255, 255, 0.1); /* 옅은 테두리 */
+
+        width: 50px;
+        height: 50px;
+        border-radius: 50%; /* 동그란 버튼 */
+        font-size: 1.5rem; /* 아이콘 크기 */
+        cursor: pointer;
+        backdrop-filter: blur(4px); /* 뒤에 있는 내용 흐리게 */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: background 0.3s, transform 0.1s;
+        -webkit-tap-highlight-color: transparent; /* 모바일 터치 시 박스 제거 */
+      }
+
+      /* 눌렀을 때 효과 */
+      #fullscreen-btn:active {
+        background: rgba(128, 128, 128, 0.5);
+        transform: scale(0.9);
       }
     </style>
   </head>
@@ -161,6 +167,8 @@
         <span class="time-unit">분</span>
       </div>
     </div>
+
+    <button id="fullscreen-btn" onclick="toggleFullScreen()">⛶</button>
 
     <script>
       function updateClock() {
@@ -226,6 +234,22 @@
 
         document.getElementById("hour-num").textContent = hours;
         document.getElementById("min-num").textContent = minutes;
+      }
+
+      function toggleFullScreen() {
+        if (!document.fullscreenElement) {
+          // 전체화면 진입
+          document.documentElement.requestFullscreen().catch((err) => {
+            console.log(
+              `Error attempting to enable full-screen mode: ${err.message}`
+            );
+          });
+        } else {
+          // 전체화면 해제
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+          }
+        }
       }
 
       updateClock();
