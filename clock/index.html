@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Period Clock</title>
+    <style>
+      /* 1. 기본 설정 및 테마 변수 */
+      :root {
+        --bg-color: #222;
+        --text-color: #fff;
+        --highlight-color: #ffd700; /* 강조색 */
+        --transition-speed: 0.5s; /* 테마 변경 시 부드럽게 */
+      }
+
+      /* 화이트 모드 클래스 (아침/점심) */
+      body.light-mode {
+        --bg-color: #f4f4f4;
+        --text-color: #222;
+        --highlight-color: #0066ff; /* 파란 계열 */
+      }
+
+      /* 다크 모드 클래스 (저녁/밤/새벽) - 기본 */
+      body.dark-mode {
+        --bg-color: #1a1a1a;
+        --text-color: #e0e0e0;
+        --highlight-color: #ffca28; /* 노란 계열 */
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        font-family: "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif;
+        transition: background-color var(--transition-speed),
+          color var(--transition-speed);
+        overflow: hidden;
+      }
+
+      .clock-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1vh; /* 세로 간격 */
+        width: 100%;
+      }
+
+      /* 2. 날짜 스타일 (작게) */
+      #date {
+        font-size: 1.2rem;
+        font-weight: 300;
+        opacity: 0.7;
+      }
+
+      /* 3. 요일 스타일 (중간) */
+      #day {
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+      }
+
+      /* 4. 시간대(아침/점심 등) 스타일 (아주 크게 - 오전/오후 대체) */
+      #period {
+        font-size: 5rem;
+        font-weight: 800;
+        color: var(--highlight-color);
+        line-height: 1.1;
+        margin-bottom: 10px;
+        transition: color var(--transition-speed);
+      }
+
+      /* 5. 시간 표시 영역 (n시 n분) */
+      .time-wrapper {
+        display: flex;
+        align-items: baseline; /* 글자 밑줄 기준 정렬 */
+        gap: 15px;
+        font-weight: 700;
+      }
+
+      /* 숫자 스타일 */
+      .time-num {
+        font-size: 6rem; /* 한글보다 작게 */
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -2px;
+      }
+
+      /* 한글(시/분) 스타일 - 요청대로 숫자보다 크게 */
+      .time-unit {
+        font-size: 6rem; /* 숫자보다 큼 */
+        font-weight: 900;
+      }
+    </style>
+  </head>
+  <body class="dark-mode">
+    <div class="clock-container">
+      <div id="date"></div>
+
+      <div id="day"></div>
+
+      <div id="period"></div>
+
+      <div class="time-wrapper">
+        <span id="hour-num" class="time-num"></span>
+        <span class="time-unit">시</span>
+        <span id="min-num" class="time-num"></span>
+        <span class="time-unit">분</span>
+      </div>
+    </div>
+
+    <script>
+      function updateClock() {
+        const now = new Date();
+        const body = document.body;
+
+        // --- 1. 날짜 및 요일 처리 ---
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const date = String(now.getDate()).padStart(2, "0");
+        const days = [
+          "일요일",
+          "월요일",
+          "화요일",
+          "수요일",
+          "목요일",
+          "금요일",
+          "토요일",
+        ];
+        const dayName = days[now.getDay()];
+
+        document.getElementById(
+          "date"
+        ).textContent = `${year}년 ${month}월 ${date}일`;
+        document.getElementById("day").textContent = dayName;
+
+        // --- 2. 시간대 및 테마 로직 (핵심) ---
+        const currentHour = now.getHours();
+        let periodText = "";
+        let isLightMode = false;
+
+        // 시간대 구분 로직 (원하는대로 수정 가능)
+        if (currentHour >= 5 && currentHour < 11) {
+          periodText = "아침";
+          isLightMode = true; // 화이트 모드
+        } else if (currentHour >= 11 && currentHour < 17) {
+          periodText = "낮";
+          isLightMode = true; // 화이트 모드
+        } else if (currentHour >= 17 && currentHour < 21) {
+          periodText = "저녁";
+          isLightMode = false; // 다크 모드
+        } else if (currentHour >= 21 || currentHour < 1) {
+          periodText = "밤";
+          isLightMode = false; // 다크 모드
+        } else {
+          periodText = "새벽";
+          isLightMode = false; // 다크 모드
+        }
+
+        // 테마 적용
+        if (isLightMode) {
+          body.classList.add("light-mode");
+          body.classList.remove("dark-mode");
+        } else {
+          body.classList.add("dark-mode");
+          body.classList.remove("light-mode");
+        }
+
+        // 시간대 텍스트 적용
+        document.getElementById("period").textContent = periodText;
+
+        // --- 3. 시간 포맷팅 (12시간제 + 한글) ---
+        let hours = currentHour % 12;
+        hours = hours ? hours : 12; // 0시는 12시로 표시
+        const minutes = String(now.getMinutes()).padStart(2, "0");
+
+        document.getElementById("hour-num").textContent = hours;
+        document.getElementById("min-num").textContent = minutes;
+      }
+
+      // 초기 실행 및 반복
+      updateClock();
+      setInterval(updateClock, 1000);
+    </script>
+  </body>
+</html>
