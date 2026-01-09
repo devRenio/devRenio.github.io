@@ -199,16 +199,19 @@
         let periodText = "";
         let isLightMode = false;
 
-        if (currentHour >= 5 && currentHour < 11) {
+        if (currentHour >= 7 && currentHour < 10) {
           periodText = "아침";
           isLightMode = true;
-        } else if (currentHour >= 11 && currentHour < 17) {
+        } else if (currentHour >= 10 && currentHour < 14) {
           periodText = "점심";
+          isLightMode = true;
+        } else if (currentHour >= 14 && currentHour < 17) {
+          periodText = "낮";
           isLightMode = true;
         } else if (currentHour >= 17 && currentHour < 21) {
           periodText = "저녁";
           isLightMode = false;
-        } else if (currentHour >= 21 || currentHour < 1) {
+        } else if (currentHour >= 21 || currentHour < 3) {
           periodText = "밤";
           isLightMode = false;
         } else {
