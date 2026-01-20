@@ -46,7 +46,7 @@ function App() {
   const inputRef = useRef(null);
 
   useEffect(() => {
-    fetch("/data/scriptures.json")
+    fetch(`${import.meta.env.BASE_URL}data/scriptures.json`)
       .then((res) => res.json())
       .then((data) => {
         const formatted = [1, 2, 3, 4, 5, 6].map(
