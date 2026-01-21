@@ -79,6 +79,11 @@
   --hover-bg: #f1f3f5; /* 마우스 올렸을 때 */
   --shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* 부드러운 그림자 */
   --input-bg: #ffffff;
+  --color-success: #2b8a3e; /* 짙은 초록 (Light) */
+  --color-fail: #c92a2a; /* 짙은 빨강 (Light) */
+  --highlight-bg: rgba(0, 0, 0, 0.05); /* 텍스트 강조 배경 */
+  --flash-success: rgba(43, 138, 62, 0.2); /* 연한 초록 배경 */
+  --flash-fail: rgba(201, 42, 42, 0.2); /* 연한 빨강 배경 */
 }
 
 /* 다크 모드 변수 */
@@ -92,6 +97,11 @@
   --hover-bg: #2c2c2c;
   --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   --input-bg: #1e1e1e;
+  --color-success: #69db7c; /* 밝은 초록 (Dark) */
+  --color-fail: #ff8787; /* 밝은 빨강 (Dark) */
+  --highlight-bg: rgba(255, 255, 255, 0.1);
+  --flash-success: rgba(105, 219, 124, 0.2);
+  --flash-fail: rgba(255, 135, 135, 0.2);
 }
 
 /* --- 2. 전체 레이아웃 --- */
@@ -448,8 +458,8 @@ button:hover {
 }
 
 .modal-content h3 {
-  margin-bottom: 24px;
-  font-size: 18px;
+  margin-bottom: 30px;
+  font-size: 23px;
   text-align: center;
 }
 
@@ -590,4 +600,97 @@ input[type="checkbox"] {
   background-color: var(--text-secondary);
   border-radius: 4px;
   opacity: 0.5;
+}
+
+.problem-text-wrapper {
+  width: 100%;
+  text-align: center; /* 텍스트 중앙 정렬 */
+  word-break: keep-all; /* 단어 단위 줄바꿈 */
+  overflow-wrap: break-word;
+  margin: 0;
+  padding: 0;
+  display: block; /* 중요: Flex Item이 아닌 블록 요소로 동작 */
+}
+
+@keyframes flashEffect {
+  0% {
+    background-color: var(--flash-color);
+    box-shadow: 0 0 0 2px var(--flash-color); /* 주변으로 살짝 번지는 효과 */
+    border-radius: 4px;
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+/* 정답(초록색) & 오답(빨간색) 공통 스타일 */
+.text-success,
+.text-fail {
+  display: inline; /* 중요: 블록이 아닌 문장의 일부로 배치 */
+  vertical-align: baseline; /* 중요: 주변 텍스트와 밑줄 높이를 맞춤 */
+  line-height: inherit; /* 중요: 부모 요소의 줄 간격을 그대로 따름 */
+  margin: 0; /* 혹시 모를 외부 여백 제거 */
+  padding: 0; /* 혹시 모를 내부 여백 제거 */
+  font-weight: inherit; /* 굵기 등도 부모를 따름 (튀지 않게) */
+  animation: colorFadeIn 0.3s ease forwards; /* 부드러운 등장 효과 */
+}
+
+/* 색상만 다르게 적용 */
+.text-success {
+  color: var(--color-success);
+  display: inline; /* 중요: 문장 흐름 유지 */
+  vertical-align: baseline;
+  line-height: inherit;
+
+  /* 애니메이션 변수 매핑 */
+  --flash-color: var(--flash-success);
+  animation: flashEffect 0.6s ease-out forwards;
+}
+
+.text-fail {
+  color: var(--color-fail);
+  display: inline; /* 중요: 문장 흐름 유지 */
+  vertical-align: baseline;
+  line-height: inherit;
+
+  /* 애니메이션 변수 매핑 */
+  --flash-color: var(--flash-fail);
+  animation: flashEffect 0.6s ease-out forwards;
+}
+
+@keyframes errorBlankFlash {
+  0% {
+    color: var(--color-fail);
+    background-color: rgba(201, 42, 42, 0.2);
+    box-shadow: 0 0 0 2px rgba(201, 42, 42, 0.2);
+    border-radius: 4px;
+  }
+  100% {
+    color: inherit;
+    background-color: transparent;
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+.text-error-flash {
+  display: inline;
+  animation: errorBlankFlash 0.5s ease-out;
+}
+
+@keyframes activeBlankBlink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.active-blank {
+  display: inline-block; /* 애니메이션 안정성 */
+  animation: activeBlankBlink 1.2s infinite ease-in-out;
+  font-weight: bold;
+  color: var(--text-primary);
 }

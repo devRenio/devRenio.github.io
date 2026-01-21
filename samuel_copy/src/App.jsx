@@ -64,44 +64,156 @@ const INITIAL_FONTS = [
   })),
 ].sort((a, b) => a.displayName.localeCompare(b.displayName, "ko"));
 
+const cleanText = (text) => {
+  if (!text) return "";
+  return text.replace(/\{\{[SF]:(.*?)\}\}/g, "$1");
+};
+
+// [수정됨] 컴포넌트: 첫 번째 빈칸을 찾아 '커서 깜빡임' 또는 '에러' 효과 적용
+const ProblemRenderer = ({ text, isError }) => {
+  if (!text) return null;
+
+  // 1. 텍스트 분리
+  const parts = text.split(/(\{\{[SF]:.*?\}\})/g);
+
+  // 2. '첫 번째 빈칸'의 위치를 미리 계산
+  // (에러가 아니더라도 항상 현재 입력 위치를 표시하기 위함)
+  let targetLocation = null;
+
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    // 마커가 아니고, 빈칸(_)을 포함하고 있다면
+    if (!part.startsWith("{{") && part.includes("_")) {
+      const subParts = part.split(/(_+)/);
+      for (let j = 0; j < subParts.length; j++) {
+        if (subParts[j].startsWith("_")) {
+          targetLocation = { partIndex: i, subIndex: j };
+          break; // 첫 번째 빈칸 발견 즉시 종료
+        }
+      }
+    }
+    if (targetLocation) break;
+  }
+
+  return (
+    <>
+      {parts.map((part, index) => {
+        const uniqueKey = `${index}-${part}`;
+
+        // A. 정답 마커
+        if (part.startsWith("{{S:")) {
+          const content = part.replace(/\{\{S:(.*)\}\}/, "$1");
+          return (
+            <span key={uniqueKey} className="text-success">
+              {content}
+            </span>
+          );
+        }
+        // B. 오답 마커
+        else if (part.startsWith("{{F:")) {
+          const content = part.replace(/\{\{F:(.*)\}\}/, "$1");
+          return (
+            <span key={uniqueKey} className="text-fail">
+              {content}
+            </span>
+          );
+        }
+        // C. 일반 텍스트 및 빈칸
+        else {
+          if (!part.includes("_")) return part;
+
+          const subParts = part.split(/(_+)/);
+          return (
+            <span key={uniqueKey}>
+              {subParts.map((subPart, subIndex) => {
+                // 현재 부분이 '첫 번째 빈칸'인지 확인
+                const isTarget =
+                  targetLocation &&
+                  targetLocation.partIndex === index &&
+                  targetLocation.subIndex === subIndex;
+
+                if (isTarget) {
+                  // 타겟 빈칸일 경우: 에러면 '붉은 섬광', 아니면 '커서 깜빡임'
+                  return (
+                    <span
+                      key={`${subIndex}-${isTarget}`}
+                      className={isError ? "text-error-flash" : "active-blank"}
+                    >
+                      {subPart}
+                    </span>
+                  );
+                }
+
+                // 타겟이 아닌 나머지 빈칸들
+                return subPart;
+              })}
+            </span>
+          );
+        }
+      })}
+    </>
+  );
+};
+
 function App() {
+  const savedData = (() => {
+    try {
+      const data = localStorage.getItem("samuel_storage");
+      return data ? JSON.parse(data) : {};
+    } catch (err) {
+      console.log(err);
+      return {};
+    }
+  })();
+
   // --- 파이썬 앱의 글로벌 변수 및 상태 이식 ---
   const [originalScriptures, setOriginalScriptures] = useState([]);
-  const [selectedScriptures, setSelectedScriptures] = useState([
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-  ]);
-  const [scripture, setScripture] = useState([]);
-  const [courseName, setCourseName] = useState("과정 미선택");
-  const [leftVerse, setLeftVerse] = useState(0);
-  const [failNum, setFailNum] = useState(0);
-  const [wrongVerses, setWrongVerses] = useState([]);
 
-  const [currentProblem, setCurrentProblem] = useState(null);
+  const [selectedScriptures, setSelectedScriptures] = useState(
+    savedData.selectedScriptures || [[], [], [], [], [], []],
+  );
+
+  const [scripture, setScripture] = useState(savedData.scripture || []);
+  const [courseName, setCourseName] = useState(
+    savedData.courseName || "과정 미선택",
+  );
+  const [leftVerse, setLeftVerse] = useState(
+    savedData.scripture ? savedData.scripture.length : 0,
+  );
+  const [failNum, setFailNum] = useState(savedData.failNum || 0);
+  const [wrongVerses, setWrongVerses] = useState(savedData.wrongVerses || []);
+
+  const [currentProblem, setCurrentProblem] = useState(
+    savedData.currentProblem || null,
+  );
   const [userInput, setUserInput] = useState("");
   const [attempts, setAttempts] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [currentMode, setCurrentMode] = useState(1);
 
-  // 빈칸 50%(index 5), 전체 2어절(value 2) 디폴트 설정
-  const [blankNum, setBlankNum] = useState(5);
-  const [wholeLevelNum, setWholeLevelNum] = useState(2);
+  const [currentMode, setCurrentMode] = useState(savedData.currentMode || 1);
+  const [blankNum, setBlankNum] = useState(savedData.blankNum || 4); // 4 = 50%
+  const [wholeLevelNum, setWholeLevelNum] = useState(
+    savedData.wholeLevelNum || 2,
+  );
 
   // 폰트 상태
-  const [fontSize, setFontSize] = useState(30);
-  const [isBold, setIsBold] = useState(false);
+  const [fontSize, setFontSize] = useState(savedData.fontSize || 30);
+  const [isBold, setIsBold] = useState(
+    savedData.isBold !== undefined ? savedData.isBold : false,
+  );
   const [fontFamilies, setFontFamilies] = useState(INITIAL_FONTS);
-  const [fontFamily, setFontFamily] = useState("NanumSquareRoundB");
+  const [fontFamily, setFontFamily] = useState(
+    savedData.fontFamily || "NanumSquareRoundB",
+  );
 
   const [activeModal, setActiveModal] = useState(null);
   const inputRef = useRef(null);
 
   // 테마 상태
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState(savedData.theme || "light");
+
+  // 애니메이션 상태
+  const [isError, setIsError] = useState(false);
 
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
@@ -132,6 +244,45 @@ function App() {
         setOriginalScriptures(formatted);
       });
   }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
+
+  useEffect(() => {
+    // 저장하고 싶은 모든 상태를 객체로 묶음
+    const dataToSave = {
+      theme,
+      fontFamily,
+      fontSize,
+      isBold,
+      courseName,
+      failNum,
+      wrongVerses,
+      scripture,
+      selectedScriptures,
+      currentMode,
+      blankNum,
+      wholeLevelNum,
+      currentProblem,
+    };
+
+    localStorage.setItem("samuel_storage", JSON.stringify(dataToSave));
+  }, [
+    theme,
+    fontFamily,
+    fontSize,
+    isBold,
+    courseName,
+    failNum,
+    wrongVerses,
+    scripture,
+    selectedScriptures,
+    currentMode,
+    blankNum,
+    wholeLevelNum,
+    currentProblem,
+  ]);
 
   // 문제 표시 (display_problem)
   const displayProblem = useCallback(
@@ -228,8 +379,10 @@ function App() {
   };
 
   const handleCorrect = (answer) => {
-    const updatedText = currentProblem.problemText.replace(/_+/, answer);
+    const cleanedText = cleanText(currentProblem.problemText);
+    const updatedText = cleanedText.replace(/_+/, `{{S:${answer}}}`);
     const remainingAnswers = currentProblem.answers.slice(1);
+
     setCurrentProblem({
       ...currentProblem,
       problemText: updatedText,
@@ -245,12 +398,36 @@ function App() {
     setAttempts(newAttempts);
     setUserInput("");
 
+    // 3번 틀렸을 때 (정답 공개)
     if (newAttempts >= 3) {
+      setIsError(false);
+
       if (!wrongVerses.some((v) => v.reference === currentProblem.reference)) {
         setWrongVerses((prev) => [...prev, currentProblem.raw]);
       }
       setFailNum((prev) => prev + 1);
-      handleCorrect(answer);
+
+      // 마커 로직
+      const cleanedText = cleanText(currentProblem.problemText);
+
+      // [핵심 수정] 닫는 괄호 }} 가 반드시 두 개여야 합니다!
+      // 오타 주의: `{{F:${answer}}` -> `{{F:${answer}}}`
+      const updatedText = cleanedText.replace(/_+/, `{{F:${answer}}}`);
+
+      const remainingAnswers = currentProblem.answers.slice(1);
+
+      setCurrentProblem({
+        ...currentProblem,
+        problemText: updatedText,
+        answers: remainingAnswers,
+      });
+
+      setAttempts(0);
+      if (remainingAnswers.length === 0) setIsCompleted(true);
+    } else {
+      // [중요] 기회가 남았을 때만 빈칸 에러(붉은 반짝임) 실행
+      setIsError(true);
+      setTimeout(() => setIsError(false), 400);
     }
   };
 
@@ -438,8 +615,17 @@ function App() {
             fontWeight: isBold ? "bold" : "normal",
           }}
         >
-          {currentProblem?.problemText ||
-            "상단 메뉴에서 과정과 일차를 선택한 후 모드를 눌러 시작하세요."}
+          {/* [수정됨] 텍스트가 끊기지 않도록 wrapper div로 감싸줍니다 */}
+          <div className="problem-text-wrapper">
+            {currentProblem ? (
+              <ProblemRenderer
+                text={currentProblem.problemText}
+                isError={isError}
+              />
+            ) : (
+              "상단 메뉴에서 과정과 일차를 선택한 후 모드를 눌러 시작하세요."
+            )}
+          </div>
         </div>
       </main>
 
@@ -447,7 +633,7 @@ function App() {
       <div className="input-area">
         <input
           ref={inputRef}
-          className="answer-input"
+          className={`answer-input ${isError ? "input-error" : ""}`}
           type="text"
           value={userInput}
           onChange={(e) => setUserInput(e.target.value)}
@@ -471,7 +657,7 @@ function App() {
             남은 구절 : <strong>{leftVerse}</strong>
           </span>
           <span>
-            틀린 갯수 : <strong>{failNum}</strong>
+            틀린 개수 : <strong>{failNum}</strong>
           </span>
         </div>
         <div className="status-btns">
@@ -535,14 +721,40 @@ function App() {
                     marginBottom: "20px",
                   }}
                 >
-                  <strong>사무엘 암송 프로그램</strong>
+                  <strong>사무엘학교 암송 프로그램</strong>
                   <br />
-                  버전 : 제43기 사무엘학교
+                  제43기 사무엘학교
                   <br />
                   <br />
-                  하나님의 말씀을 마음에 새기는
-                  <br />
-                  귀한 시간 되시길 바랍니다.
+                  <div
+                    style={{
+                      fontSize: "17px",
+                      fontFamily: "MaruBuriBold",
+                    }}
+                  >
+                    “구원의 투구와 성령의 검 곧 하나님의 말씀을 가지라”
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "15px",
+                      fontFamily: "MaruBuriSemiBold",
+                      marginTop: "3px",
+                    }}
+                  >
+                    에베소서 6장 17절
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      marginTop: "6px",
+                      paddingBottom: "10px",
+                    }}
+                  >
+                    <br />
+                    서울양천교회 공은호 형제
+                    <br />
+                    (문의 : 깨사모 쪽지)
+                  </div>
                 </p>
                 <button
                   className="full-width-btn"
@@ -583,7 +795,7 @@ function App() {
                 <h3>빈칸 비율 선택</h3>
                 <div className="modal-grid">
                   <button onClick={() => handleBlankLevel(-1)}>
-                    0% (암기)
+                    0% (암기용)
                   </button>
                   {[...Array(10)].map((_, i) => (
                     <button key={i} onClick={() => handleBlankLevel(i)}>
@@ -604,7 +816,7 @@ function App() {
             {/* 전체 모드 어절 수 모달 */}
             {activeModal === "whole" && (
               <>
-                <h3>어절 수 선택</h3>
+                <h3>공개할 어절 수 선택</h3>
                 <div className="modal-grid">
                   {[1, 2, 3, 4].map((n) => (
                     <button key={n} onClick={() => handleWholeLevel(n)}>
