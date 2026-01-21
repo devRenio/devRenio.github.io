@@ -173,6 +173,8 @@ function App() {
     savedData.selectedScriptures || [[], [], [], [], [], []],
   );
 
+  const [activeMenu, setActiveMenu] = useState(null);
+
   const [scripture, setScripture] = useState(savedData.scripture || []);
   const [courseName, setCourseName] = useState(
     savedData.courseName || "과정 미선택",
@@ -182,6 +184,10 @@ function App() {
   );
   const [failNum, setFailNum] = useState(savedData.failNum || 0);
   const [wrongVerses, setWrongVerses] = useState(savedData.wrongVerses || []);
+
+  const [cumulativeStats, setCumulativeStats] = useState(
+    savedData.cumulativeStats || { total: 0, correct: 0, wrong: 0 },
+  );
 
   const [currentProblem, setCurrentProblem] = useState(
     savedData.currentProblem || null,
@@ -212,8 +218,12 @@ function App() {
   // 테마 상태
   const [theme, setTheme] = useState(savedData.theme || "light");
 
-  // 애니메이션 상태
+  // 오답 상태
   const [isError, setIsError] = useState(false);
+
+  const [hasFailedCurrent, setHasFailedCurrent] = useState(
+    savedData.hasFailedCurrent || false,
+  );
 
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
@@ -265,6 +275,8 @@ function App() {
       blankNum,
       wholeLevelNum,
       currentProblem,
+      cumulativeStats,
+      hasFailedCurrent,
     };
 
     localStorage.setItem("samuel_storage", JSON.stringify(dataToSave));
@@ -282,6 +294,8 @@ function App() {
     blankNum,
     wholeLevelNum,
     currentProblem,
+    cumulativeStats,
+    hasFailedCurrent,
   ]);
 
   // 문제 표시 (display_problem)
@@ -301,6 +315,7 @@ function App() {
       setAttempts(0);
       setIsCompleted(false);
       setUserInput("");
+      setHasFailedCurrent(false);
 
       setTimeout(() => {
         if (inputRef.current) inputRef.current.focus();
@@ -356,6 +371,7 @@ function App() {
     setWrongVerses([]);
     setCurrentProblem(null);
     setUserInput("");
+    setHasFailedCurrent(false);
   };
 
   const submitAnswer = () => {
@@ -390,7 +406,17 @@ function App() {
     });
     setUserInput("");
     setAttempts(0);
-    if (remainingAnswers.length === 0) setIsCompleted(true);
+    if (remainingAnswers.length === 0) {
+      setIsCompleted(true);
+
+      if (!hasFailedCurrent) {
+        setCumulativeStats((prev) => ({
+          ...prev,
+          total: prev.total + 1,
+          correct: prev.correct + 1,
+        }));
+      }
+    }
   };
 
   const handleWrong = (answer) => {
@@ -398,7 +424,6 @@ function App() {
     setAttempts(newAttempts);
     setUserInput("");
 
-    // 3번 틀렸을 때 (정답 공개)
     if (newAttempts >= 3) {
       setIsError(false);
 
@@ -407,13 +432,17 @@ function App() {
       }
       setFailNum((prev) => prev + 1);
 
-      // 마커 로직
+      if (!hasFailedCurrent) {
+        setHasFailedCurrent(true);
+        setCumulativeStats((prev) => ({
+          ...prev,
+          total: prev.total + 1,
+          wrong: prev.wrong + 1,
+        }));
+      }
+
       const cleanedText = cleanText(currentProblem.problemText);
-
-      // [핵심 수정] 닫는 괄호 }} 가 반드시 두 개여야 합니다!
-      // 오타 주의: `{{F:${answer}}` -> `{{F:${answer}}}`
       const updatedText = cleanedText.replace(/_+/, `{{F:${answer}}}`);
-
       const remainingAnswers = currentProblem.answers.slice(1);
 
       setCurrentProblem({
@@ -425,7 +454,6 @@ function App() {
       setAttempts(0);
       if (remainingAnswers.length === 0) setIsCompleted(true);
     } else {
-      // [중요] 기회가 남았을 때만 빈칸 에러(붉은 반짝임) 실행
       setIsError(true);
       setTimeout(() => setIsError(false), 400);
     }
@@ -493,30 +521,64 @@ function App() {
       {/* 1. 상단 메뉴바 */}
       <nav className="navbar">
         <div className="menu-groups">
-          {/* 과정 메뉴 */}
-          <div className="menu-group">
+          <div
+            className="menu-group"
+            onMouseEnter={() => setActiveMenu("course")}
+            onMouseLeave={() => setActiveMenu(null)}
+          >
             <button className="menu-trigger">과정 ▾</button>
-            <div className="dropdown-content">
+            <div
+              className="dropdown-content"
+              style={{ display: activeMenu === "course" ? "flex" : "none" }}
+            >
               {[1, 2, 3, 4].map((n) => (
-                <button key={n} onClick={() => selectCourse(n)}>
+                <button
+                  key={n}
+                  onClick={() => {
+                    selectCourse(n);
+                    setActiveMenu(null);
+                  }}
+                >
                   {n}과정
                 </button>
               ))}
             </div>
           </div>
 
-          {/* 일차 메뉴 */}
-          <div className="menu-group">
+          <div
+            className="menu-group"
+            onMouseEnter={() => setActiveMenu("day")}
+            onMouseLeave={() => setActiveMenu(null)}
+          >
             <button className="menu-trigger">일차 ▾</button>
-            <div className="dropdown-content">
+            <div
+              className="dropdown-content"
+              style={{ display: activeMenu === "day" ? "flex" : "none" }}
+            >
               {[1, 2, 3, 4, 5, 6].map((n) => (
-                <button key={n} onClick={() => selectDay(n)}>
+                <button
+                  key={n}
+                  onClick={() => {
+                    selectDay(n);
+                  }}
+                >
                   {n}일차
                 </button>
               ))}
-              <button onClick={() => selectDay(7)}>전체</button>
+              <button
+                onClick={() => {
+                  selectDay(7);
+                }}
+              >
+                전체
+              </button>
               <hr />
-              <button onClick={dayReset} style={{ color: "#ff6b6b" }}>
+              <button
+                onClick={() => {
+                  dayReset();
+                }}
+                style={{ color: "#ff6b6b" }}
+              >
                 초기화
               </button>
             </div>
@@ -534,15 +596,18 @@ function App() {
         </div>
 
         <div className="nav-actions">
-          {/* 전체화면 버튼 추가 */}
           <button onClick={toggleFullscreen} className="theme-toggle">
             ⛶ 전체화면
           </button>
-          {/* 테마 버튼 */}
           <button onClick={toggleTheme} className="theme-toggle">
             {theme === "light" ? "🌙 Dark" : "☀️ Light"}
           </button>
-          {/* 정보 버튼 (alert 대신 모달 호출) */}
+          <button
+            className="theme-toggle"
+            onClick={() => setActiveModal("stats")}
+          >
+            통계
+          </button>
           <button
             className="theme-toggle"
             onClick={() => setActiveModal("info")}
@@ -867,8 +932,8 @@ function App() {
                     <input
                       type="range"
                       min="16"
-                      max="100"
-                      step="2"
+                      max="50"
+                      step="1"
                       value={fontSize}
                       onChange={(e) => setFontSize(Number(e.target.value))}
                       style={{ width: "120px" }}
@@ -954,6 +1019,107 @@ function App() {
                     닫기
                   </button>
                 </div>
+              </>
+            )}
+            {activeModal === "stats" && (
+              <>
+                <h3
+                  style={{
+                    marginBottom: "0px",
+                  }}
+                >
+                  누적 학습 통계
+                </h3>
+                <h3
+                  style={{
+                    marginTop: "3px",
+                    textAlign: "center",
+                    fontSize: "12px",
+                    fontWeight: "normal",
+                  }}
+                >
+                  구절 기준 통계
+                </h3>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "12px",
+                    marginBottom: "24px",
+                    textAlign: "center",
+                    fontSize: "16px",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      borderBottom: "1px solid var(--border-color)",
+                      paddingBottom: "8px",
+                    }}
+                  >
+                    <span style={{ color: "var(--text-secondary)" }}>
+                      총 시도 횟수
+                    </span>
+                    <strong>{cumulativeStats.total.toLocaleString()}회</strong>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      color: "var(--color-success)",
+                    }}
+                  >
+                    <span>정답 횟수</span>
+                    <strong>
+                      {cumulativeStats.correct.toLocaleString()}회
+                    </strong>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      color: "var(--color-fail)",
+                    }}
+                  >
+                    <span>오답 횟수</span>
+                    <strong>{cumulativeStats.wrong.toLocaleString()}회</strong>
+                  </div>
+                  <div
+                    style={{
+                      marginTop: "12px",
+                      padding: "12px",
+                      backgroundColor: "var(--hover-bg)",
+                      borderRadius: "8px",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    정답률 :{" "}
+                    {cumulativeStats.total === 0
+                      ? "0%"
+                      : `${((cumulativeStats.correct / cumulativeStats.total) * 100).toFixed(1)}%`}
+                  </div>
+                </div>
+
+                {/* 통계 초기화 버튼 (필요시 사용, 작게 배치) */}
+                <button
+                  className="full-width-btn"
+                  onClick={() => {
+                    if (window.confirm("통계 기록을 초기화하시겠습니까?")) {
+                      setCumulativeStats({ total: 0, correct: 0, wrong: 0 });
+                    }
+                  }}
+                >
+                  기록 초기화
+                </button>
+
+                <button
+                  className="full-width-btn"
+                  style={{ marginBottom: 0 }}
+                  onClick={() => setActiveModal(null)}
+                >
+                  닫기
+                </button>
               </>
             )}
           </div>

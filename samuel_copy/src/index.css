@@ -208,10 +208,6 @@ button:hover {
   z-index: 200;
 }
 
-.menu-group:hover .dropdown-content {
-  display: flex;
-}
-
 .dropdown-content button {
   text-align: left;
   width: 100%;
