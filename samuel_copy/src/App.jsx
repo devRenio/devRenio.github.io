@@ -69,26 +69,20 @@ const cleanText = (text) => {
   return text.replace(/\{\{[SF]:(.*?)\}\}/g, "$1");
 };
 
-// [수정됨] 컴포넌트: 첫 번째 빈칸을 찾아 '커서 깜빡임' 또는 '에러' 효과 적용
 const ProblemRenderer = ({ text, isError }) => {
   if (!text) return null;
 
-  // 1. 텍스트 분리
   const parts = text.split(/(\{\{[SF]:.*?\}\})/g);
-
-  // 2. '첫 번째 빈칸'의 위치를 미리 계산
-  // (에러가 아니더라도 항상 현재 입력 위치를 표시하기 위함)
   let targetLocation = null;
 
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i];
-    // 마커가 아니고, 빈칸(_)을 포함하고 있다면
     if (!part.startsWith("{{") && part.includes("_")) {
       const subParts = part.split(/(_+)/);
       for (let j = 0; j < subParts.length; j++) {
         if (subParts[j].startsWith("_")) {
           targetLocation = { partIndex: i, subIndex: j };
-          break; // 첫 번째 빈칸 발견 즉시 종료
+          break;
         }
       }
     }
@@ -100,7 +94,6 @@ const ProblemRenderer = ({ text, isError }) => {
       {parts.map((part, index) => {
         const uniqueKey = `${index}-${part}`;
 
-        // A. 정답 마커
         if (part.startsWith("{{S:")) {
           const content = part.replace(/\{\{S:(.*)\}\}/, "$1");
           return (
@@ -108,32 +101,26 @@ const ProblemRenderer = ({ text, isError }) => {
               {content}
             </span>
           );
-        }
-        // B. 오답 마커
-        else if (part.startsWith("{{F:")) {
+        } else if (part.startsWith("{{F:")) {
           const content = part.replace(/\{\{F:(.*)\}\}/, "$1");
           return (
             <span key={uniqueKey} className="text-fail">
               {content}
             </span>
           );
-        }
-        // C. 일반 텍스트 및 빈칸
-        else {
+        } else {
           if (!part.includes("_")) return part;
 
           const subParts = part.split(/(_+)/);
           return (
             <span key={uniqueKey}>
               {subParts.map((subPart, subIndex) => {
-                // 현재 부분이 '첫 번째 빈칸'인지 확인
                 const isTarget =
                   targetLocation &&
                   targetLocation.partIndex === index &&
                   targetLocation.subIndex === subIndex;
 
                 if (isTarget) {
-                  // 타겟 빈칸일 경우: 에러면 '붉은 섬광', 아니면 '커서 깜빡임'
                   return (
                     <span
                       key={`${subIndex}-${isTarget}`}
@@ -143,8 +130,6 @@ const ProblemRenderer = ({ text, isError }) => {
                     </span>
                   );
                 }
-
-                // 타겟이 아닌 나머지 빈칸들
                 return subPart;
               })}
             </span>
@@ -166,9 +151,7 @@ function App() {
     }
   })();
 
-  // --- 파이썬 앱의 글로벌 변수 및 상태 이식 ---
   const [originalScriptures, setOriginalScriptures] = useState([]);
-
   const [selectedScriptures, setSelectedScriptures] = useState(
     savedData.selectedScriptures || [[], [], [], [], [], []],
   );
@@ -197,7 +180,7 @@ function App() {
   const [isCompleted, setIsCompleted] = useState(false);
 
   const [currentMode, setCurrentMode] = useState(savedData.currentMode || 1);
-  const [blankNum, setBlankNum] = useState(savedData.blankNum || 4); // 4 = 50%
+  const [blankNum, setBlankNum] = useState(savedData.blankNum || 4);
   const [wholeLevelNum, setWholeLevelNum] = useState(
     savedData.wholeLevelNum || 2,
   );
@@ -220,10 +203,13 @@ function App() {
 
   // 오답 상태
   const [isError, setIsError] = useState(false);
-
   const [hasFailedCurrent, setHasFailedCurrent] = useState(
     savedData.hasFailedCurrent || false,
   );
+
+  // [추가] 커스텀 Alert/Confirm을 위한 상태
+  const [alertMessage, setAlertMessage] = useState("");
+  const [onConfirm, setOnConfirm] = useState(null); // 확인 버튼 클릭 시 실행할 함수
 
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
@@ -231,7 +217,6 @@ function App() {
     document.documentElement.setAttribute("data-theme", newTheme);
   };
 
-  // 전체화면 토글 함수
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch((err) => {
@@ -260,7 +245,6 @@ function App() {
   }, [theme]);
 
   useEffect(() => {
-    // 저장하고 싶은 모든 상태를 객체로 묶음
     const dataToSave = {
       theme,
       fontFamily,
@@ -298,7 +282,6 @@ function App() {
     hasFailedCurrent,
   ]);
 
-  // 문제 표시 (display_problem)
   const displayProblem = useCallback(
     (mode, list = scripture, bNum = blankNum, wNum = wholeLevelNum) => {
       if (list.length === 0) return;
@@ -467,9 +450,11 @@ function App() {
     }
   };
 
+  // [수정] 시스템 폰트 로드 (alert -> modal)
   const loadSystemFonts = async () => {
     if (!window.queryLocalFonts) {
-      alert("이 브라우저는 시스템 폰트 접근을 지원하지 않습니다.");
+      setAlertMessage("이 브라우저는 시스템 폰트 접근을 지원하지 않습니다.");
+      setActiveModal("alert");
       return;
     }
 
@@ -507,12 +492,14 @@ function App() {
       );
 
       setFontFamilies(combinedList);
-      alert(
+      setAlertMessage(
         `${combinedList.length - BUNDLED_FONTS.length}개의 시스템 폰트를 불러왔습니다.`,
       );
+      setActiveModal("alert");
     } catch (err) {
       console.error(err);
-      alert("폰트 접근 권한 승인이 필요합니다.");
+      setAlertMessage("폰트 접근 권한 승인이 필요합니다.");
+      setActiveModal("alert");
     }
   };
 
@@ -576,6 +563,7 @@ function App() {
               <button
                 onClick={() => {
                   dayReset();
+                  setActiveMenu(null);
                 }}
                 style={{ color: "#ff6b6b" }}
               >
@@ -659,7 +647,7 @@ function App() {
           </div>
         ))}
 
-        {/* 도움말 버튼 (alert 대신 모달 호출) */}
+        {/* 도움말 버튼 */}
         <div className="mode-group">
           <button
             className="mode-main-btn"
@@ -680,7 +668,6 @@ function App() {
             fontWeight: isBold ? "bold" : "normal",
           }}
         >
-          {/* [수정됨] 텍스트가 끊기지 않도록 wrapper div로 감싸줍니다 */}
           <div className="problem-text-wrapper">
             {currentProblem ? (
               <ProblemRenderer
@@ -745,6 +732,67 @@ function App() {
       {activeModal && (
         <div className="modal-overlay" onClick={() => setActiveModal(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            {/* [추가] 커스텀 Alert 모달 */}
+            {activeModal === "alert" && (
+              <>
+                <h3 style={{ marginBottom: "15px" }}>알림</h3>
+                <p
+                  style={{
+                    textAlign: "center",
+                    marginBottom: "20px",
+                    lineHeight: "1.5",
+                  }}
+                >
+                  {alertMessage}
+                </p>
+                <button
+                  className="full-width-btn"
+                  style={{ marginBottom: 0 }}
+                  onClick={() => setActiveModal(null)}
+                >
+                  확인
+                </button>
+              </>
+            )}
+
+            {/* [추가] 커스텀 Confirm 모달 */}
+            {activeModal === "confirm" && (
+              <>
+                <h3 style={{ marginBottom: "15px" }}>확인</h3>
+                <p
+                  style={{
+                    textAlign: "center",
+                    marginBottom: "20px",
+                    lineHeight: "1.5",
+                  }}
+                >
+                  {alertMessage}
+                </p>
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <button
+                    className="full-width-btn"
+                    style={{
+                      marginBottom: 0,
+                      backgroundColor: "var(--color-fail)", // 예: '아니오' 등 취소 색상(선택)이나 기본값
+                    }}
+                    onClick={() => setActiveModal(null)}
+                  >
+                    취소
+                  </button>
+                  <button
+                    className="full-width-btn"
+                    style={{ marginBottom: 0 }}
+                    onClick={() => {
+                      if (onConfirm) onConfirm();
+                      setActiveModal(null);
+                    }}
+                  >
+                    확인
+                  </button>
+                </div>
+              </>
+            )}
+
             {/* 도움말 모달 */}
             {activeModal === "help" && (
               <>
@@ -1021,6 +1069,8 @@ function App() {
                 </div>
               </>
             )}
+
+            {/* 통계 모달 */}
             {activeModal === "stats" && (
               <>
                 <h3
@@ -1101,13 +1151,15 @@ function App() {
                   </div>
                 </div>
 
-                {/* 통계 초기화 버튼 (필요시 사용, 작게 배치) */}
+                {/* [수정] 통계 초기화 버튼 (confirm -> modal) */}
                 <button
                   className="full-width-btn"
                   onClick={() => {
-                    if (window.confirm("통계 기록을 초기화하시겠습니까?")) {
+                    setAlertMessage("통계 기록을 초기화하시겠습니까?");
+                    setOnConfirm(() => () => {
                       setCumulativeStats({ total: 0, correct: 0, wrong: 0 });
-                    }
+                    });
+                    setActiveModal("confirm");
                   }}
                 >
                   기록 초기화
