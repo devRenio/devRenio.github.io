@@ -773,7 +773,6 @@ function App() {
                     className="full-width-btn"
                     style={{
                       marginBottom: 0,
-                      backgroundColor: "var(--color-fail)", // 예: '아니오' 등 취소 색상(선택)이나 기본값
                     }}
                     onClick={() => setActiveModal(null)}
                   >
@@ -781,7 +780,10 @@ function App() {
                   </button>
                   <button
                     className="full-width-btn"
-                    style={{ marginBottom: 0 }}
+                    style={{
+                      marginBottom: 0,
+                      backgroundColor: "var(--color-fail)",
+                    }}
                     onClick={() => {
                       if (onConfirm) onConfirm();
                       setActiveModal(null);
