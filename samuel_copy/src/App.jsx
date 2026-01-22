@@ -180,7 +180,7 @@ function App() {
   const [isCompleted, setIsCompleted] = useState(false);
 
   const [currentMode, setCurrentMode] = useState(savedData.currentMode || 1);
-  const [blankNum, setBlankNum] = useState(savedData.blankNum || 4);
+  const [blankNum, setBlankNum] = useState(savedData.blankNum || 5);
   const [wholeLevelNum, setWholeLevelNum] = useState(
     savedData.wholeLevelNum || 2,
   );
@@ -611,7 +611,7 @@ function App() {
           {
             id: 1,
             n: "빈칸 모드",
-            subText: `${blankNum * 10}%`, // 50%
+            subText: `${blankNum * 10}%`,
             subAction: () => setActiveModal("blank"),
           },
           { id: 2, n: "구절 모드", subText: null, subAction: null },
