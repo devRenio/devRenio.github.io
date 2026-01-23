@@ -737,8 +737,8 @@ function App() {
             justifyContent: "center",
           }}
         >
-          {/* A. 주제 표시 (모드 5일 때만) */}
-          {currentProblem?.topic && (
+          {/* A. 주제 표시 (모드 2, 4가 아닐 때만) */}
+          {currentMode !== 2 && currentMode !== 4 && currentProblem?.topic && (
             <div className="topic-display">{currentProblem.topic}</div>
           )}
 
