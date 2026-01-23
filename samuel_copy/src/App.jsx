@@ -233,9 +233,23 @@ function App() {
     fetch(`${import.meta.env.BASE_URL}data/scriptures.json`)
       .then((res) => res.json())
       .then((data) => {
-        const formatted = [1, 2, 3, 4, 5, 6].map(
-          (d) => data.find((item) => item.day === d)?.topics[0].verses || [],
-        );
+        // 1일부터 6일까지 순회
+        const formatted = [1, 2, 3, 4, 5, 6].map((d) => {
+          // 해당 일차(day) 데이터 찾기
+          const dayData = data.find((item) => item.day === d);
+          if (!dayData) return [];
+
+          // [핵심 수정]
+          // 기존: dayData.topics[0].verses (첫 번째 주제만 가져옴)
+          // 변경: dayData.topics.flatMap(...) (모든 주제를 순회하며 합침)
+          return dayData.topics.flatMap((topic) =>
+            topic.verses.map((v) => ({
+              ...v,
+              topic: topic.title, // 각 구절 객체에 주제 제목(title)을 심어줌
+            })),
+          );
+        });
+
         setOriginalScriptures(formatted);
       });
   }, []);
@@ -289,12 +303,56 @@ function App() {
       const problemNum = Math.floor(Math.random() * list.length);
       const selected = list[problemNum];
 
-      const problem = generateProblem(selected, mode, {
-        blankNum: bNum,
+      // 주제 모드(5)는 본문 빈칸 비율 100%(10)
+      const actualBlankNum = mode === 5 ? 10 : bNum;
+
+      const problem = generateProblem(selected, mode === 5 ? 1 : mode, {
+        blankNum: actualBlankNum,
         wholeLevelNum: wNum,
       });
 
-      setCurrentProblem({ ...problem, raw: selected, indexInList: problemNum });
+      let finalProblemText = problem.problemText;
+      let finalAnswers = [...problem.answers]; // 복사해서 사용
+
+      // [핵심] 주제 모드(5) 전용 로직
+      if (mode === 5) {
+        // 1. 본문 텍스트 압축 (모든 단어 빈칸을 _ 한 글자로)
+        // 기존 텍스트에서 맨 앞의 참조 부분((롬 10:17) 등)은 제거하고 시작
+        let bodyText = finalProblemText.replace(/^\(.+?\)\s*/, "");
+        bodyText = bodyText.replace(/_+/g, "_");
+
+        // 2. 참조 가리기 및 정답 추가
+        const match = selected.reference.match(/\((.+?) (\d+):(\d+)\)/);
+        let maskedRefStr = selected.reference; // 기본값
+
+        if (match) {
+          const [, book, chap, verse] = match;
+
+          if (Math.random() > 0.5) {
+            // 절(Verse) 가리기
+            maskedRefStr = `(${book} ${chap}:_)`;
+            finalAnswers.unshift(verse); // 정답 배열 맨 앞에 '절' 추가
+          } else {
+            // 장(Chapter) 가리기
+            maskedRefStr = `(${book} _:${verse})`;
+            finalAnswers.unshift(chap); // 정답 배열 맨 앞에 '장' 추가
+          }
+        }
+
+        // 3. 텍스트 합치기: (참조) + (본문)
+        finalProblemText = `${maskedRefStr} ${bodyText}`;
+      }
+
+      setCurrentProblem({
+        ...problem,
+        problemText: finalProblemText, // 합쳐진 텍스트
+        answers: finalAnswers, // 참조 정답이 포함된 리스트
+        raw: selected,
+        indexInList: problemNum,
+        topic: selected.topic,
+        // maskedReference는 이제 problemText에 포함되므로 별도 필드 불필요
+      });
+
       setAttempts(0);
       setIsCompleted(false);
       setUserInput("");
@@ -622,6 +680,12 @@ function App() {
             subText: `${wholeLevelNum}어절`,
             subAction: () => setActiveModal("whole"),
           },
+          {
+            id: 5,
+            n: "주제 모드",
+            subText: null,
+            subAction: null,
+          },
         ].map((m) => (
           <div key={m.id} className="mode-group">
             <button
@@ -666,8 +730,24 @@ function App() {
             fontFamily: fontFamily,
             fontSize: `${fontSize}px`,
             fontWeight: isBold ? "bold" : "normal",
+            // 주제와 본문을 위아래로 배치하기 위한 flex 설정
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
+          {/* A. 주제 표시 (모드 5일 때만) */}
+          {currentMode === 5 && currentProblem?.topic && (
+            <div className="topic-display">{currentProblem.topic}</div>
+          )}
+
+          {/* [삭제됨] B. 참조 표시 
+             이제 참조가 본문(ProblemRenderer) 안에 포함되어 있으므로, 
+             별도의 참조 div는 제거합니다.
+          */}
+
+          {/* C. 본문 텍스트 (참조 포함) */}
           <div className="problem-text-wrapper">
             {currentProblem ? (
               <ProblemRenderer

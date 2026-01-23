@@ -690,3 +690,22 @@ input[type="checkbox"] {
   font-weight: bold;
   color: var(--text-primary);
 }
+
+.topic-display {
+  font-family: "MaruBuriBold";
+  font-size: 0.7em;
+  color: var(--text-secondary);
+  margin-bottom: 20px; /* 아래 요소와 간격 */
+  padding: 10px;
+  background-color: var(--hover-bg);
+  border-radius: 8px;
+  line-height: 1.5;
+  word-break: keep-all;
+  width: 90%;
+  text-align: center; /* 텍스트 중앙 정렬 */
+}
+
+[data-theme="dark"] .topic-display {
+  color: var(--text-secondary);
+  background-color: rgba(255, 255, 255, 0.05);
+}
