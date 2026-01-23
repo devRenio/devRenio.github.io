@@ -738,7 +738,7 @@ function App() {
           }}
         >
           {/* A. 주제 표시 (모드 5일 때만) */}
-          {currentMode === 5 && currentProblem?.topic && (
+          {currentProblem?.topic && (
             <div className="topic-display">{currentProblem.topic}</div>
           )}
 
