@@ -140,11 +140,22 @@ const ProblemRenderer = ({ text, isError }) => {
   );
 };
 
+const DATA_VERSION = "v1.1";
+
 function App() {
   const savedData = (() => {
     try {
       const data = localStorage.getItem("samuel_storage");
-      return data ? JSON.parse(data) : {};
+      if (!data) return {};
+
+      const parsed = JSON.parse(data);
+
+      if (parsed.version !== DATA_VERSION) {
+        console.log("데이터 버전이 변경되어 로컬 스토리지를 초기화합니다.");
+        return {};
+      }
+
+      return parsed;
     } catch (err) {
       console.log(err);
       return {};
@@ -260,6 +271,7 @@ function App() {
 
   useEffect(() => {
     const dataToSave = {
+      version: DATA_VERSION,
       theme,
       fontFamily,
       fontSize,
@@ -303,7 +315,6 @@ function App() {
       const problemNum = Math.floor(Math.random() * list.length);
       const selected = list[problemNum];
 
-      // 주제 모드(5)는 본문 빈칸 비율 100%(10)
       const actualBlankNum = mode === 5 ? 10 : bNum;
 
       const problem = generateProblem(selected, mode === 5 ? 1 : mode, {
@@ -322,7 +333,7 @@ function App() {
         bodyText = bodyText.replace(/_+/g, "_");
 
         // 2. 참조 가리기 및 정답 추가
-        const match = selected.reference.match(/\((.+?) (\d+):(\d+)\)/);
+        const match = selected.reference.match(/\((.+?) (\d+):(.+?)\)/);
         let maskedRefStr = selected.reference; // 기본값
 
         if (match) {
@@ -330,8 +341,12 @@ function App() {
 
           if (Math.random() > 0.5) {
             // 절(Verse) 가리기
-            maskedRefStr = `(${book} ${chap}:_)`;
-            finalAnswers.unshift(verse); // 정답 배열 맨 앞에 '절' 추가
+            const maskedVerse = verse.replace(/\d+/g, "_");
+            maskedRefStr = `(${book} ${chap}:${maskedVerse})`;
+            const verseNumbers = verse.match(/\d+/g);
+            if (verseNumbers) {
+              finalAnswers.unshift(...verseNumbers);
+            }
           } else {
             // 장(Chapter) 가리기
             maskedRefStr = `(${book} _:${verse})`;
@@ -508,7 +523,6 @@ function App() {
     }
   };
 
-  // [수정] 시스템 폰트 로드 (alert -> modal)
   const loadSystemFonts = async () => {
     if (!window.queryLocalFonts) {
       setAlertMessage("이 브라우저는 시스템 폰트 접근을 지원하지 않습니다.");
@@ -772,7 +786,9 @@ function App() {
           onKeyDown={handleKeyDown}
           autoFocus
           placeholder={
-            isCompleted ? "Space/Enter를 눌러 다음 구절로" : "정답 입력..."
+            isCompleted
+              ? "Space/Enter를 눌러 다음 구절로"
+              : "Space/Enter를 눌러 정답 입력"
           }
           style={{
             fontSize: `${Math.max(20, fontSize * 0.7)}px`,
