@@ -39,3 +39,4 @@ google_analytics:
 plugins:
   - jekyll-sitemap
   - jekyll-feed
+  - jekyll-paginate

@@ -685,3 +685,51 @@ a {
   font-size: 22px;
   bottom: 30px;
 }
+
+.demo-button {
+  display: inline-block;
+  background-color: #3498db;
+  color: white !important;
+  padding: 4px 12px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 500;
+  margin-left: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.demo-button:hover {
+  background-color: #2980b9;
+  color: white !important;
+}
+
+.card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.semi-transparent-button.white-button {
+  display: inline-block;
+  padding: 8px 18px;
+  margin: 5px;
+  border: 1px solid #3498db;
+  border-radius: 25px;
+  background-color: transparent;
+  color: #3498db;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.semi-transparent-button.white-button:hover {
+  background-color: rgba(52, 152, 219, 0.1);
+}
+
+.white-button-hover {
+  background-color: #3498db !important;
+  color: white !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
