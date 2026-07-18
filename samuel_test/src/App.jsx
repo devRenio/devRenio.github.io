@@ -142,6 +142,22 @@ const ProblemRenderer = ({ text, isError }) => {
 
 const DATA_VERSION = "v1.1";
 
+function useIsMobile(breakpoint = 768) {
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.innerWidth < breakpoint,
+  );
+
+  useEffect(() => {
+    const mql = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
+    const handler = (e) => setIsMobile(e.matches);
+    setIsMobile(mql.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, [breakpoint]);
+
+  return isMobile;
+}
+
 function App() {
   const savedData = (() => {
     try {
@@ -208,6 +224,14 @@ function App() {
 
   const [activeModal, setActiveModal] = useState(null);
   const inputRef = useRef(null);
+  const navRef = useRef(null);
+  const isMobile = useIsMobile();
+  const displayFontSize = isMobile ? Math.min(fontSize, 22) : fontSize;
+  const inputFontSize = Math.max(16, displayFontSize * 0.7);
+
+  const toggleMenu = (menuName) => {
+    setActiveMenu((prev) => (prev === menuName ? null : menuName));
+  };
 
   // 테마 상태
   const [theme, setTheme] = useState(savedData.theme || "light");
@@ -268,6 +292,19 @@ function App() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    if (!activeMenu) return;
+
+    const handleClickOutside = (e) => {
+      if (navRef.current && !navRef.current.contains(e.target)) {
+        setActiveMenu(null);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [activeMenu]);
 
   useEffect(() => {
     const dataToSave = {
@@ -578,14 +615,22 @@ function App() {
   return (
     <div className="app-container" data-theme={theme}>
       {/* 1. 상단 메뉴바 */}
-      <nav className="navbar">
+      <nav className="navbar" ref={navRef}>
         <div className="menu-groups">
           <div
             className="menu-group"
-            onMouseEnter={() => setActiveMenu("course")}
-            onMouseLeave={() => setActiveMenu(null)}
+            onMouseEnter={() => !isMobile && setActiveMenu("course")}
+            onMouseLeave={() => !isMobile && setActiveMenu(null)}
           >
-            <button className="menu-trigger">과정 ▾</button>
+            <button
+              className="menu-trigger"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleMenu("course");
+              }}
+            >
+              과정 ▾
+            </button>
             <div
               className="dropdown-content"
               style={{ display: activeMenu === "course" ? "flex" : "none" }}
@@ -606,10 +651,18 @@ function App() {
 
           <div
             className="menu-group"
-            onMouseEnter={() => setActiveMenu("day")}
-            onMouseLeave={() => setActiveMenu(null)}
+            onMouseEnter={() => !isMobile && setActiveMenu("day")}
+            onMouseLeave={() => !isMobile && setActiveMenu(null)}
           >
-            <button className="menu-trigger">일차 ▾</button>
+            <button
+              className="menu-trigger"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleMenu("day");
+              }}
+            >
+              일차 ▾
+            </button>
             <div
               className="dropdown-content"
               style={{ display: activeMenu === "day" ? "flex" : "none" }}
@@ -619,6 +672,7 @@ function App() {
                   key={n}
                   onClick={() => {
                     selectDay(n);
+                    setActiveMenu(null);
                   }}
                 >
                   {n}일차
@@ -627,6 +681,7 @@ function App() {
               <button
                 onClick={() => {
                   selectDay(7);
+                  setActiveMenu(null);
                 }}
               >
                 전체
@@ -656,7 +711,10 @@ function App() {
         </div>
 
         <div className="nav-actions">
-          <button onClick={toggleFullscreen} className="theme-toggle">
+          <button
+            onClick={toggleFullscreen}
+            className="theme-toggle hide-mobile"
+          >
             ⛶ 전체화면
           </button>
           <button onClick={toggleTheme} className="theme-toggle">
@@ -742,7 +800,7 @@ function App() {
           className="problem-box"
           style={{
             fontFamily: fontFamily,
-            fontSize: `${fontSize}px`,
+            fontSize: `${displayFontSize}px`,
             fontWeight: isBold ? "bold" : "normal",
             // 주제와 본문을 위아래로 배치하기 위한 flex 설정
             display: "flex",
@@ -791,7 +849,7 @@ function App() {
               : "Space/Enter를 눌러 정답 입력"
           }
           style={{
-            fontSize: `${Math.max(20, fontSize * 0.7)}px`,
+            fontSize: `${inputFontSize}px`,
             fontFamily: fontFamily,
           }}
         />
