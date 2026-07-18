@@ -119,6 +119,12 @@ body {
   height: 100%;
 }
 
+body.samuel-typing {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
 .app-container {
   display: flex;
   flex-direction: column;
@@ -136,6 +142,25 @@ body {
     background-color 0.3s ease,
     color 0.3s ease;
   overflow-x: hidden;
+}
+
+.app-chrome {
+  flex-shrink: 0;
+}
+
+.mobile-study-shell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.input-dock {
+  flex-shrink: 0;
+}
+
+.keyboard-mini-bar {
+  display: none;
 }
 
 /* 버튼 공통 스타일 */
@@ -722,6 +747,110 @@ input[type="checkbox"] {
     display: none !important;
   }
 
+  .app-container.is-mobile {
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+  }
+
+  /* 키보드가 올라온 뒤: visualViewport 크기에 맞춰 고정 */
+  .app-container.is-mobile.keyboard-open {
+    position: fixed;
+    top: var(--vv-offset-top, 0px);
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: var(--vv-height, 100dvh);
+    max-height: var(--vv-height, 100dvh);
+    z-index: 200;
+  }
+
+  /* 입력 포커스 시: 메뉴·상태바 숨기고 학습 영역만 표시 */
+  .app-container.is-mobile.typing-mode .app-chrome,
+  .app-container.is-mobile.typing-mode .status-bar {
+    display: none;
+  }
+
+  .app-container.is-mobile.typing-mode .mobile-study-shell {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .app-container.is-mobile.typing-mode .problem-container {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 8px 12px;
+  }
+
+  .app-container.is-mobile.typing-mode .problem-box {
+    width: 100%;
+    min-height: unset;
+    height: auto;
+    padding: 12px 8px;
+    border-radius: 12px;
+    box-shadow: none;
+    background-color: transparent;
+    justify-content: flex-start;
+  }
+
+  .app-container.is-mobile.typing-mode .topic-display {
+    margin-bottom: 8px;
+    padding: 6px 8px;
+    font-size: 0.6em;
+  }
+
+  .keyboard-mini-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 12px;
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .keyboard-mini-stat {
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+
+  .keyboard-mini-stat strong {
+    color: var(--text-primary);
+  }
+
+  .keyboard-mini-actions {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+  }
+
+  .keyboard-mini-actions button {
+    padding: 6px 10px;
+    font-size: 12px;
+    border-radius: 8px;
+    background-color: var(--hover-bg);
+    white-space: nowrap;
+  }
+
+  .app-container.is-mobile.typing-mode .input-dock {
+    flex-shrink: 0;
+    background-color: var(--card-bg);
+    border-top: 1px solid var(--border-color);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .app-container.is-mobile.typing-mode .input-area {
+    padding: 8px 12px 10px;
+  }
+
   .navbar {
     flex-wrap: wrap;
     height: auto;
@@ -800,6 +929,8 @@ input[type="checkbox"] {
     padding: 10px 12px;
     align-items: stretch;
     min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .problem-box {
@@ -820,12 +951,13 @@ input[type="checkbox"] {
 
   .input-area {
     max-width: none;
-    padding: 0 12px 16px;
-    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    padding: 0 12px 12px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
   }
 
   .answer-input {
     padding: 12px 0;
+    font-size: 16px !important;
   }
 
   .status-bar {

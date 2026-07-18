@@ -158,6 +158,74 @@ function useIsMobile(breakpoint = 768) {
   return isMobile;
 }
 
+function useKeyboardLayout(isMobile, inputRef) {
+  const [inputFocused, setInputFocused] = useState(false);
+  const [viewport, setViewport] = useState(() => ({
+    height: typeof window !== "undefined" ? window.innerHeight : 0,
+    offsetTop: 0,
+  }));
+
+  useEffect(() => {
+    if (!isMobile || !window.visualViewport) return;
+
+    const vv = window.visualViewport;
+    const update = () => {
+      setViewport({
+        height: vv.height,
+        offsetTop: vv.offsetTop,
+      });
+    };
+
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    update();
+
+    return () => {
+      vv.removeEventListener("resize", update);
+      vv.removeEventListener("scroll", update);
+    };
+  }, [isMobile]);
+
+  const keyboardHeight =
+    typeof window !== "undefined"
+      ? Math.max(0, window.innerHeight - viewport.height)
+      : 0;
+
+  const keyboardOpen = isMobile && inputFocused && keyboardHeight > 60;
+  const typingMode = isMobile && inputFocused;
+
+  useEffect(() => {
+    if (!typingMode) return;
+    document.body.classList.add("samuel-typing");
+    return () => document.body.classList.remove("samuel-typing");
+  }, [typingMode]);
+
+  const handleInputFocus = () => setInputFocused(true);
+
+  const handleInputBlur = () => {
+    window.setTimeout(() => {
+      if (document.activeElement !== inputRef.current) {
+        setInputFocused(false);
+      }
+    }, 120);
+  };
+
+  const dismissKeyboard = () => {
+    inputRef.current?.blur();
+    setInputFocused(false);
+  };
+
+  return {
+    typingMode,
+    keyboardOpen,
+    viewportHeight: viewport.height,
+    viewportOffsetTop: viewport.offsetTop,
+    handleInputFocus,
+    handleInputBlur,
+    dismissKeyboard,
+  };
+}
+
 function App() {
   const savedData = (() => {
     try {
@@ -225,8 +293,20 @@ function App() {
   const [activeModal, setActiveModal] = useState(null);
   const inputRef = useRef(null);
   const navRef = useRef(null);
+  const problemContainerRef = useRef(null);
   const isMobile = useIsMobile();
-  const displayFontSize = isMobile ? Math.min(fontSize, 22) : fontSize;
+  const {
+    typingMode,
+    keyboardOpen,
+    viewportHeight,
+    viewportOffsetTop,
+    handleInputFocus,
+    handleInputBlur,
+    dismissKeyboard,
+  } = useKeyboardLayout(isMobile, inputRef);
+  const displayFontSize = isMobile
+    ? Math.min(fontSize, typingMode ? 18 : 22)
+    : fontSize;
   const inputFontSize = Math.max(16, displayFontSize * 0.7);
 
   const toggleMenu = (menuName) => {
@@ -305,6 +385,23 @@ function App() {
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, [activeMenu]);
+
+  useEffect(() => {
+    if (!typingMode || !problemContainerRef.current) return;
+
+    const scrollActiveBlankIntoView = () => {
+      const activeBlank = problemContainerRef.current?.querySelector(
+        ".active-blank, .text-error-flash",
+      );
+      if (activeBlank) {
+        activeBlank.scrollIntoView({ block: "center", behavior: "smooth" });
+      }
+    };
+
+    scrollActiveBlankIntoView();
+    const timer = window.setTimeout(scrollActiveBlankIntoView, 320);
+    return () => window.clearTimeout(timer);
+  }, [typingMode, keyboardOpen, currentProblem?.problemText]);
 
   useEffect(() => {
     const dataToSave = {
@@ -613,7 +710,26 @@ function App() {
   };
 
   return (
-    <div className="app-container" data-theme={theme}>
+    <div
+      className={[
+        "app-container",
+        isMobile ? "is-mobile" : "",
+        typingMode ? "typing-mode" : "",
+        keyboardOpen ? "keyboard-open" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      data-theme={theme}
+      style={
+        keyboardOpen
+          ? {
+              "--vv-height": `${viewportHeight}px`,
+              "--vv-offset-top": `${viewportOffsetTop}px`,
+            }
+          : undefined
+      }
+    >
+      <div className="app-chrome">
       {/* 1. 상단 메뉴바 */}
       <nav className="navbar" ref={navRef}>
         <div className="menu-groups">
@@ -793,20 +909,21 @@ function App() {
           </button>
         </div>
       </div>
+      </div>
 
+      <div className="mobile-study-shell">
       {/* 3. 문제 표시 영역 */}
-      <main className="problem-container">
+      <main className="problem-container" ref={problemContainerRef}>
         <div
           className="problem-box"
           style={{
             fontFamily: fontFamily,
             fontSize: `${displayFontSize}px`,
             fontWeight: isBold ? "bold" : "normal",
-            // 주제와 본문을 위아래로 배치하기 위한 flex 설정
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
+            justifyContent: typingMode ? "flex-start" : "center",
           }}
         >
           {/* A. 주제 표시 (모드 2, 4가 아닐 때만) */}
@@ -833,26 +950,57 @@ function App() {
         </div>
       </main>
 
-      {/* 4. 답안 입력 영역 */}
-      <div className="input-area">
-        <input
-          ref={inputRef}
-          className={`answer-input ${isError ? "input-error" : ""}`}
-          type="text"
-          value={userInput}
-          onChange={(e) => setUserInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          autoFocus
-          placeholder={
-            isCompleted
-              ? "Space/Enter를 눌러 다음 구절로"
-              : "Space/Enter를 눌러 정답 입력"
-          }
-          style={{
-            fontSize: `${inputFontSize}px`,
-            fontFamily: fontFamily,
-          }}
-        />
+      <div className="input-dock">
+        {typingMode && (
+          <div className="keyboard-mini-bar">
+            <span className="badge">{courseName}</span>
+            <span className="keyboard-mini-stat">
+              남은 <strong>{leftVerse}</strong>
+            </span>
+            <div className="keyboard-mini-actions">
+              <button type="button" onClick={() => displayProblem(currentMode)}>
+                스킵
+              </button>
+              <button type="button" onClick={dismissKeyboard}>
+                키보드 닫기
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 4. 답안 입력 영역 */}
+        <div className="input-area">
+          <input
+            ref={inputRef}
+            className={`answer-input ${isError ? "input-error" : ""}`}
+            type="text"
+            value={userInput}
+            onChange={(e) => setUserInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onFocus={handleInputFocus}
+            onBlur={handleInputBlur}
+            autoFocus={!isMobile}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            enterKeyHint={isCompleted ? "next" : "done"}
+            placeholder={
+              isMobile
+                ? isCompleted
+                  ? "Enter → 다음 구절"
+                  : "정답 입력 후 Enter"
+                : isCompleted
+                  ? "Space/Enter를 눌러 다음 구절로"
+                  : "Space/Enter를 눌러 정답 입력"
+            }
+            style={{
+              fontSize: `${inputFontSize}px`,
+              fontFamily: fontFamily,
+            }}
+          />
+        </div>
+      </div>
       </div>
 
       {/* 5. 하단 상태바 */}
