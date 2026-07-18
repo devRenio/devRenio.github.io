@@ -567,17 +567,13 @@ function App() {
   const submitLockRef = useRef(false);
 
   const submitAnswer = (inputOverride) => {
-    if (submitLockRef.current) return;
     if (!currentProblem) return;
 
-    submitLockRef.current = true;
-    window.setTimeout(() => {
-      submitLockRef.current = false;
-    }, 300);
-
     const input = inputOverride ?? userInput;
+    const shouldAdvance =
+      isCompleted || currentProblem.answers.length === 0;
 
-    if (isCompleted || currentProblem.answers.length === 0) {
+    if (shouldAdvance) {
       const newList = scripture.filter(
         (_, i) => i !== currentProblem.indexInList,
       );
@@ -586,6 +582,13 @@ function App() {
       displayProblem(currentMode, newList);
       return;
     }
+
+    if (submitLockRef.current) return;
+
+    submitLockRef.current = true;
+    window.setTimeout(() => {
+      submitLockRef.current = false;
+    }, 300);
 
     const answer = currentProblem.answers[0];
     if (normToken(input) === normToken(answer)) {
@@ -690,15 +693,21 @@ function App() {
     const value = e.target.value;
 
     // 일부 모바일 브라우저는 beforeinput/keydown 없이 공백만 삽입하는 경우가 있음
-    if (
-      isMobile &&
-      !e.nativeEvent.isComposing &&
-      value.endsWith(" ") &&
-      value.trimEnd().length > 0
-    ) {
+    if (isMobile && !e.nativeEvent.isComposing && value.endsWith(" ")) {
+      if (isCompleted || currentProblem?.answers.length === 0) {
+        setUserInput("");
+        submitAnswer();
+        return;
+      }
+
       const trimmed = value.trimEnd();
-      setUserInput(trimmed);
-      submitAnswer(trimmed);
+      if (trimmed.length > 0) {
+        setUserInput(trimmed);
+        submitAnswer(trimmed);
+        return;
+      }
+
+      setUserInput("");
       return;
     }
 

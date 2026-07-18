@@ -249,17 +249,20 @@ button:hover {
 
 .nav-actions {
   display: flex;
+  align-items: center;
   gap: 8px;
 }
 
 .theme-toggle {
   background-color: var(--hover-bg);
   font-size: 12px;
-  /* 버튼 높이와 패딩을 명시하여 클릭감 개선 */
   height: 36px;
   padding: 0 16px;
   border-radius: 18px;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.2s ease;
 }
 
@@ -735,10 +738,6 @@ input[type="checkbox"] {
 [data-theme="dark"] .topic-display {
   color: var(--text-secondary);
   background-color: rgba(255, 255, 255, 0.05);
-}
-
-.hide-mobile {
-  display: inline-flex;
 }
 
 /* --- 10. 모바일 반응형 --- */
