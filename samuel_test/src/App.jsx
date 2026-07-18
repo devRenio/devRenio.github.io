@@ -1,5 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { generateProblem, normToken } from "./utils/memorizeLogic";
+import {
+  DEFAULT_FONT,
+  cssFontFamily,
+  isBundledFont,
+  preloadBundledFonts,
+  resolveInitialFont,
+} from "./utils/fonts";
 
 const BUNDLED_FONTS = [
   { realName: "GmarketSansBold", displayName: "G마켓 산스 Bold" },
@@ -141,6 +148,7 @@ const ProblemRenderer = ({ text, isError }) => {
 };
 
 const DATA_VERSION = "v1.1";
+const MOBILE_NOTICE_KEY = "samuel_mobile_notice_dismissed";
 
 function useIsMobile(breakpoint = 768) {
   const [isMobile, setIsMobile] = useState(
@@ -286,9 +294,10 @@ function App() {
     savedData.isBold !== undefined ? savedData.isBold : false,
   );
   const [fontFamilies, setFontFamilies] = useState(INITIAL_FONTS);
-  const [fontFamily, setFontFamily] = useState(
-    savedData.fontFamily || "NanumSquareRoundB",
+  const [fontFamily, setFontFamily] = useState(() =>
+    resolveInitialFont(savedData.fontFamily, window.innerWidth < 768),
   );
+  const activeFontFamily = cssFontFamily(fontFamily);
 
   const [activeModal, setActiveModal] = useState(null);
   const inputRef = useRef(null);
@@ -325,6 +334,7 @@ function App() {
   // [추가] 커스텀 Alert/Confirm을 위한 상태
   const [alertMessage, setAlertMessage] = useState("");
   const [onConfirm, setOnConfirm] = useState(null); // 확인 버튼 클릭 시 실행할 함수
+  const [showMobileNotice, setShowMobileNotice] = useState(false);
 
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
@@ -342,6 +352,19 @@ function App() {
         document.exitFullscreen();
       }
     }
+  };
+
+  useEffect(() => {
+    if (isMobile) return;
+    if (localStorage.getItem(MOBILE_NOTICE_KEY) === "true") return;
+    setShowMobileNotice(true);
+  }, [isMobile]);
+
+  const dismissMobileNotice = (permanent = false) => {
+    if (permanent) {
+      localStorage.setItem(MOBILE_NOTICE_KEY, "true");
+    }
+    setShowMobileNotice(false);
   };
 
   useEffect(() => {
@@ -370,8 +393,23 @@ function App() {
   }, []);
 
   useEffect(() => {
+    preloadBundledFonts();
+  }, []);
+
+  useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    if (!isMobile) return;
+
+    setFontFamilies(
+      BUNDLED_FONTS.sort((a, b) =>
+        a.displayName.localeCompare(b.displayName, "ko"),
+      ),
+    );
+    setFontFamily((prev) => (isBundledFont(prev) ? prev : DEFAULT_FONT));
+  }, [isMobile]);
 
   useEffect(() => {
     if (!activeMenu) return;
@@ -715,6 +753,14 @@ function App() {
   };
 
   const loadSystemFonts = async () => {
+    if (isMobile) {
+      setAlertMessage(
+        "모바일에서는 앱에 포함된 글꼴만 사용할 수 있습니다. 목록에서 선택해 주세요.",
+      );
+      setActiveModal("alert");
+      return;
+    }
+
     if (!window.queryLocalFonts) {
       setAlertMessage("이 브라우저는 시스템 폰트 접근을 지원하지 않습니다.");
       setActiveModal("alert");
@@ -974,7 +1020,7 @@ function App() {
         <div
           className="problem-box"
           style={{
-            fontFamily: fontFamily,
+            fontFamily: activeFontFamily,
             fontSize: `${displayFontSize}px`,
             fontWeight: isBold ? "bold" : "normal",
             display: "flex",
@@ -1054,7 +1100,7 @@ function App() {
             }
             style={{
               fontSize: `${inputFontSize}px`,
-              fontFamily: fontFamily,
+              fontFamily: activeFontFamily,
             }}
           />
         </div>
@@ -1313,9 +1359,16 @@ function App() {
             {activeModal === "font" && (
               <>
                 <h3>글꼴 설정</h3>
-                <button onClick={loadSystemFonts} className="full-width-btn">
-                  시스템 폰트 불러오기
-                </button>
+                {isMobile && (
+                  <p className="font-modal-note">
+                    모바일에서는 앱에 포함된 글꼴만 적용됩니다.
+                  </p>
+                )}
+                {!isMobile && (
+                  <button onClick={loadSystemFonts} className="full-width-btn">
+                    시스템 폰트 불러오기
+                  </button>
+                )}
 
                 <select
                   value={fontFamily}
@@ -1327,7 +1380,7 @@ function App() {
                     <option
                       key={f.realName}
                       value={f.realName}
-                      style={{ fontFamily: f.realName }}
+                      style={{ fontFamily: cssFontFamily(f.realName) }}
                     >
                       {f.displayName}
                     </option>
@@ -1369,7 +1422,7 @@ function App() {
                   <button
                     className="modal-close-btn"
                     onClick={() => {
-                      setFontFamily("NanumSquareRoundB");
+                      setFontFamily(DEFAULT_FONT);
                       setFontSize(30);
                       setIsBold(false);
                     }}
@@ -1536,6 +1589,48 @@ function App() {
                 </button>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* 모바일 지원 공지 (데스크탑) */}
+      {showMobileNotice && (
+        <div
+          className="modal-overlay notice-overlay"
+          onClick={() => dismissMobileNotice(false)}
+        >
+          <div className="modal-content notice-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>업데이트 안내</h3>
+            <p className="notice-body">
+              사무엘학교 암송 프로그램이 <strong>모바일 환경</strong>에서도
+              사용할 수 있도록 개선되었습니다.
+              <br />
+              <br />
+              • 모바일 화면 레이아웃 최적화
+              <br />
+              • 키보드 입력·다음 구절 이동 지원
+              <br />
+              • 앱 포함 글꼴 모바일 적용
+              <br />
+              <br />
+              스마트폰 브라우저에서도 편하게 암송해 보세요.
+            </p>
+            <div className="notice-actions">
+              <button
+                className="full-width-btn"
+                style={{ marginBottom: 0 }}
+                onClick={() => dismissMobileNotice(false)}
+              >
+                확인
+              </button>
+              <button
+                className="modal-close-btn"
+                style={{ marginBottom: 0 }}
+                onClick={() => dismissMobileNotice(true)}
+              >
+                다시 보지 않기
+              </button>
+            </div>
           </div>
         </div>
       )}

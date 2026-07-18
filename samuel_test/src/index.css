@@ -2,70 +2,85 @@
 @font-face {
   font-family: "GmarketSansBold";
   src: url("/fonts/GMARKETSANSTTFBOLD.TTF") format("truetype");
+  font-display: swap;
 }
 @font-face {
   font-family: "GmarketSansLight";
   src: url("/fonts/GMARKETSANSTTFLIGHT.TTF") format("truetype");
+  font-display: swap;
 }
 @font-face {
   font-family: "GmarketSansMedium";
   src: url("/fonts/GMARKETSANSTTFMEDIUM.TTF") format("truetype");
+  font-display: swap;
 }
 
 /* 학교안심 알림장 */
 @font-face {
   font-family: "HakgyoansimAllimjangB";
   src: url("/fonts/HAKGYOANSIM ALLIMJANG TTF B.TTF") format("truetype");
+  font-display: swap;
 }
 @font-face {
   font-family: "HakgyoansimAllimjangR";
   src: url("/fonts/HAKGYOANSIM ALLIMJANG TTF R.TTF") format("truetype");
+  font-display: swap;
 }
 
 /* 마루 부리 */
 @font-face {
   font-family: "MaruBuriBold";
   src: url("/fonts/MARUBURI-BOLD.TTF") format("truetype");
+  font-display: swap;
 }
 @font-face {
   font-family: "MaruBuriExtraLight";
   src: url("/fonts/MARUBURI-EXTRALIGHT.TTF") format("truetype");
+  font-display: swap;
 }
 @font-face {
   font-family: "MaruBuriLight";
   src: url("/fonts/MARUBURI-LIGHT.TTF") format("truetype");
+  font-display: swap;
 }
 @font-face {
   font-family: "MaruBuriRegular";
   src: url("/fonts/MARUBURI-REGULAR.TTF") format("truetype");
+  font-display: swap;
 }
 @font-face {
   font-family: "MaruBuriSemiBold";
   src: url("/fonts/MARUBURI-SEMIBOLD.TTF") format("truetype");
+  font-display: swap;
 }
 
 /* 나눔스퀘어라운드 */
 @font-face {
   font-family: "NanumSquareRoundB";
   src: url("/fonts/NANUMSQUAREROUNDB.TTF") format("truetype");
+  font-display: swap;
 }
 @font-face {
   font-family: "NanumSquareRoundEB";
   src: url("/fonts/NANUMSQUAREROUNDEB.TTF") format("truetype");
+  font-display: swap;
 }
 @font-face {
   font-family: "NanumSquareRoundL";
   src: url("/fonts/NANUMSQUAREROUNDL.TTF") format("truetype");
+  font-display: swap;
 }
 @font-face {
   font-family: "NanumSquareRoundR";
   src: url("/fonts/NANUMSQUAREROUNDR.TTF") format("truetype");
+  font-display: swap;
 }
 
 /* 레코체 */
 @font-face {
   font-family: "RecipeKorea";
   src: url("/fonts/RECIPEKOREA 레코체 FONT.TTF") format("truetype");
+  font-display: swap;
 }
 
 /* --- 1. 기본 테마 변수 설정 (세련된 무채색) --- */
@@ -379,6 +394,8 @@ button:hover {
   text-align: center;
   outline: none;
   transition: border-color 0.3s;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .answer-input:focus {
@@ -544,6 +561,35 @@ button:hover {
 .font-selector option:checked {
   background-color: var(--text-primary);
   color: var(--bg-color);
+}
+
+.font-modal-note {
+  margin: -12px 0 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.notice-overlay {
+  z-index: 1100;
+}
+
+.notice-modal h3 {
+  margin-bottom: 16px;
+}
+
+.notice-body {
+  text-align: left;
+  line-height: 1.7;
+  margin-bottom: 24px;
+  font-size: 15px;
+}
+
+.notice-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .font-controls {
