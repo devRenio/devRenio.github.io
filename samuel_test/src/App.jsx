@@ -564,8 +564,19 @@ function App() {
     setHasFailedCurrent(false);
   };
 
-  const submitAnswer = () => {
+  const submitLockRef = useRef(false);
+
+  const submitAnswer = (inputOverride) => {
+    if (submitLockRef.current) return;
     if (!currentProblem) return;
+
+    submitLockRef.current = true;
+    window.setTimeout(() => {
+      submitLockRef.current = false;
+    }, 300);
+
+    const input = inputOverride ?? userInput;
+
     if (isCompleted || currentProblem.answers.length === 0) {
       const newList = scripture.filter(
         (_, i) => i !== currentProblem.indexInList,
@@ -577,7 +588,7 @@ function App() {
     }
 
     const answer = currentProblem.answers[0];
-    if (normToken(userInput) === normToken(answer)) {
+    if (normToken(input) === normToken(answer)) {
       handleCorrect(answer);
     } else {
       handleWrong(answer);
@@ -651,10 +662,47 @@ function App() {
 
   const handleKeyDown = (e) => {
     if (e.nativeEvent.isComposing) return;
-    if (e.key === " " || e.key === "Enter") {
+    const isSubmitKey =
+      e.key === "Enter" ||
+      e.key === " " ||
+      e.key === "Spacebar" ||
+      e.code === "Space";
+    if (isSubmitKey) {
       e.preventDefault();
       submitAnswer();
     }
+  };
+
+  const handleBeforeInput = (e) => {
+    if (e.nativeEvent.isComposing) return;
+
+    const isSubmitInput =
+      e.inputType === "insertLineBreak" ||
+      (e.inputType === "insertText" && e.data === " ");
+
+    if (!isSubmitInput) return;
+
+    e.preventDefault();
+    submitAnswer();
+  };
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+
+    // 일부 모바일 브라우저는 beforeinput/keydown 없이 공백만 삽입하는 경우가 있음
+    if (
+      isMobile &&
+      !e.nativeEvent.isComposing &&
+      value.endsWith(" ") &&
+      value.trimEnd().length > 0
+    ) {
+      const trimmed = value.trimEnd();
+      setUserInput(trimmed);
+      submitAnswer(trimmed);
+      return;
+    }
+
+    setUserInput(value);
   };
 
   const loadSystemFonts = async () => {
@@ -975,8 +1023,9 @@ function App() {
             className={`answer-input ${isError ? "input-error" : ""}`}
             type="text"
             value={userInput}
-            onChange={(e) => setUserInput(e.target.value)}
+            onChange={handleInputChange}
             onKeyDown={handleKeyDown}
+            onBeforeInput={handleBeforeInput}
             onFocus={handleInputFocus}
             onBlur={handleInputBlur}
             autoFocus={!isMobile}
@@ -988,8 +1037,8 @@ function App() {
             placeholder={
               isMobile
                 ? isCompleted
-                  ? "Enter → 다음 구절"
-                  : "정답 입력 후 Enter"
+                  ? "Enter/Space → 다음 구절"
+                  : "정답 입력 후 Enter/Space"
                 : isCompleted
                   ? "Space/Enter를 눌러 다음 구절로"
                   : "Space/Enter를 눌러 정답 입력"
