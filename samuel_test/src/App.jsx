@@ -1602,18 +1602,8 @@ function App() {
           <div className="modal-content notice-modal" onClick={(e) => e.stopPropagation()}>
             <h3>업데이트 안내</h3>
             <p className="notice-body">
-              사무엘학교 암송 프로그램이 <strong>모바일 환경</strong>에서도
-              사용할 수 있도록 개선되었습니다.
-              <br />
-              <br />
-              • 모바일 화면 레이아웃 최적화
-              <br />
-              • 키보드 입력·다음 구절 이동 지원
-              <br />
-              • 앱 포함 글꼴 모바일 적용
-              <br />
-              <br />
-              스마트폰 브라우저에서도 편하게 암송해 보세요.
+              사무엘학교 암송 프로그램이 모바일 환경에서도 사용할 수 있도록
+              개선되었습니다.
             </p>
             <div className="notice-actions">
               <button
