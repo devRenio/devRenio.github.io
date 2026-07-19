@@ -1,94 +1,75 @@
 import { PHRASE_BLANK } from "../utils/problemText";
 
+/**
+ * 문제 텍스트 렌더링.
+ * - `{{S:..}}` 정답(초록), `{{F:..}}` 오답(빨강)
+ * - 활성 빈칸(연속 빈칸 ON이면 첫 `…`, OFF면 첫 `_+`) 하나만 깜빡임
+ */
 const ProblemRenderer = ({ text, isError, activeBlankDisplay }) => {
   if (!text) return null;
 
   const parts = text.split(/(\{\{[SF]:.*?\}\})/g);
+  const usePhrase = activeBlankDisplay === PHRASE_BLANK;
+  let highlighted = false;
 
-  const renderPlainPart = (part) => {
-    if (!part.includes("_") && !part.includes(PHRASE_BLANK)) return part;
+  const activeClass = isError
+    ? usePhrase
+      ? "text-error-flash phrase-blank"
+      : "text-error-flash"
+    : usePhrase
+      ? "active-blank phrase-blank"
+      : "active-blank";
 
-    const phraseIdx =
-      activeBlankDisplay === PHRASE_BLANK
-        ? part.indexOf(PHRASE_BLANK)
-        : -1;
+  const renderPlainPart = (part, key) => {
+    if (highlighted) return part;
 
-    if (phraseIdx !== -1) {
-      return (
-        <>
-          {part.slice(0, phraseIdx)}
-          <span
-            className={
-              isError ? "text-error-flash phrase-blank" : "active-blank phrase-blank"
-            }
-          >
-            {PHRASE_BLANK}
-          </span>
-          {part.slice(phraseIdx + PHRASE_BLANK.length)}
-        </>
-      );
+    let idx = -1;
+    let len = 0;
+
+    if (usePhrase) {
+      idx = part.indexOf(PHRASE_BLANK);
+      len = PHRASE_BLANK.length;
+    } else {
+      const m = part.match(/_+/);
+      if (m) {
+        idx = m.index;
+        len = m[0].length;
+      }
     }
 
-    if (activeBlankDisplay && part.includes(activeBlankDisplay)) {
-      const start = part.indexOf(activeBlankDisplay);
-      return (
-        <>
-          {part.slice(0, start)}
-          <span className={isError ? "text-error-flash" : "active-blank"}>
-            {activeBlankDisplay}
-          </span>
-          {part.slice(start + activeBlankDisplay.length)}
-        </>
-      );
-    }
+    if (idx === -1) return part;
 
-    let highlighted = false;
-    const subParts = part.split(/(_+)/);
+    highlighted = true;
     return (
-      <>
-        {subParts.map((subPart, subIndex) => {
-          if (!highlighted && subPart.startsWith("_")) {
-            highlighted = true;
-            return (
-              <span
-                key={subIndex}
-                className={isError ? "text-error-flash" : "active-blank"}
-              >
-                {subPart}
-              </span>
-            );
-          }
-          return subPart;
-        })}
-      </>
+      <span key={key}>
+        {part.slice(0, idx)}
+        <span className={activeClass}>{part.slice(idx, idx + len)}</span>
+        {part.slice(idx + len)}
+      </span>
     );
   };
 
   return (
     <>
       {parts.map((part, index) => {
-        const uniqueKey = `${index}-${part}`;
+        const key = `${index}-${part}`;
 
         if (part.startsWith("{{S:")) {
-          const content = part.replace(/\{\{S:(.*)\}\}/, "$1");
           return (
-            <span key={uniqueKey} className="text-success">
-              {content}
+            <span key={key} className="text-success">
+              {part.replace(/\{\{S:(.*)\}\}/, "$1")}
             </span>
           );
         }
         if (part.startsWith("{{F:")) {
-          const content = part.replace(/\{\{F:(.*)\}\}/, "$1");
           return (
-            <span key={uniqueKey} className="text-fail">
-              {content}
+            <span key={key} className="text-fail">
+              {part.replace(/\{\{F:(.*)\}\}/, "$1")}
             </span>
           );
         }
 
-        if (!part.includes("_") && !part.includes(PHRASE_BLANK)) return part;
-
-        return <span key={uniqueKey}>{renderPlainPart(part)}</span>;
+        return renderPlainPart(part, key);
       })}
     </>
   );

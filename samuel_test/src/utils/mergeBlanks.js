@@ -1,6 +1,6 @@
 import { createPhraseAnswer, isPhraseAnswer, PHRASE_BLANK } from "./problemText";
 
-/** `(참조)` 접두어의 끝 위치 — 없으면 0 */
+/** `(참조)` 접두어의 끝 위치(닫는 괄호 다음) — 없으면 0 */
 export function getReferenceEndIndex(text) {
   if (!text.startsWith("(")) return 0;
 
@@ -15,6 +15,7 @@ export function getReferenceEndIndex(text) {
   return 0;
 }
 
+/** i번째 빈칸 ↔ answers[i] 매핑을 위한 빈칸 위치 수집 */
 function collectBlanks(problemText, answers) {
   const blanks = [];
   const re = /_+/g;
@@ -23,36 +24,28 @@ function collectBlanks(problemText, answers) {
     blanks.push({ index: m.index, length: m[0].length });
   }
   if (blanks.length !== answers.length) return null;
-  return blanks.map((b, i) => ({ ...b, answerIndex: i }));
+  return blanks;
 }
 
-function answerTokensAt(answers, answerIndex) {
-  const a = answers[answerIndex];
-  return isPhraseAnswer(a) ? a.tokens : [a];
+function tokensOf(answer) {
+  return isPhraseAnswer(answer) ? answer.tokens : [answer];
 }
 
-function buildPhraseAnswer(answers, blankEntries) {
-  const tokens = blankEntries.flatMap((b) =>
-    answerTokensAt(answers, b.answerIndex),
-  );
-  return createPhraseAnswer(tokens, PHRASE_BLANK);
-}
-
-/** 본문 빈칸 구간에 공개된 단어(한글·영문 등)가 끼어 있으면 true */
-function bodySpanHasVisibleWords(text, bodyBlanks) {
-  const start = bodyBlanks[0].index;
-  const end =
-    bodyBlanks[bodyBlanks.length - 1].index +
-    bodyBlanks[bodyBlanks.length - 1].length;
-  const span = text.slice(start, end).replace(/_+/g, "");
-  return /[0-9A-Za-z가-힣]/.test(span);
-}
+// 본문: 공백으로만 이어질 때 병합
+const BODY_SEP = /^\s+$/;
+// 장절 괄호 안: 공백·기호(: - , /)로 이어지면 병합, 기호는 버림
+const REF_SEP = /^[\s:,\-/]*$/;
 
 /**
- * 연속 빈칸 단순 병합:
- * 1. 괄호 안 장절 빈칸 전체 → `( … )` (기호·괄호는 원문 그대로)
- * 2. 본문 빈칸 전체(공개 단어 없을 때만) → `…` 하나
- * 3. 빈칸 모드처럼 본문에 공개 단어가 있으면 본문은 `_` 유지
+ * 연속 빈칸 병합 (연속 빈칸 ON 전용).
+ *
+ * 규칙:
+ *  1. 모든 빈칸은 길이 힌트 없이 PHRASE_BLANK(…) 로 표시.
+ *  2. 장절 괄호 `(...)` 안: 빈칸이 공백/기호로 이어지면 한 덩어리 → 내부 기호 버리고 `(…)`.
+ *     - 일부만 가려진 경우(예: `(창 8:_)`)는 보이는 부분 유지 → `(창 8:…)`.
+ *  3. 본문: 공백으로만 이어진 빈칸끼리 한 덩어리 → `…`.
+ *     - 공개 단어나 쉼표 등 기호를 만나면 덩어리가 끊김 → `…, …` (기호 유지, 정답 미포함).
+ *  4. 각 덩어리는 phrase 정답(토큰 목록)으로 묶임.
  */
 export function mergeConsecutiveBlanks(problemText, answers) {
   if (!problemText || answers.length === 0) {
@@ -63,64 +56,45 @@ export function mergeConsecutiveBlanks(problemText, answers) {
   if (!blanks) return { problemText, answers };
 
   const refEnd = getReferenceEndIndex(problemText);
-  const refBlanks =
-    refEnd > 0 ? blanks.filter((b) => b.index < refEnd) : [];
-  const bodyBlanks =
-    refEnd > 0 ? blanks.filter((b) => b.index >= refEnd) : [...blanks];
+  const inRef = (b) => refEnd > 0 && b.index < refEnd;
 
-  const bodyCanMerge =
-    bodyBlanks.length > 0 &&
-    !bodySpanHasVisibleWords(problemText, bodyBlanks);
+  const runs = [];
+  let current = [0];
 
-  if (refBlanks.length === 0 && !bodyCanMerge) {
-    return { problemText, answers };
+  for (let i = 1; i < blanks.length; i++) {
+    const prev = blanks[i - 1];
+    const curr = blanks[i];
+    const between = problemText.slice(prev.index + prev.length, curr.index);
+
+    const bothRef = inRef(prev) && inRef(curr);
+    const bothBody = !inRef(prev) && !inRef(curr);
+    const separator = bothRef ? REF_SEP : BODY_SEP;
+
+    if ((bothRef || bothBody) && separator.test(between)) {
+      current.push(i);
+    } else {
+      runs.push(current);
+      current = [i];
+    }
   }
+  runs.push(current);
 
   let newText = "";
   let lastEnd = 0;
   const newAnswers = [];
-  let blankIdx = 0;
 
-  while (blankIdx < blanks.length) {
-    const b = blanks[blankIdx];
+  runs.forEach((run) => {
+    const first = blanks[run[0]];
+    const last = blanks[run[run.length - 1]];
 
-    if (refBlanks.length > 0 && b === refBlanks[0]) {
-      newText += problemText.slice(lastEnd, b.index);
-      newAnswers.push(buildPhraseAnswer(answers, refBlanks));
-      newText += PHRASE_BLANK;
-      lastEnd =
-        refBlanks[refBlanks.length - 1].index +
-        refBlanks[refBlanks.length - 1].length;
-      blankIdx += refBlanks.length;
-      continue;
-    }
+    newText += problemText.slice(lastEnd, first.index);
+    newText += PHRASE_BLANK;
 
-    if (bodyCanMerge && b === bodyBlanks[0]) {
-      newText += problemText.slice(lastEnd, b.index);
-      newAnswers.push(buildPhraseAnswer(answers, bodyBlanks));
-      newText += PHRASE_BLANK;
-      lastEnd =
-        bodyBlanks[bodyBlanks.length - 1].index +
-        bodyBlanks[bodyBlanks.length - 1].length;
-      blankIdx += bodyBlanks.length;
-      continue;
-    }
+    const tokens = run.flatMap((idx) => tokensOf(answers[idx]));
+    newAnswers.push(createPhraseAnswer(tokens, PHRASE_BLANK));
 
-    if (
-      refBlanks.some((r) => r.answerIndex === b.answerIndex) ||
-      (bodyCanMerge &&
-        bodyBlanks.some((r) => r.answerIndex === b.answerIndex))
-    ) {
-      blankIdx++;
-      continue;
-    }
-
-    newText += problemText.slice(lastEnd, b.index);
-    newAnswers.push(answers[b.answerIndex]);
-    newText += "_";
-    lastEnd = b.index + b.length;
-    blankIdx++;
-  }
+    lastEnd = last.index + last.length;
+  });
 
   newText += problemText.slice(lastEnd);
   return { problemText: newText, answers: newAnswers };

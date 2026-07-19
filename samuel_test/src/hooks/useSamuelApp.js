@@ -13,19 +13,16 @@ import { BUNDLED_FONTS, INITIAL_FONTS, KOREAN_FONT_MAP } from "../constants/font
 import { loadStoredData, saveStoredData } from "../utils/storage";
 import { mergeConsecutiveBlanks } from "../utils/mergeBlanks";
 import {
-  PHRASE_BLANK,
   cleanText,
   createPhraseAnswer,
-  getBlankDisplay,
   isPhraseAnswer,
-  partialSegmentsToDisplay,
-  phraseToFailMarkers,
-  phraseToSuccessMarkers,
-  remainingBlankDisplay,
-  replaceAnswerRegion,
+  partialSegmentsToText,
+  phraseFailMarkers,
+  phraseSuccessMarkers,
   replaceFirstBlank,
+  replacePhraseBlank,
 } from "../utils/problemText";
-import { gradePhrase, isFullPhraseMatch } from "../utils/phraseGrading";
+import { gradePhrase } from "../utils/phraseGrading";
 import { formatScriptureData, getDayProgress } from "../utils/scriptureHelpers";
 import { useIsMobile } from "./useIsMobile";
 import { useKeyboardLayout } from "./useKeyboardLayout";
@@ -281,14 +278,15 @@ export function useSamuelApp() {
 
   const handleCorrect = useCallback(
     (answer) => {
-      const blankDisplay = getBlankDisplay(answer);
-      const marker = isPhraseAnswer(answer)
-        ? phraseToSuccessMarkers(answer.tokens, blankDisplay)
+      const isPhrase = isPhraseAnswer(answer);
+      const base = cleanText(currentProblem.problemText);
+      const marker = isPhrase
+        ? phraseSuccessMarkers(answer.tokens)
         : `{{S:${answer}}}`;
 
-      const updatedText = blankDisplay
-        ? replaceAnswerRegion(currentProblem.problemText, blankDisplay, marker)
-        : replaceFirstBlank(cleanText(currentProblem.problemText), marker);
+      const updatedText = isPhrase
+        ? replacePhraseBlank(base, marker)
+        : replaceFirstBlank(base, marker);
 
       const remainingAnswers = currentProblem.answers.slice(1);
 
@@ -317,30 +315,12 @@ export function useSamuelApp() {
 
   const handlePartialPhrase = useCallback(
     (segments, unmatchedTokens) => {
-      const currentAnswer = currentProblem.answers[0];
-      const blankDisplay = getBlankDisplay(currentAnswer);
-      const partialText = partialSegmentsToDisplay(blankDisplay, segments);
-      const updatedText = replaceAnswerRegion(
-        currentProblem.problemText,
-        blankDisplay,
-        partialText,
-      );
+      const base = cleanText(currentProblem.problemText);
+      const partialText = partialSegmentsToText(segments);
+      const updatedText = replacePhraseBlank(base, partialText);
 
-      let remainingAnswers;
-      if (unmatchedTokens.length === 1 && blankDisplay !== PHRASE_BLANK) {
-        remainingAnswers = [unmatchedTokens[0]];
-      } else if (unmatchedTokens.length > 0) {
-        remainingAnswers = [
-          createPhraseAnswer(
-            unmatchedTokens,
-            blankDisplay === PHRASE_BLANK
-              ? PHRASE_BLANK
-              : remainingBlankDisplay(blankDisplay, segments),
-          ),
-        ];
-      } else {
-        remainingAnswers = [];
-      }
+      const remainingAnswers =
+        unmatchedTokens.length > 0 ? [createPhraseAnswer(unmatchedTokens)] : [];
 
       setCurrentProblem({
         ...currentProblem,
@@ -348,15 +328,17 @@ export function useSamuelApp() {
         answers: [...remainingAnswers, ...currentProblem.answers.slice(1)],
       });
       setUserInput("");
+      setAttempts(0);
+      attemptsRef.current = 0;
     },
     [currentProblem],
   );
 
   const handleWrong = useCallback(
     (answer) => {
-      const blankDisplay = getBlankDisplay(answer);
-      const failMarker = isPhraseAnswer(answer)
-        ? phraseToFailMarkers(answer.tokens, blankDisplay)
+      const isPhrase = isPhraseAnswer(answer);
+      const failMarker = isPhrase
+        ? phraseFailMarkers(answer.tokens)
         : `{{F:${answer}}}`;
 
       const newAttempts = attemptsRef.current + 1;
@@ -384,16 +366,10 @@ export function useSamuelApp() {
           }));
         }
 
-        const updatedText = blankDisplay
-          ? replaceAnswerRegion(
-              currentProblem.problemText,
-              blankDisplay,
-              failMarker,
-            )
-          : replaceFirstBlank(
-              cleanText(currentProblem.problemText),
-              failMarker,
-            );
+        const base = cleanText(currentProblem.problemText);
+        const updatedText = isPhrase
+          ? replacePhraseBlank(base, failMarker)
+          : replaceFirstBlank(base, failMarker);
         const remainingAnswers = currentProblem.answers.slice(1);
 
         setCurrentProblem({
@@ -438,13 +414,7 @@ export function useSamuelApp() {
       const currentAnswer = currentProblem.answers[0];
 
       if (isPhraseAnswer(currentAnswer)) {
-        const tokens = currentAnswer.tokens;
-        if (isFullPhraseMatch(tokens, input)) {
-          handleCorrect(currentAnswer);
-          return;
-        }
-
-        const result = gradePhrase(tokens, input);
+        const result = gradePhrase(currentAnswer.tokens, input);
         if (result.allCorrect) {
           handleCorrect(currentAnswer);
         } else if (result.anyCorrect) {
