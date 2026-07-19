@@ -76,11 +76,18 @@ export function phraseToFailMarkers(tokens, blankDisplay) {
 /** 부분 채점 결과를 표시 문자열로 변환 */
 export function partialSegmentsToDisplay(blankDisplay, segments) {
   if (blankDisplay === PHRASE_BLANK) {
-    return segments
-      .map((seg) =>
-        seg.type === "correct" ? `{{S:${seg.text}}}` : PHRASE_BLANK,
-      )
-      .join(" ");
+    const parts = [];
+    let i = 0;
+    while (i < segments.length) {
+      if (segments[i].type === "correct") {
+        parts.push(`{{S:${segments[i].text}}}`);
+        i++;
+      } else {
+        while (i < segments.length && segments[i].type === "blank") i++;
+        parts.push(PHRASE_BLANK);
+      }
+    }
+    return parts.join(" ");
   }
 
   let segIdx = 0;

@@ -2,9 +2,45 @@ import { isPhraseAnswer, PHRASE_BLANK } from "./problemText";
 
 const SEPARATOR_ONLY = /^[\s,.\-:;!?'"()/]*$/;
 
+/** `(참조)` 접두어의 끝 위치 — 없으면 0 */
+export function getReferenceEndIndex(text) {
+  if (!text.startsWith("(")) return 0;
+
+  let depth = 0;
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === "(") depth++;
+    if (text[i] === ")") {
+      depth--;
+      if (depth === 0) return i + 1;
+    }
+  }
+  return 0;
+}
+
+function blankInReference(blank, refEnd) {
+  return refEnd > 0 && blank.index < refEnd;
+}
+
+function shouldMergeBlanks(problemText, blanks, i, refEnd) {
+  const prev = blanks[i - 1];
+  const curr = blanks[i];
+  const between = problemText.slice(prev.index + prev.length, curr.index);
+
+  if (!SEPARATOR_ONLY.test(between)) return false;
+
+  if (refEnd > 0) {
+    if (blankInReference(prev, refEnd) !== blankInReference(curr, refEnd)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 /**
  * 연속 빈칸을 phrase 그룹으로 묶는다.
- * phrase 그룹은 단어 수 힌트 없이 PHRASE_BLANK(…) 하나로 표시한다.
+ * - 장절 `( … )` 과 본문 `…` 은 별도 그룹
+ * - phrase 그룹은 PHRASE_BLANK(…) 하나로 표시 (단어 수 힌트 없음)
  */
 export function mergeConsecutiveBlanks(problemText, answers) {
   if (!problemText || answers.length === 0) {
@@ -22,15 +58,13 @@ export function mergeConsecutiveBlanks(problemText, answers) {
     return { problemText, answers };
   }
 
+  const refEnd = getReferenceEndIndex(problemText);
+
   const groups = [];
   let currentGroup = [0];
 
   for (let i = 1; i < blanks.length; i++) {
-    const prev = blanks[i - 1];
-    const curr = blanks[i];
-    const between = problemText.slice(prev.index + prev.length, curr.index);
-
-    if (SEPARATOR_ONLY.test(between)) {
+    if (shouldMergeBlanks(problemText, blanks, i, refEnd)) {
       currentGroup.push(i);
     } else {
       groups.push(currentGroup);

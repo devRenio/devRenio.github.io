@@ -13,6 +13,7 @@ import { BUNDLED_FONTS, INITIAL_FONTS, KOREAN_FONT_MAP } from "../constants/font
 import { loadStoredData, saveStoredData } from "../utils/storage";
 import { mergeConsecutiveBlanks } from "../utils/mergeBlanks";
 import {
+  PHRASE_BLANK,
   cleanText,
   createPhraseAnswer,
   getBlankDisplay,
@@ -89,6 +90,11 @@ export function useSamuelApp() {
   const problemContainerRef = useRef(null);
   const submitLockRef = useRef(false);
   const attemptsRef = useRef(0);
+  const mergeBlanksRef = useRef(mergeBlanks);
+
+  useEffect(() => {
+    mergeBlanksRef.current = mergeBlanks;
+  }, [mergeBlanks]);
 
   const isMobile = useIsMobile();
   const keyboard = useKeyboardLayout(isMobile, inputRef);
@@ -324,13 +330,19 @@ export function useSamuelApp() {
       );
 
       let remainingAnswers;
-      if (unmatchedTokens.length === 1) {
+      if (unmatchedTokens.length === 1 && blankDisplay !== PHRASE_BLANK) {
         remainingAnswers = [unmatchedTokens[0]];
-      } else {
-        const newBlankDisplay = remainingBlankDisplay(blankDisplay, segments);
+      } else if (unmatchedTokens.length > 0) {
         remainingAnswers = [
-          createPhraseAnswer(unmatchedTokens, newBlankDisplay),
+          createPhraseAnswer(
+            unmatchedTokens,
+            blankDisplay === PHRASE_BLANK
+              ? PHRASE_BLANK
+              : remainingBlankDisplay(blankDisplay, segments),
+          ),
         ];
+      } else {
+        remainingAnswers = [];
       }
 
       setCurrentProblem({
@@ -525,9 +537,10 @@ export function useSamuelApp() {
   const handleKeyDown = (e) => {
     if (e.nativeEvent.isComposing) return;
 
-    const isEnter = e.key === "Enter";
+    const isEnter =
+      e.key === "Enter" || e.code === "Enter" || e.keyCode === 13;
     const isSpace =
-      e.key === " " || e.key === "Spacebar" || e.code === "Space";
+      e.code === "Space" || e.key === " " || e.key === "Spacebar";
 
     if (isEnter) {
       e.preventDefault();
@@ -536,7 +549,7 @@ export function useSamuelApp() {
     }
 
     if (isSpace) {
-      if (mergeBlanks) return;
+      if (mergeBlanksRef.current) return;
       e.preventDefault();
       submitAnswer();
     }
@@ -544,23 +557,36 @@ export function useSamuelApp() {
 
   const handleBeforeInput = (e) => {
     if (e.nativeEvent.isComposing) return;
-    if (mergeBlanks) return;
 
-    const isSubmitInput =
-      e.inputType === "insertLineBreak" ||
-      (e.inputType === "insertText" && e.data === " ");
+    const isLineBreak = e.inputType === "insertLineBreak";
+    const isSpaceInsert =
+      e.inputType === "insertText" &&
+      (e.data === " " || e.data === "\u00a0");
 
-    if (!isSubmitInput) return;
-    e.preventDefault();
-    submitAnswer();
+    if (mergeBlanksRef.current) {
+      if (isLineBreak) {
+        e.preventDefault();
+        submitAnswer();
+      }
+      return;
+    }
+
+    if (isLineBreak || isSpaceInsert) {
+      e.preventDefault();
+      submitAnswer();
+    }
   };
 
   const handleInputChange = (e) => {
     const value = e.target.value;
 
+    if (mergeBlanksRef.current) {
+      setUserInput(value);
+      return;
+    }
+
     if (
       isMobile &&
-      !mergeBlanks &&
       !e.nativeEvent.isComposing &&
       value.endsWith(" ")
     ) {
