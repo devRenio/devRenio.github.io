@@ -1,3 +1,10 @@
+/** 연속 빈칸(phrase) 전용 표시 문자 — 단어 수 힌트 없음, 일반 '_' 와 구분 */
+export const PHRASE_BLANK = "…";
+
+export function isPhraseBlankChar(ch) {
+  return ch === PHRASE_BLANK;
+}
+
 export function cleanText(text) {
   if (!text) return "";
   return text.replace(/\{\{[SF]:(.*?)\}\}/g, "$1");
@@ -31,12 +38,15 @@ export function replaceAnswerRegion(text, blankDisplay, replacement) {
 
 /** 현재 답안에 맞는 blankDisplay 반환 */
 export function getBlankDisplay(answer) {
-  if (isPhraseAnswer(answer)) return answer.blankDisplay || "_".repeat(answer.tokens.length);
+  if (isPhraseAnswer(answer)) return answer.blankDisplay ?? PHRASE_BLANK;
   return null;
 }
 
-/** blankDisplay의 각 '_'를 토큰 마커로 변환 (구두점 유지) */
-export function phraseMarkersFromDisplay(blankDisplay, tokens, markerChar) {
+function phraseMarkersFromDisplay(blankDisplay, tokens, markerChar) {
+  if (blankDisplay === PHRASE_BLANK) {
+    return tokens.map((t) => `{{${markerChar}:${t}}}`).join(" ");
+  }
+
   let ti = 0;
   let out = "";
   for (let i = 0; i < blankDisplay.length; i++) {
@@ -63,8 +73,16 @@ export function phraseToFailMarkers(tokens, blankDisplay) {
   return `{{F:${tokens.join(" ")}}}`;
 }
 
-/** 부분 채점 결과를 blankDisplay 기준으로 변환 (구두점 유지) */
+/** 부분 채점 결과를 표시 문자열로 변환 */
 export function partialSegmentsToDisplay(blankDisplay, segments) {
+  if (blankDisplay === PHRASE_BLANK) {
+    return segments
+      .map((seg) =>
+        seg.type === "correct" ? `{{S:${seg.text}}}` : PHRASE_BLANK,
+      )
+      .join(" ");
+  }
+
   let segIdx = 0;
   let out = "";
   for (let i = 0; i < blankDisplay.length; i++) {
@@ -80,6 +98,10 @@ export function partialSegmentsToDisplay(blankDisplay, segments) {
 
 /** 부분 채점 후 남은 unmatched 토큰용 blankDisplay */
 export function remainingBlankDisplay(blankDisplay, segments) {
+  if (blankDisplay === PHRASE_BLANK) {
+    return segments.some((s) => s.type === "blank") ? PHRASE_BLANK : "";
+  }
+
   let segIdx = 0;
   let out = "";
   let pendingSep = "";
@@ -98,16 +120,6 @@ export function remainingBlankDisplay(blankDisplay, segments) {
   return out;
 }
 
-/** @deprecated partialResultToText — partialSegmentsToDisplay 사용 */
-export function partialResultToText(segments) {
-  return segments
-    .map((seg) => {
-      if (seg.type === "correct") return `{{S:${seg.text}}}`;
-      return "_";
-    })
-    .join(" ");
-}
-
-export function createPhraseAnswer(tokens, blankDisplay) {
+export function createPhraseAnswer(tokens, blankDisplay = PHRASE_BLANK) {
   return { type: "phrase", tokens, blankDisplay };
 }

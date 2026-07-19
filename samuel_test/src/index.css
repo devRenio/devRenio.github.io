@@ -1334,21 +1334,11 @@ input[type="checkbox"] {
   color: var(--color-fail);
 }
 
-/* --- 연속 빈칸 phrase 영역 --- */
-.phrase-blank-zone {
-  display: inline;
-  border-bottom: 2px dashed var(--text-secondary);
-  padding: 0 2px;
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--hover-bg) 80%, transparent);
+.verse-wrong-ref {
+  color: var(--text-secondary);
 }
 
-.phrase-blank-zone.phrase-blank-error {
-  border-bottom-color: var(--color-fail);
-  background: color-mix(in srgb, var(--color-fail) 12%, transparent);
-}
-
-.phrase-blank-sep {
-  color: var(--text-primary);
-  user-select: none;
+/* 연속 빈칸(phrase) — 일반 '_' 와 구분, 단어 수 힌트 없음 */
+.phrase-blank {
+  letter-spacing: 0.05em;
 }

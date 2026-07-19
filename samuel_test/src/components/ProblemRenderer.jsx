@@ -1,38 +1,42 @@
+import { PHRASE_BLANK } from "../utils/problemText";
+
 const ProblemRenderer = ({ text, isError, activeBlankDisplay }) => {
   if (!text) return null;
 
   const parts = text.split(/(\{\{[SF]:.*?\}\})/g);
 
-  const renderZone = (zone) => (
-    <span
-      className={`phrase-blank-zone ${isError ? "phrase-blank-error" : ""}`}
-    >
-      {zone.split("").map((ch, i) =>
-        ch === "_" ? (
-          <span
-            key={i}
-            className={isError ? "text-error-flash" : "active-blank"}
-          >
-            _
-          </span>
-        ) : (
-          <span key={i} className="phrase-blank-sep">
-            {ch}
-          </span>
-        ),
-      )}
-    </span>
-  );
-
   const renderPlainPart = (part) => {
-    if (!part.includes("_")) return part;
+    if (!part.includes("_") && !part.includes(PHRASE_BLANK)) return part;
+
+    const phraseIdx =
+      activeBlankDisplay === PHRASE_BLANK
+        ? part.indexOf(PHRASE_BLANK)
+        : -1;
+
+    if (phraseIdx !== -1) {
+      return (
+        <>
+          {part.slice(0, phraseIdx)}
+          <span
+            className={
+              isError ? "text-error-flash phrase-blank" : "active-blank phrase-blank"
+            }
+          >
+            {PHRASE_BLANK}
+          </span>
+          {part.slice(phraseIdx + PHRASE_BLANK.length)}
+        </>
+      );
+    }
 
     if (activeBlankDisplay && part.includes(activeBlankDisplay)) {
       const start = part.indexOf(activeBlankDisplay);
       return (
         <>
           {part.slice(0, start)}
-          {renderZone(activeBlankDisplay)}
+          <span className={isError ? "text-error-flash" : "active-blank"}>
+            {activeBlankDisplay}
+          </span>
           {part.slice(start + activeBlankDisplay.length)}
         </>
       );
@@ -82,7 +86,7 @@ const ProblemRenderer = ({ text, isError, activeBlankDisplay }) => {
           );
         }
 
-        if (!part.includes("_")) return part;
+        if (!part.includes("_") && !part.includes(PHRASE_BLANK)) return part;
 
         return <span key={uniqueKey}>{renderPlainPart(part)}</span>;
       })}

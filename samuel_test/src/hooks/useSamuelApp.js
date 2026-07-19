@@ -529,9 +529,14 @@ export function useSamuelApp() {
     const isSpace =
       e.key === " " || e.key === "Spacebar" || e.code === "Space";
 
-    if (mergeBlanks && isSpace && !isEnter) return;
+    if (isEnter) {
+      e.preventDefault();
+      submitAnswer();
+      return;
+    }
 
-    if (isEnter || isSpace) {
+    if (isSpace) {
+      if (mergeBlanks) return;
       e.preventDefault();
       submitAnswer();
     }
