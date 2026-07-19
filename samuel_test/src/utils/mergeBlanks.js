@@ -88,13 +88,13 @@ export function mergeConsecutiveBlanks(problemText, answers) {
     const last = blanks[run[run.length - 1]];
     const tokens = run.flatMap((idx) => tokensOf(answers[idx]));
 
-    const isRefRun = inRef(first);
+    // 장절 런: … 자리에 들어갈 원래 형식(괄호 제외 런 영역)을 보존
+    // 예) 런 영역 "_ _:_,_" → "창 11:1,9" (감싸는 괄호는 … 바깥이라 제외)
     let displayFormat = null;
-
-    if (isRefRun && refEnd > 0) {
-      const refText = problemText.slice(0, refEnd);
+    if (inRef(first)) {
+      const region = problemText.slice(first.index, last.index + last.length);
       let ti = 0;
-      displayFormat = refText.replace(/_+/g, () => tokens[ti++] ?? "_");
+      displayFormat = region.replace(/_+/g, () => tokens[ti++] ?? "_");
     }
 
     newText += problemText.slice(lastEnd, first.index);
