@@ -140,6 +140,17 @@ body.samuel-typing {
   width: 100%;
 }
 
+body.samuel-tutorial {
+  overflow: hidden;
+}
+
+body.samuel-tutorial .app-container button:hover,
+body.samuel-tutorial .app-container .theme-toggle:hover,
+body.samuel-tutorial .app-container .mode-main-btn:hover,
+body.samuel-tutorial .app-container .mode-sub-btn:hover {
+  transform: none;
+}
+
 .app-container {
   display: flex;
   flex-direction: column;
@@ -296,6 +307,14 @@ button:hover {
   padding: 16px 0;
   background-color: var(--bg-color);
   min-height: 80px;
+}
+
+.mode-bar-tour {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .mode-group {

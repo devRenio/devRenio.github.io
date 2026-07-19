@@ -7,6 +7,11 @@ import {
   preloadBundledFonts,
   resolveInitialFont,
 } from "./utils/fonts";
+import Tutorial from "./components/Tutorial";
+import {
+  TUTORIAL_STORAGE_KEY,
+  getStepsForDevice,
+} from "./data/tutorialSteps";
 
 const BUNDLED_FONTS = [
   { realName: "GmarketSansBold", displayName: "G마켓 산스 Bold" },
@@ -335,6 +340,10 @@ function App() {
   const [alertMessage, setAlertMessage] = useState("");
   const [onConfirm, setOnConfirm] = useState(null); // 확인 버튼 클릭 시 실행할 함수
   const [showMobileNotice, setShowMobileNotice] = useState(false);
+  const [tutorialActive, setTutorialActive] = useState(false);
+  const [tutorialStep, setTutorialStep] = useState(0);
+  const [showTutorialSkipConfirm, setShowTutorialSkipConfirm] = useState(false);
+  const tutorialSteps = getStepsForDevice(isMobile);
 
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
@@ -366,6 +375,41 @@ function App() {
     }
     setShowMobileNotice(false);
   };
+
+  const completeTutorial = useCallback(() => {
+    localStorage.setItem(TUTORIAL_STORAGE_KEY, "true");
+    setTutorialActive(false);
+    setTutorialStep(0);
+    setShowTutorialSkipConfirm(false);
+  }, []);
+
+  const startTutorial = useCallback(() => {
+    setTutorialStep(0);
+    setTutorialActive(true);
+    setShowTutorialSkipConfirm(false);
+    setActiveModal(null);
+    setActiveMenu(null);
+  }, []);
+
+  const advanceTutorial = useCallback(() => {
+    if (tutorialStep >= tutorialSteps.length - 1) {
+      completeTutorial();
+      return;
+    }
+    setTutorialStep((prev) => prev + 1);
+  }, [tutorialStep, tutorialSteps.length, completeTutorial]);
+
+  useEffect(() => {
+    if (localStorage.getItem(TUTORIAL_STORAGE_KEY) === "true") return;
+    if (showMobileNotice) return;
+
+    const timer = window.setTimeout(() => {
+      setTutorialActive(true);
+      setTutorialStep(0);
+    }, 400);
+
+    return () => window.clearTimeout(timer);
+  }, [showMobileNotice]);
 
   useEffect(() => {
     fetch(`${import.meta.env.BASE_URL}data/scriptures.json`)
@@ -835,7 +879,7 @@ function App() {
       <div className="app-chrome">
       {/* 1. 상단 메뉴바 */}
       <nav className="navbar" ref={navRef}>
-        <div className="menu-groups">
+        <div className="menu-groups" data-tour="course-day">
           <div
             className="menu-group"
             onMouseEnter={() => !isMobile && setActiveMenu("course")}
@@ -922,6 +966,7 @@ function App() {
           <div className="menu-group">
             <button
               className="menu-trigger"
+              data-tour="font-btn"
               onClick={() => setActiveModal("font")}
             >
               글꼴
@@ -933,20 +978,27 @@ function App() {
           <button
             onClick={toggleFullscreen}
             className="theme-toggle hide-mobile"
+            data-tour="fullscreen-btn"
           >
             ⛶ 전체화면
           </button>
-          <button onClick={toggleTheme} className="theme-toggle">
+          <button
+            onClick={toggleTheme}
+            className="theme-toggle"
+            data-tour="theme-btn"
+          >
             {theme === "light" ? "🌙 Dark" : "☀️ Light"}
           </button>
           <button
             className="theme-toggle"
+            data-tour="stats-btn"
             onClick={() => setActiveModal("stats")}
           >
             통계
           </button>
           <button
             className="theme-toggle"
+            data-tour="info-btn"
             onClick={() => setActiveModal("info")}
           >
             정보
@@ -956,6 +1008,7 @@ function App() {
 
       {/* 2. 모드 선택 바 */}
       <div className="mode-bar">
+        <div className="mode-bar-tour" data-tour="mode-bar">
         {[
           {
             id: 1,
@@ -1002,6 +1055,8 @@ function App() {
           </div>
         ))}
 
+        </div>
+
         {/* 도움말 버튼 */}
         <div className="mode-group">
           <button
@@ -1019,6 +1074,7 @@ function App() {
       <main className="problem-container" ref={problemContainerRef}>
         <div
           className="problem-box"
+          data-tour="problem-box"
           style={{
             fontFamily: activeFontFamily,
             fontSize: `${displayFontSize}px`,
@@ -1072,7 +1128,7 @@ function App() {
         )}
 
         {/* 4. 답안 입력 영역 */}
-        <div className="input-area">
+        <div className="input-area" data-tour="input-area">
           <input
             ref={inputRef}
             className={`answer-input ${isError ? "input-error" : ""}`}
@@ -1109,7 +1165,7 @@ function App() {
 
       {/* 5. 하단 상태바 */}
       <footer className="status-bar">
-        <div className="status-info">
+        <div className="status-info" data-tour="status-info">
           <span className="badge">{courseName}</span>
           <span>
             남은 구절 : <strong>{leftVerse}</strong>
@@ -1119,8 +1175,14 @@ function App() {
           </span>
         </div>
         <div className="status-btns">
-          <button onClick={() => displayProblem(currentMode)}>스킵</button>
           <button
+            data-tour="skip-btn"
+            onClick={() => displayProblem(currentMode)}
+          >
+            스킵
+          </button>
+          <button
+            data-tour="wrong-btn"
             onClick={() => {
               if (wrongVerses.length === 0) setActiveModal("no-wrong");
               else setActiveModal("wrong");
@@ -1128,7 +1190,11 @@ function App() {
           >
             틀린 구절
           </button>
-          <button onClick={dayReset} className="reset-btn">
+          <button
+            data-tour="reset-btn"
+            onClick={dayReset}
+            className="reset-btn"
+          >
             초기화
           </button>
         </div>
@@ -1278,8 +1344,15 @@ function App() {
                   </div>
                 </p>
                 <button
+                  type="button"
+                  className="tutorial-replay-btn"
+                  onClick={startTutorial}
+                >
+                  튜토리얼 다시 보기
+                </button>
+                <button
                   className="full-width-btn"
-                  style={{ marginBottom: 0 }}
+                  style={{ marginBottom: 0, marginTop: "12px" }}
                   onClick={() => setActiveModal(null)}
                 >
                   닫기
@@ -1589,6 +1662,62 @@ function App() {
                 </button>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      <Tutorial
+        active={tutorialActive}
+        stepIndex={tutorialStep}
+        steps={tutorialSteps}
+        onNext={advanceTutorial}
+        onRequestSkip={() => setShowTutorialSkipConfirm(true)}
+        isDesktop={!isMobile}
+      />
+
+      {showTutorialSkipConfirm && (
+        <div
+          className="modal-overlay"
+          style={{ zIndex: 2600 }}
+          onClick={() => setShowTutorialSkipConfirm(false)}
+        >
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ marginBottom: "15px" }}>튜토리얼 건너뛰기</h3>
+            <p
+              style={{
+                textAlign: "center",
+                marginBottom: "20px",
+                lineHeight: "1.6",
+              }}
+            >
+              튜토리얼을 건너뛰시겠습니까?
+              <br />
+              <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
+                나중에 정보 메뉴에서 다시 볼 수 있습니다.
+              </span>
+            </p>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button
+                className="full-width-btn"
+                style={{ marginBottom: 0 }}
+                onClick={() => setShowTutorialSkipConfirm(false)}
+              >
+                계속 보기
+              </button>
+              <button
+                className="full-width-btn"
+                style={{
+                  marginBottom: 0,
+                  backgroundColor: "var(--color-fail)",
+                }}
+                onClick={completeTutorial}
+              >
+                건너뛰기
+              </button>
+            </div>
           </div>
         </div>
       )}
