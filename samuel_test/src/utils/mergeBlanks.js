@@ -1,8 +1,5 @@
 import { createPhraseAnswer, isPhraseAnswer, PHRASE_BLANK } from "./problemText";
 
-/** 공백만 있을 때만 빈칸 병합 — `:`, `-`, `,` 등 장절 기호는 유지 */
-const WHITESPACE_ONLY = /^\s+$/;
-
 /** `(참조)` 접두어의 끝 위치 — 없으면 0 */
 export function getReferenceEndIndex(text) {
   if (!text.startsWith("(")) return 0;
@@ -18,91 +15,112 @@ export function getReferenceEndIndex(text) {
   return 0;
 }
 
-function blankInReference(blank, refEnd) {
-  return refEnd > 0 && blank.index < refEnd;
-}
-
-function shouldMergeBlanks(problemText, blanks, i, refEnd) {
-  const prev = blanks[i - 1];
-  const curr = blanks[i];
-  const between = problemText.slice(prev.index + prev.length, curr.index);
-
-  if (!WHITESPACE_ONLY.test(between)) return false;
-
-  if (refEnd > 0) {
-    if (blankInReference(prev, refEnd) !== blankInReference(curr, refEnd)) {
-      return false;
-    }
+function collectBlanks(problemText, answers) {
+  const blanks = [];
+  const re = /_+/g;
+  let m;
+  while ((m = re.exec(problemText)) !== null) {
+    blanks.push({ index: m.index, length: m[0].length });
   }
-
-  return true;
+  if (blanks.length !== answers.length) return null;
+  return blanks.map((b, i) => ({ ...b, answerIndex: i }));
 }
 
-function toPhraseAnswer(answer) {
-  if (isPhraseAnswer(answer)) return answer;
-  return createPhraseAnswer([answer], PHRASE_BLANK);
+function answerTokensAt(answers, answerIndex) {
+  const a = answers[answerIndex];
+  return isPhraseAnswer(a) ? a.tokens : [a];
+}
+
+function buildPhraseAnswer(answers, blankEntries) {
+  const tokens = blankEntries.flatMap((b) =>
+    answerTokensAt(answers, b.answerIndex),
+  );
+  return createPhraseAnswer(tokens, PHRASE_BLANK);
+}
+
+/** 본문 빈칸 구간에 공개된 단어(한글·영문 등)가 끼어 있으면 true */
+function bodySpanHasVisibleWords(text, bodyBlanks) {
+  const start = bodyBlanks[0].index;
+  const end =
+    bodyBlanks[bodyBlanks.length - 1].index +
+    bodyBlanks[bodyBlanks.length - 1].length;
+  const span = text.slice(start, end).replace(/_+/g, "");
+  return /[0-9A-Za-z가-힣]/.test(span);
 }
 
 /**
- * 연속 빈칸(공백으로만 구분)을 phrase 그룹으로 묶는다.
- * - 장절 `( … : … )` — 콜론·하이픈 등 기호 유지
- * - 장절 `( … )` 과 본문 `…` 분리
- * - 모든 phrase/단일 빈칸 → PHRASE_BLANK(…) 하나로 표시
+ * 연속 빈칸 단순 병합:
+ * 1. 괄호 안 장절 빈칸 전체 → `( … )` (기호·괄호는 원문 그대로)
+ * 2. 본문 빈칸 전체(공개 단어 없을 때만) → `…` 하나
+ * 3. 빈칸 모드처럼 본문에 공개 단어가 있으면 본문은 `_` 유지
  */
 export function mergeConsecutiveBlanks(problemText, answers) {
   if (!problemText || answers.length === 0) {
     return { problemText, answers };
   }
 
-  const blankPattern = /_+/g;
-  const blanks = [];
-  let match;
-  while ((match = blankPattern.exec(problemText)) !== null) {
-    blanks.push({ index: match.index, length: match[0].length });
-  }
-
-  if (blanks.length === 0 || blanks.length !== answers.length) {
-    return { problemText, answers };
-  }
+  const blanks = collectBlanks(problemText, answers);
+  if (!blanks) return { problemText, answers };
 
   const refEnd = getReferenceEndIndex(problemText);
+  const refBlanks =
+    refEnd > 0 ? blanks.filter((b) => b.index < refEnd) : [];
+  const bodyBlanks =
+    refEnd > 0 ? blanks.filter((b) => b.index >= refEnd) : [...blanks];
 
-  const groups = [];
-  let currentGroup = [0];
+  const bodyCanMerge =
+    bodyBlanks.length > 0 &&
+    !bodySpanHasVisibleWords(problemText, bodyBlanks);
 
-  for (let i = 1; i < blanks.length; i++) {
-    if (shouldMergeBlanks(problemText, blanks, i, refEnd)) {
-      currentGroup.push(i);
-    } else {
-      groups.push(currentGroup);
-      currentGroup = [i];
-    }
+  if (refBlanks.length === 0 && !bodyCanMerge) {
+    return { problemText, answers };
   }
-  groups.push(currentGroup);
 
   let newText = "";
   let lastEnd = 0;
   const newAnswers = [];
+  let blankIdx = 0;
 
-  groups.forEach((group) => {
-    const firstBlank = blanks[group[0]];
-    const lastBlank = blanks[group.length - 1];
+  while (blankIdx < blanks.length) {
+    const b = blanks[blankIdx];
 
-    newText += problemText.slice(lastEnd, firstBlank.index);
-
-    if (group.length === 1) {
-      newAnswers.push(toPhraseAnswer(answers[group[0]]));
-    } else {
-      const tokens = group.flatMap((idx) => {
-        const ans = answers[idx];
-        return isPhraseAnswer(ans) ? ans.tokens : [ans];
-      });
-      newAnswers.push(createPhraseAnswer(tokens, PHRASE_BLANK));
+    if (refBlanks.length > 0 && b === refBlanks[0]) {
+      newText += problemText.slice(lastEnd, b.index);
+      newAnswers.push(buildPhraseAnswer(answers, refBlanks));
+      newText += PHRASE_BLANK;
+      lastEnd =
+        refBlanks[refBlanks.length - 1].index +
+        refBlanks[refBlanks.length - 1].length;
+      blankIdx += refBlanks.length;
+      continue;
     }
-    newText += PHRASE_BLANK;
 
-    lastEnd = lastBlank.index + lastBlank.length;
-  });
+    if (bodyCanMerge && b === bodyBlanks[0]) {
+      newText += problemText.slice(lastEnd, b.index);
+      newAnswers.push(buildPhraseAnswer(answers, bodyBlanks));
+      newText += PHRASE_BLANK;
+      lastEnd =
+        bodyBlanks[bodyBlanks.length - 1].index +
+        bodyBlanks[bodyBlanks.length - 1].length;
+      blankIdx += bodyBlanks.length;
+      continue;
+    }
+
+    if (
+      refBlanks.some((r) => r.answerIndex === b.answerIndex) ||
+      (bodyCanMerge &&
+        bodyBlanks.some((r) => r.answerIndex === b.answerIndex))
+    ) {
+      blankIdx++;
+      continue;
+    }
+
+    newText += problemText.slice(lastEnd, b.index);
+    newAnswers.push(answers[b.answerIndex]);
+    newText += "_";
+    lastEnd = b.index + b.length;
+    blankIdx++;
+  }
 
   newText += problemText.slice(lastEnd);
   return { problemText: newText, answers: newAnswers };
