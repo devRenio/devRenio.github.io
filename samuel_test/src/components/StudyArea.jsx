@@ -26,7 +26,43 @@ export default function StudyArea({
   onBeforeInput,
   onFocus,
   onBlur,
+  onSubmit,
 }) {
+  const isSpaceKey = (e) =>
+    e.code === "Space" || e.key === " " || e.key === "Spacebar";
+
+  const isEnterKey = (e) =>
+    e.key === "Enter" || e.code === "Enter" || e.keyCode === 13;
+
+  const handleInputKeyDown = (e) => {
+    if (e.nativeEvent.isComposing) return;
+
+    if (mergeBlanks) {
+      if (isSpaceKey(e)) return;
+      if (isEnterKey(e)) {
+        e.preventDefault();
+        onSubmit();
+      }
+      return;
+    }
+
+    onKeyDown(e);
+  };
+
+  const handleInputBeforeInput = (e) => {
+    if (e.nativeEvent.isComposing) return;
+
+    if (mergeBlanks) {
+      if (e.inputType === "insertLineBreak") {
+        e.preventDefault();
+        onSubmit();
+      }
+      return;
+    }
+
+    onBeforeInput(e);
+  };
+
   const inputPlaceholder = (() => {
     if (mergeBlanks) {
       return isCompleted
@@ -118,8 +154,8 @@ export default function StudyArea({
             type="text"
             value={userInput}
             onChange={onInputChange}
-            onKeyDown={onKeyDown}
-            onBeforeInput={onBeforeInput}
+            onKeyDown={handleInputKeyDown}
+            onBeforeInput={handleInputBeforeInput}
             onFocus={onFocus}
             onBlur={onBlur}
             autoFocus={!isMobile}

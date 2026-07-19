@@ -1,6 +1,7 @@
-import { isPhraseAnswer, PHRASE_BLANK } from "./problemText";
+import { createPhraseAnswer, isPhraseAnswer, PHRASE_BLANK } from "./problemText";
 
-const SEPARATOR_ONLY = /^[\s,.\-:;!?'"()/]*$/;
+/** 공백만 있을 때만 빈칸 병합 — `:`, `-`, `,` 등 장절 기호는 유지 */
+const WHITESPACE_ONLY = /^\s+$/;
 
 /** `(참조)` 접두어의 끝 위치 — 없으면 0 */
 export function getReferenceEndIndex(text) {
@@ -26,7 +27,7 @@ function shouldMergeBlanks(problemText, blanks, i, refEnd) {
   const curr = blanks[i];
   const between = problemText.slice(prev.index + prev.length, curr.index);
 
-  if (!SEPARATOR_ONLY.test(between)) return false;
+  if (!WHITESPACE_ONLY.test(between)) return false;
 
   if (refEnd > 0) {
     if (blankInReference(prev, refEnd) !== blankInReference(curr, refEnd)) {
@@ -37,10 +38,16 @@ function shouldMergeBlanks(problemText, blanks, i, refEnd) {
   return true;
 }
 
+function toPhraseAnswer(answer) {
+  if (isPhraseAnswer(answer)) return answer;
+  return createPhraseAnswer([answer], PHRASE_BLANK);
+}
+
 /**
- * 연속 빈칸을 phrase 그룹으로 묶는다.
- * - 장절 `( … )` 과 본문 `…` 은 별도 그룹
- * - phrase 그룹은 PHRASE_BLANK(…) 하나로 표시 (단어 수 힌트 없음)
+ * 연속 빈칸(공백으로만 구분)을 phrase 그룹으로 묶는다.
+ * - 장절 `( … : … )` — 콜론·하이픈 등 기호 유지
+ * - 장절 `( … )` 과 본문 `…` 분리
+ * - 모든 phrase/단일 빈칸 → PHRASE_BLANK(…) 하나로 표시
  */
 export function mergeConsecutiveBlanks(problemText, answers) {
   if (!problemText || answers.length === 0) {
@@ -73,30 +80,26 @@ export function mergeConsecutiveBlanks(problemText, answers) {
   }
   groups.push(currentGroup);
 
-  const hasMerge = groups.some((g) => g.length > 1);
-  if (!hasMerge) return { problemText, answers };
-
   let newText = "";
   let lastEnd = 0;
   const newAnswers = [];
 
   groups.forEach((group) => {
     const firstBlank = blanks[group[0]];
-    const lastBlank = blanks[group[group.length - 1]];
+    const lastBlank = blanks[group.length - 1];
 
     newText += problemText.slice(lastEnd, firstBlank.index);
 
     if (group.length === 1) {
-      newAnswers.push(answers[group[0]]);
-      newText += "_";
+      newAnswers.push(toPhraseAnswer(answers[group[0]]));
     } else {
       const tokens = group.flatMap((idx) => {
         const ans = answers[idx];
         return isPhraseAnswer(ans) ? ans.tokens : [ans];
       });
-      newAnswers.push({ type: "phrase", tokens, blankDisplay: PHRASE_BLANK });
-      newText += PHRASE_BLANK;
+      newAnswers.push(createPhraseAnswer(tokens, PHRASE_BLANK));
     }
+    newText += PHRASE_BLANK;
 
     lastEnd = lastBlank.index + lastBlank.length;
   });

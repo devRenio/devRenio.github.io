@@ -91,10 +91,7 @@ export function useSamuelApp() {
   const submitLockRef = useRef(false);
   const attemptsRef = useRef(0);
   const mergeBlanksRef = useRef(mergeBlanks);
-
-  useEffect(() => {
-    mergeBlanksRef.current = mergeBlanks;
-  }, [mergeBlanks]);
+  mergeBlanksRef.current = mergeBlanks;
 
   const isMobile = useIsMobile();
   const keyboard = useKeyboardLayout(isMobile, inputRef);

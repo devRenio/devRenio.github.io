@@ -110,6 +110,7 @@ function App() {
         onInputChange={app.handleInputChange}
         onKeyDown={app.handleKeyDown}
         onBeforeInput={app.handleBeforeInput}
+        onSubmit={() => app.submitAnswer()}
         onFocus={app.keyboard.handleInputFocus}
         onBlur={app.keyboard.handleInputBlur}
       />
