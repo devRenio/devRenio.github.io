@@ -56,6 +56,7 @@ export default function ModeBar({
       <div className="mode-bar-options">
         <label
           className={`merge-blank-toggle ${mergeBlanks ? "on" : ""}`}
+          data-tour="merge-blanks"
           title="인접 빈칸을 하나로 병합해 한 번에 입력 (Enter로 제출)"
         >
           <input
