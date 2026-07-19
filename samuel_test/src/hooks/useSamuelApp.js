@@ -314,7 +314,47 @@ export function useSamuelApp() {
     (segments, unmatchedTokens) => {
       const base = cleanText(currentProblem.problemText);
       const partialText = partialSegmentsToText(segments);
-      const updatedText = replacePhraseBlank(base, partialText);
+      let updatedText = replacePhraseBlank(base, partialText);
+
+      const newAttempts = attemptsRef.current + 1;
+      attemptsRef.current = newAttempts;
+      setAttempts(newAttempts);
+      setUserInput("");
+
+      if (newAttempts >= 3 && unmatchedTokens.length > 0) {
+        if (
+          !wrongVerses.some((v) => v.reference === currentProblem.reference)
+        ) {
+          setWrongVerses((prev) => [...prev, currentProblem.raw]);
+        }
+        setFailNum((prev) => prev + 1);
+        recordVerseWrong(currentProblem.reference);
+
+        if (!hasFailedCurrent) {
+          setHasFailedCurrent(true);
+          setCumulativeStats((prev) => ({
+            ...prev,
+            total: prev.total + 1,
+            wrong: prev.wrong + 1,
+          }));
+        }
+
+        const failMarker = phraseFailMarkers(unmatchedTokens);
+        updatedText = replacePhraseBlank(updatedText, failMarker);
+
+        setCurrentProblem({
+          ...currentProblem,
+          problemText: updatedText,
+          answers: currentProblem.answers.slice(1),
+        });
+        setAttempts(0);
+        attemptsRef.current = 0;
+
+        if (currentProblem.answers.length <= 1) {
+          setIsCompleted(true);
+        }
+        return;
+      }
 
       const remainingAnswers =
         unmatchedTokens.length > 0 ? [createPhraseAnswer(unmatchedTokens)] : [];
@@ -324,11 +364,8 @@ export function useSamuelApp() {
         problemText: updatedText,
         answers: [...remainingAnswers, ...currentProblem.answers.slice(1)],
       });
-      setUserInput("");
-      setAttempts(0);
-      attemptsRef.current = 0;
     },
-    [currentProblem],
+    [currentProblem, wrongVerses, hasFailedCurrent, recordVerseWrong],
   );
 
   const handleWrong = useCallback(
