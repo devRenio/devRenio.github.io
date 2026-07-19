@@ -121,7 +121,6 @@ function App() {
         failNum={app.failNum}
         onSkip={() => app.displayProblem(app.currentMode)}
         onOpenWrong={handleOpenWrong}
-        onOpenVerseList={() => app.setActiveModal("verse-list")}
         onRequestReset={app.requestDayReset}
       />
 
@@ -150,7 +149,6 @@ function App() {
           app.setWrongVerses([]);
           app.setActiveModal(null);
         }}
-        scripture={app.scripture}
         cumulativeStats={app.cumulativeStats}
         verseWrongCounts={app.verseWrongCounts}
         selectedScriptures={app.selectedScriptures}

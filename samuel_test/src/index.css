@@ -1192,50 +1192,7 @@ input[type="checkbox"] {
   accent-color: var(--text-primary);
 }
 
-/* --- 구절 목록 모달 --- */
-.verse-list {
-  max-height: 50vh;
-  overflow-y: auto;
-  text-align: left;
-  margin: 12px 0;
-}
-
-.verse-list-item {
-  display: flex;
-  gap: 8px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.verse-list-item:last-child {
-  border-bottom: none;
-}
-
-.verse-list-num {
-  color: var(--text-secondary);
-  font-size: 14px;
-  flex-shrink: 0;
-}
-
-.verse-list-body {
-  flex: 1;
-  min-width: 0;
-}
-
-.verse-list-topic {
-  display: block;
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin-top: 2px;
-}
-
-.verse-list-text {
-  font-size: 13px;
-  margin: 6px 0 0;
-  line-height: 1.5;
-  color: var(--text-secondary);
-}
-
+/* --- 구절 목록 모달 (empty 메시지는 통계 탭에서도 사용) --- */
 .verse-list-empty {
   text-align: center;
   color: var(--text-secondary);

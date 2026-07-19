@@ -4,7 +4,6 @@ export default function StatusBar({
   failNum,
   onSkip,
   onOpenWrong,
-  onOpenVerseList,
   onRequestReset,
 }) {
   return (
@@ -19,9 +18,6 @@ export default function StatusBar({
         </span>
       </div>
       <div className="status-btns">
-        <button data-tour="verse-list-btn" onClick={onOpenVerseList}>
-          목록
-        </button>
         <button data-tour="skip-btn" onClick={onSkip}>
           스킵
         </button>

@@ -19,7 +19,6 @@ export default function ModalHost({
   wrongVerses,
   onStartWrongReview,
   onClearWrongVerses,
-  scripture,
   cumulativeStats,
   verseWrongCounts,
   selectedScriptures,
@@ -216,37 +215,6 @@ export default function ModalHost({
               onClick={onClose}
             >
               확인
-            </button>
-          </>
-        )}
-
-        {activeModal === "verse-list" && (
-          <>
-            <h3>남은 구절 목록</h3>
-            {scripture.length === 0 ? (
-              <p className="verse-list-empty">남은 구절이 없습니다.</p>
-            ) : (
-              <div className="verse-list">
-                {scripture.map((v, i) => (
-                  <div key={`${v.reference}-${i}`} className="verse-list-item">
-                    <span className="verse-list-num">{i + 1}.</span>
-                    <div className="verse-list-body">
-                      <strong>{v.reference}</strong>
-                      {v.topic && (
-                        <span className="verse-list-topic">{v.topic}</span>
-                      )}
-                      <p className="verse-list-text">{v.verse}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-            <button
-              className="full-width-btn"
-              style={{ marginBottom: 0, marginTop: "12px" }}
-              onClick={onClose}
-            >
-              닫기
             </button>
           </>
         )}
