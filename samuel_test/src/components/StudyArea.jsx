@@ -1,4 +1,5 @@
 import ProblemRenderer from "./ProblemRenderer";
+import { getBlankDisplay, isPhraseAnswer } from "../utils/problemText";
 
 export default function StudyArea({
   problemContainerRef,
@@ -67,6 +68,11 @@ export default function StudyArea({
               <ProblemRenderer
                 text={currentProblem.problemText}
                 isError={isError}
+                activeBlankDisplay={
+                  isPhraseAnswer(currentProblem.answers?.[0])
+                    ? getBlankDisplay(currentProblem.answers[0])
+                    : null
+                }
               />
             ) : isEmpty ? (
               <div className="empty-queue-cta">

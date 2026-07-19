@@ -1,22 +1,64 @@
-const ProblemRenderer = ({ text, isError }) => {
+const ProblemRenderer = ({ text, isError, activeBlankDisplay }) => {
   if (!text) return null;
 
   const parts = text.split(/(\{\{[SF]:.*?\}\})/g);
-  let targetLocation = null;
 
-  for (let i = 0; i < parts.length; i++) {
-    const part = parts[i];
-    if (!part.startsWith("{{") && part.includes("_")) {
-      const subParts = part.split(/(_+)/);
-      for (let j = 0; j < subParts.length; j++) {
-        if (subParts[j].startsWith("_")) {
-          targetLocation = { partIndex: i, subIndex: j };
-          break;
-        }
-      }
+  const renderZone = (zone) => (
+    <span
+      className={`phrase-blank-zone ${isError ? "phrase-blank-error" : ""}`}
+    >
+      {zone.split("").map((ch, i) =>
+        ch === "_" ? (
+          <span
+            key={i}
+            className={isError ? "text-error-flash" : "active-blank"}
+          >
+            _
+          </span>
+        ) : (
+          <span key={i} className="phrase-blank-sep">
+            {ch}
+          </span>
+        ),
+      )}
+    </span>
+  );
+
+  const renderPlainPart = (part) => {
+    if (!part.includes("_")) return part;
+
+    if (activeBlankDisplay && part.includes(activeBlankDisplay)) {
+      const start = part.indexOf(activeBlankDisplay);
+      return (
+        <>
+          {part.slice(0, start)}
+          {renderZone(activeBlankDisplay)}
+          {part.slice(start + activeBlankDisplay.length)}
+        </>
+      );
     }
-    if (targetLocation) break;
-  }
+
+    let highlighted = false;
+    const subParts = part.split(/(_+)/);
+    return (
+      <>
+        {subParts.map((subPart, subIndex) => {
+          if (!highlighted && subPart.startsWith("_")) {
+            highlighted = true;
+            return (
+              <span
+                key={subIndex}
+                className={isError ? "text-error-flash" : "active-blank"}
+              >
+                {subPart}
+              </span>
+            );
+          }
+          return subPart;
+        })}
+      </>
+    );
+  };
 
   return (
     <>
@@ -42,29 +84,7 @@ const ProblemRenderer = ({ text, isError }) => {
 
         if (!part.includes("_")) return part;
 
-        const subParts = part.split(/(_+)/);
-        return (
-          <span key={uniqueKey}>
-            {subParts.map((subPart, subIndex) => {
-              const isTarget =
-                targetLocation &&
-                targetLocation.partIndex === index &&
-                targetLocation.subIndex === subIndex;
-
-              if (isTarget) {
-                return (
-                  <span
-                    key={`${subIndex}-${isTarget}`}
-                    className={isError ? "text-error-flash" : "active-blank"}
-                  >
-                    {subPart}
-                  </span>
-                );
-              }
-              return subPart;
-            })}
-          </span>
-        );
+        return <span key={uniqueKey}>{renderPlainPart(part)}</span>;
       })}
     </>
   );

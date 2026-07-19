@@ -14,9 +14,14 @@ import { loadStoredData, saveStoredData } from "../utils/storage";
 import { mergeConsecutiveBlanks } from "../utils/mergeBlanks";
 import {
   cleanText,
+  createPhraseAnswer,
+  getBlankDisplay,
   isPhraseAnswer,
-  partialResultToText,
+  partialSegmentsToDisplay,
+  phraseToFailMarkers,
   phraseToSuccessMarkers,
+  remainingBlankDisplay,
+  replaceAnswerRegion,
   replaceFirstBlank,
 } from "../utils/problemText";
 import { gradePhrase, isFullPhraseMatch } from "../utils/phraseGrading";
@@ -83,6 +88,7 @@ export function useSamuelApp() {
   const navRef = useRef(null);
   const problemContainerRef = useRef(null);
   const submitLockRef = useRef(false);
+  const attemptsRef = useRef(0);
 
   const isMobile = useIsMobile();
   const keyboard = useKeyboardLayout(isMobile, inputRef);
@@ -219,6 +225,7 @@ export function useSamuelApp() {
         setCurrentProblem(null);
         setUserInput("");
         setAttempts(0);
+        attemptsRef.current = 0;
         setIsCompleted(false);
         setHasFailedCurrent(false);
         return;
@@ -233,6 +240,7 @@ export function useSamuelApp() {
         indexInList: problemNum,
       });
       setAttempts(0);
+      attemptsRef.current = 0;
       setIsCompleted(false);
       setUserInput("");
       setHasFailedCurrent(false);
@@ -270,11 +278,15 @@ export function useSamuelApp() {
 
   const handleCorrect = useCallback(
     (answer) => {
-      const cleanedText = cleanText(currentProblem.problemText);
+      const blankDisplay = getBlankDisplay(answer);
       const marker = isPhraseAnswer(answer)
-        ? phraseToSuccessMarkers(answer.tokens)
+        ? phraseToSuccessMarkers(answer.tokens, blankDisplay)
         : `{{S:${answer}}}`;
-      const updatedText = replaceFirstBlank(cleanedText, marker);
+
+      const updatedText = blankDisplay
+        ? replaceAnswerRegion(currentProblem.problemText, blankDisplay, marker)
+        : replaceFirstBlank(cleanText(currentProblem.problemText), marker);
+
       const remainingAnswers = currentProblem.answers.slice(1);
 
       setCurrentProblem({
@@ -284,6 +296,7 @@ export function useSamuelApp() {
       });
       setUserInput("");
       setAttempts(0);
+      attemptsRef.current = 0;
 
       if (remainingAnswers.length === 0) {
         setIsCompleted(true);
@@ -301,14 +314,24 @@ export function useSamuelApp() {
 
   const handlePartialPhrase = useCallback(
     (segments, unmatchedTokens) => {
-      const cleanedText = cleanText(currentProblem.problemText);
-      const partialText = partialResultToText(segments);
-      const updatedText = replaceFirstBlank(cleanedText, partialText);
+      const currentAnswer = currentProblem.answers[0];
+      const blankDisplay = getBlankDisplay(currentAnswer);
+      const partialText = partialSegmentsToDisplay(blankDisplay, segments);
+      const updatedText = replaceAnswerRegion(
+        currentProblem.problemText,
+        blankDisplay,
+        partialText,
+      );
 
-      const remainingAnswers =
-        unmatchedTokens.length === 1
-          ? [unmatchedTokens[0]]
-          : [{ type: "phrase", tokens: unmatchedTokens }];
+      let remainingAnswers;
+      if (unmatchedTokens.length === 1) {
+        remainingAnswers = [unmatchedTokens[0]];
+      } else {
+        const newBlankDisplay = remainingBlankDisplay(blankDisplay, segments);
+        remainingAnswers = [
+          createPhraseAnswer(unmatchedTokens, newBlankDisplay),
+        ];
+      }
 
       setCurrentProblem({
         ...currentProblem,
@@ -322,11 +345,13 @@ export function useSamuelApp() {
 
   const handleWrong = useCallback(
     (answer) => {
-      const failLabel = isPhraseAnswer(answer)
-        ? answer.tokens.join(" ")
-        : answer;
+      const blankDisplay = getBlankDisplay(answer);
+      const failMarker = isPhraseAnswer(answer)
+        ? phraseToFailMarkers(answer.tokens, blankDisplay)
+        : `{{F:${answer}}}`;
 
-      const newAttempts = attempts + 1;
+      const newAttempts = attemptsRef.current + 1;
+      attemptsRef.current = newAttempts;
       setAttempts(newAttempts);
       setUserInput("");
 
@@ -350,11 +375,16 @@ export function useSamuelApp() {
           }));
         }
 
-        const cleanedText = cleanText(currentProblem.problemText);
-        const updatedText = replaceFirstBlank(
-          cleanedText,
-          `{{F:${failLabel}}}`,
-        );
+        const updatedText = blankDisplay
+          ? replaceAnswerRegion(
+              currentProblem.problemText,
+              blankDisplay,
+              failMarker,
+            )
+          : replaceFirstBlank(
+              cleanText(currentProblem.problemText),
+              failMarker,
+            );
         const remainingAnswers = currentProblem.answers.slice(1);
 
         setCurrentProblem({
@@ -364,13 +394,14 @@ export function useSamuelApp() {
         });
 
         setAttempts(0);
+        attemptsRef.current = 0;
         if (remainingAnswers.length === 0) setIsCompleted(true);
       } else {
         setIsError(true);
         setTimeout(() => setIsError(false), 400);
       }
     },
-    [attempts, currentProblem, wrongVerses, hasFailedCurrent, recordVerseWrong],
+    [currentProblem, wrongVerses, hasFailedCurrent, recordVerseWrong],
   );
 
   const submitAnswer = useCallback(
