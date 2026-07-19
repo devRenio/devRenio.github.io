@@ -1,0 +1,493 @@
+import { DEFAULT_FONT } from "../utils/fonts";
+import { getVerseWrongByDay } from "../utils/scriptureHelpers";
+
+export default function ModalHost({
+  activeModal,
+  onClose,
+  alertMessage,
+  onConfirm,
+  isMobile,
+  fontFamily,
+  fontFamilies,
+  fontSize,
+  isBold,
+  onFontFamilyChange,
+  onFontSizeChange,
+  onBoldChange,
+  onFontReset,
+  onLoadSystemFonts,
+  wrongVerses,
+  onStartWrongReview,
+  onClearWrongVerses,
+  scripture,
+  cumulativeStats,
+  verseWrongCounts,
+  selectedScriptures,
+  statsTab,
+  onStatsTabChange,
+  onResetStats,
+  onStartTutorial,
+  onBlankLevel,
+  onWholeLevel,
+}) {
+  if (!activeModal) return null;
+
+  const verseWrongByDay = getVerseWrongByDay(
+    selectedScriptures,
+    verseWrongCounts,
+  );
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        {activeModal === "alert" && (
+          <>
+            <h3 style={{ marginBottom: "15px" }}>알림</h3>
+            <p
+              style={{
+                textAlign: "center",
+                marginBottom: "20px",
+                lineHeight: "1.5",
+                whiteSpace: "pre-line",
+              }}
+            >
+              {alertMessage}
+            </p>
+            <button
+              className="full-width-btn"
+              style={{ marginBottom: 0 }}
+              onClick={onClose}
+            >
+              확인
+            </button>
+          </>
+        )}
+
+        {activeModal === "confirm" && (
+          <>
+            <h3 style={{ marginBottom: "15px" }}>확인</h3>
+            <p
+              style={{
+                textAlign: "center",
+                marginBottom: "20px",
+                lineHeight: "1.5",
+                whiteSpace: "pre-line",
+              }}
+            >
+              {alertMessage}
+            </p>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button
+                className="full-width-btn"
+                style={{ marginBottom: 0 }}
+                onClick={onClose}
+              >
+                취소
+              </button>
+              <button
+                className="full-width-btn"
+                style={{
+                  marginBottom: 0,
+                  backgroundColor: "var(--color-fail)",
+                }}
+                onClick={() => {
+                  if (onConfirm) onConfirm();
+                  onClose();
+                }}
+              >
+                확인
+              </button>
+            </div>
+          </>
+        )}
+
+        {activeModal === "help" && (
+          <>
+            <h3>도움말</h3>
+            <p
+              style={{
+                textAlign: "center",
+                lineHeight: "1.6",
+                marginBottom: "20px",
+              }}
+            >
+              1. 과정과 일차를 선택하세요.
+              <br />
+              2. 원하는 모드를 선택하여 암송을 시작하세요.
+              <br />
+              3. 정답을 입력하고 <strong>Space</strong>나{" "}
+              <strong>Enter</strong>를 누르세요.
+              <br />
+              4. 틀린 구절은 자동으로 저장됩니다.
+              <br />
+              5. <strong>연속 빈칸</strong>을 켜면 인접 빈칸을 한 번에
+              입력합니다 (Enter로 제출).
+            </p>
+            <button
+              className="full-width-btn"
+              style={{ marginBottom: 0 }}
+              onClick={onClose}
+            >
+              닫기
+            </button>
+          </>
+        )}
+
+        {activeModal === "info" && (
+          <>
+            <h3>프로그램 정보</h3>
+            <p
+              style={{
+                textAlign: "center",
+                lineHeight: "1.6",
+                marginBottom: "20px",
+              }}
+            >
+              <strong>사무엘학교 암송 프로그램</strong>
+              <br />
+              제43기 사무엘학교
+              <br />
+              <br />
+              <span
+                style={{
+                  fontSize: "17px",
+                  fontFamily: "MaruBuriBold",
+                  display: "block",
+                }}
+              >
+                “구원의 투구와 성령의 검 곧 하나님의 말씀을 가지라”
+              </span>
+              <span
+                style={{
+                  fontSize: "15px",
+                  fontFamily: "MaruBuriSemiBold",
+                  marginTop: "3px",
+                  display: "block",
+                }}
+              >
+                에베소서 6장 17절
+              </span>
+              <span
+                style={{
+                  fontSize: "12px",
+                  marginTop: "6px",
+                  paddingBottom: "10px",
+                  display: "block",
+                }}
+              >
+                <br />
+                서울양천교회 공은호 형제
+                <br />
+                (문의 : 깨사모 쪽지)
+              </span>
+            </p>
+            <button
+              type="button"
+              className="tutorial-replay-btn"
+              onClick={onStartTutorial}
+            >
+              튜토리얼 다시 보기
+            </button>
+            <button
+              className="full-width-btn"
+              style={{ marginBottom: 0, marginTop: "12px" }}
+              onClick={onClose}
+            >
+              닫기
+            </button>
+          </>
+        )}
+
+        {activeModal === "no-wrong" && (
+          <>
+            <h3 style={{ marginBottom: "10px" }}>알림</h3>
+            <p
+              style={{
+                textAlign: "center",
+                marginBottom: "20px",
+                fontSize: "16px",
+              }}
+            >
+              틀린 구절이 없습니다! 🎉
+            </p>
+            <button
+              className="full-width-btn"
+              style={{ marginBottom: 0 }}
+              onClick={onClose}
+            >
+              확인
+            </button>
+          </>
+        )}
+
+        {activeModal === "verse-list" && (
+          <>
+            <h3>남은 구절 목록</h3>
+            {scripture.length === 0 ? (
+              <p className="verse-list-empty">남은 구절이 없습니다.</p>
+            ) : (
+              <div className="verse-list">
+                {scripture.map((v, i) => (
+                  <div key={`${v.reference}-${i}`} className="verse-list-item">
+                    <span className="verse-list-num">{i + 1}.</span>
+                    <div className="verse-list-body">
+                      <strong>{v.reference}</strong>
+                      {v.topic && (
+                        <span className="verse-list-topic">{v.topic}</span>
+                      )}
+                      <p className="verse-list-text">{v.verse}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <button
+              className="full-width-btn"
+              style={{ marginBottom: 0, marginTop: "12px" }}
+              onClick={onClose}
+            >
+              닫기
+            </button>
+          </>
+        )}
+
+        {activeModal === "blank" && (
+          <>
+            <h3>빈칸 비율 선택</h3>
+            <div className="modal-grid">
+              <button onClick={() => onBlankLevel(-1)}>0% (암기용)</button>
+              {[...Array(10)].map((_, i) => (
+                <button key={i} onClick={() => onBlankLevel(i)}>
+                  {(i + 1) * 10}%
+                </button>
+              ))}
+            </div>
+            <button
+              className="full-width-btn"
+              style={{ marginBottom: 0, marginTop: "10px" }}
+              onClick={onClose}
+            >
+              닫기
+            </button>
+          </>
+        )}
+
+        {activeModal === "whole" && (
+          <>
+            <h3>공개할 어절 수 선택</h3>
+            <div className="modal-grid">
+              {[1, 2, 3, 4].map((n) => (
+                <button key={n} onClick={() => onWholeLevel(n)}>
+                  {n}어절
+                </button>
+              ))}
+            </div>
+            <button
+              className="full-width-btn"
+              style={{ marginBottom: 0, marginTop: "10px" }}
+              onClick={onClose}
+            >
+              닫기
+            </button>
+          </>
+        )}
+
+        {activeModal === "font" && (
+          <>
+            <h3>글꼴 설정</h3>
+            {isMobile && (
+              <p className="font-modal-note">
+                모바일에서는 앱에 포함된 글꼴만 적용됩니다.
+              </p>
+            )}
+            {!isMobile && (
+              <button onClick={onLoadSystemFonts} className="full-width-btn">
+                시스템 폰트 불러오기
+              </button>
+            )}
+
+            <select
+              value={fontFamily}
+              onChange={(e) => onFontFamilyChange(e.target.value)}
+              className="font-selector"
+            >
+              {fontFamilies.map((f) => (
+                <option key={f.realName} value={f.realName}>
+                  {f.displayName}
+                </option>
+              ))}
+            </select>
+
+            <div className="font-size-control">
+              <label>크기: {fontSize}px</label>
+              <input
+                type="range"
+                min="16"
+                max="50"
+                value={fontSize}
+                onChange={(e) => onFontSizeChange(Number(e.target.value))}
+              />
+            </div>
+
+            <div style={{ margin: "16px 0" }}>
+              <label
+                style={{
+                  display: "flex",
+                  gap: "8px",
+                  alignItems: "center",
+                  cursor: "pointer",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={isBold}
+                  onChange={(e) => onBoldChange(e.target.checked)}
+                />
+                <span style={{ fontSize: "14px" }}>진하게</span>
+              </label>
+            </div>
+
+            <div className="modal-footer">
+              <button
+                className="modal-close-btn"
+                onClick={() => {
+                  onFontReset();
+                }}
+              >
+                초기화
+              </button>
+              <button className="modal-close-btn" onClick={onClose}>
+                닫기
+              </button>
+            </div>
+          </>
+        )}
+
+        {activeModal === "wrong" && (
+          <>
+            <h3>틀린 구절 모음</h3>
+            <div className="wrong-list">
+              {wrongVerses.map((v, i) => (
+                <p key={v.reference}>
+                  {i + 1}. {v.reference} {v.verse}
+                </p>
+              ))}
+            </div>
+
+            <button className="full-width-btn" onClick={onStartWrongReview}>
+              틀린 구절 복습 시작
+            </button>
+
+            <div className="modal-footer">
+              <button className="modal-close-btn" onClick={onClearWrongVerses}>
+                목록 초기화
+              </button>
+              <button className="modal-close-btn" onClick={onClose}>
+                닫기
+              </button>
+            </div>
+          </>
+        )}
+
+        {activeModal === "stats" && (
+          <>
+            <h3 style={{ marginBottom: "0px" }}>누적 학습 통계</h3>
+            <div className="stats-tabs">
+              <button
+                type="button"
+                className={`stats-tab-btn ${statsTab === "summary" ? "active" : ""}`}
+                onClick={() => onStatsTabChange("summary")}
+              >
+                요약
+              </button>
+              <button
+                type="button"
+                className={`stats-tab-btn ${statsTab === "verse-wrong" ? "active" : ""}`}
+                onClick={() => onStatsTabChange("verse-wrong")}
+              >
+                구절별 오답
+              </button>
+            </div>
+
+            {statsTab === "summary" && (
+              <>
+                <h3
+                  style={{
+                    marginTop: "3px",
+                    textAlign: "center",
+                    fontSize: "12px",
+                    fontWeight: "normal",
+                  }}
+                >
+                  구절 기준 통계
+                </h3>
+                <div className="stats-summary">
+                  <div className="stats-row">
+                    <span style={{ color: "var(--text-secondary)" }}>
+                      총 시도 횟수
+                    </span>
+                    <strong>{cumulativeStats.total.toLocaleString()}회</strong>
+                  </div>
+                  <div className="stats-row stats-correct">
+                    <span>정답 횟수</span>
+                    <strong>
+                      {cumulativeStats.correct.toLocaleString()}회
+                    </strong>
+                  </div>
+                  <div className="stats-row stats-wrong">
+                    <span>오답 횟수</span>
+                    <strong>{cumulativeStats.wrong.toLocaleString()}회</strong>
+                  </div>
+                  <div className="stats-rate">
+                    정답률 :{" "}
+                    {cumulativeStats.total === 0
+                      ? "0%"
+                      : `${((cumulativeStats.correct / cumulativeStats.total) * 100).toFixed(1)}%`}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {statsTab === "verse-wrong" && (
+              <div className="verse-wrong-stats">
+                {verseWrongByDay.length === 0 ? (
+                  <p className="verse-list-empty">기록된 구절별 오답이 없습니다.</p>
+                ) : (
+                  verseWrongByDay.map((dayGroup) => (
+                    <div key={dayGroup.day} className="verse-wrong-day">
+                      <h4>{dayGroup.day}일차</h4>
+                      <ul>
+                        {dayGroup.verses.map((v) => (
+                          <li key={v.reference}>
+                            <span className="verse-wrong-count">
+                              {v.wrongCount}회
+                            </span>
+                            <span className="verse-wrong-ref">{v.reference}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
+            <button className="full-width-btn" onClick={onResetStats}>
+              기록 초기화
+            </button>
+
+            <button
+              className="full-width-btn"
+              style={{ marginBottom: 0 }}
+              onClick={onClose}
+            >
+              닫기
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export { DEFAULT_FONT };
