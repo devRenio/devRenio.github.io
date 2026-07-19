@@ -162,13 +162,10 @@ export function useSamuelApp() {
     setTutorialStep((prev) => prev + 1);
   }, [tutorialStep, tutorialSteps.length, completeTutorial]);
 
-  const applyMergeIfEnabled = useCallback(
-    (problemText, answers) => {
-      if (!mergeBlanks) return { problemText, answers };
-      return mergeConsecutiveBlanks(problemText, answers);
-    },
-    [mergeBlanks],
-  );
+  const applyMergeIfEnabled = useCallback((problemText, answers) => {
+    if (!mergeBlanksRef.current) return { problemText, answers };
+    return mergeConsecutiveBlanks(problemText, answers);
+  }, []);
 
   const buildProblemForVerse = useCallback(
     (selected, mode, bNum, wNum) => {
@@ -638,6 +635,7 @@ export function useSamuelApp() {
   };
 
   const handleMergeBlanksChange = (checked) => {
+    mergeBlanksRef.current = checked;
     setMergeBlanks(checked);
     if (currentProblem && scripture.length > 0) {
       displayProblem(currentMode, scripture, blankNum, wholeLevelNum);
