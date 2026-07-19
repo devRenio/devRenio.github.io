@@ -86,12 +86,20 @@ export function mergeConsecutiveBlanks(problemText, answers) {
   runs.forEach((run) => {
     const first = blanks[run[0]];
     const last = blanks[run[run.length - 1]];
+    const tokens = run.flatMap((idx) => tokensOf(answers[idx]));
+
+    const isRefRun = inRef(first);
+    let displayFormat = null;
+
+    if (isRefRun && refEnd > 0) {
+      const refText = problemText.slice(0, refEnd);
+      let ti = 0;
+      displayFormat = refText.replace(/_+/g, () => tokens[ti++] ?? "_");
+    }
 
     newText += problemText.slice(lastEnd, first.index);
     newText += PHRASE_BLANK;
-
-    const tokens = run.flatMap((idx) => tokensOf(answers[idx]));
-    newAnswers.push(createPhraseAnswer(tokens, PHRASE_BLANK));
+    newAnswers.push(createPhraseAnswer(tokens, PHRASE_BLANK, displayFormat));
 
     lastEnd = last.index + last.length;
   });

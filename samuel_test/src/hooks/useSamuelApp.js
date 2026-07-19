@@ -278,7 +278,7 @@ export function useSamuelApp() {
       const isPhrase = isPhraseAnswer(answer);
       const base = cleanText(currentProblem.problemText);
       const marker = isPhrase
-        ? phraseSuccessMarkers(answer.tokens)
+        ? phraseSuccessMarkers(answer)
         : `{{S:${answer}}}`;
 
       const updatedText = isPhrase
@@ -372,7 +372,7 @@ export function useSamuelApp() {
     (answer) => {
       const isPhrase = isPhraseAnswer(answer);
       const failMarker = isPhrase
-        ? phraseFailMarkers(answer.tokens)
+        ? phraseFailMarkers(answer)
         : `{{F:${answer}}}`;
 
       const newAttempts = attemptsRef.current + 1;

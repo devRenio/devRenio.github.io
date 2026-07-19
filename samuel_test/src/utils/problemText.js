@@ -25,8 +25,8 @@ export function isPhraseAnswer(answer) {
   return answer && typeof answer === "object" && answer.type === "phrase";
 }
 
-export function createPhraseAnswer(tokens, blankDisplay = PHRASE_BLANK) {
-  return { type: "phrase", tokens, blankDisplay };
+export function createPhraseAnswer(tokens, blankDisplay = PHRASE_BLANK, displayFormat = null) {
+  return { type: "phrase", tokens, blankDisplay, displayFormat };
 }
 
 /** 활성 답안의 표시 문자 — phrase면 '…', 아니면 null */
@@ -34,13 +34,21 @@ export function getBlankDisplay(answer) {
   return isPhraseAnswer(answer) ? PHRASE_BLANK : null;
 }
 
-/** phrase 토큰들을 정답 마커 문자열로 (모두 공개) */
-export function phraseSuccessMarkers(tokens) {
+/** phrase 답안을 정답 마커 문자열로 (모두 공개) */
+export function phraseSuccessMarkers(answer) {
+  if (isPhraseAnswer(answer) && answer.displayFormat) {
+    return `{{S:${answer.displayFormat}}}`;
+  }
+  const tokens = isPhraseAnswer(answer) ? answer.tokens : answer;
   return tokens.map((t) => `{{S:${t}}}`).join(" ");
 }
 
-/** phrase 토큰들을 오답 마커 문자열로 (모두 공개) */
-export function phraseFailMarkers(tokens) {
+/** phrase 답안을 오답 마커 문자열로 (모두 공개) */
+export function phraseFailMarkers(answer) {
+  if (isPhraseAnswer(answer) && answer.displayFormat) {
+    return `{{F:${answer.displayFormat}}}`;
+  }
+  const tokens = isPhraseAnswer(answer) ? answer.tokens : answer;
   return tokens.map((t) => `{{F:${t}}}`).join(" ");
 }
 
