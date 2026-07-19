@@ -63,21 +63,10 @@ export default function StudyArea({
     onBeforeInput(e);
   };
 
-  const inputPlaceholder = (() => {
-    if (mergeBlanks) {
-      return isCompleted
-        ? "Enter → 다음 구절"
-        : "정답 입력 후 Enter로 제출";
-    }
-    if (isMobile) {
-      return isCompleted
-        ? "Enter/Space → 다음 구절"
-        : "정답 입력 후 Enter/Space";
-    }
-    return isCompleted
-      ? "Space/Enter를 눌러 다음 구절로"
-      : "Space/Enter를 눌러 정답 입력";
-  })();
+  const submitHint = mergeBlanks ? "Enter" : "Space/Enter";
+  const inputPlaceholder = isCompleted
+    ? `${submitHint} → 다음 구절`
+    : `정답 입력 후 ${submitHint}로 제출`;
 
   return (
     <div className="mobile-study-shell">

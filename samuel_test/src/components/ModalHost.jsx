@@ -119,7 +119,7 @@ export default function ModalHost({
               <br />
               4. 틀린 구절은 자동으로 저장됩니다.
               <br />
-              5. <strong>연속 빈칸</strong>을 켜면 인접 빈칸을 한 번에
+              5. <strong>빈칸 병합</strong>을 켜면 인접 빈칸을 한 번에
               입력합니다 (Enter로 제출).
             </p>
             <button

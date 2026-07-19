@@ -1178,7 +1178,7 @@ input[type="checkbox"] {
   margin: 8px 0;
 }
 
-/* --- 연속 빈칸 토글 --- */
+/* --- 빈칸 병합 토글 --- */
 .merge-blank-toggle {
   display: inline-flex;
   align-items: center;
@@ -1397,7 +1397,7 @@ input[type="checkbox"] {
   color: var(--text-secondary);
 }
 
-/* 연속 빈칸(phrase) — 일반 '_' 와 구분, 단어 수 힌트 없음 */
+/* 빈칸 병합(phrase) — 일반 '_' 와 구분, 단어 수 힌트 없음 */
 .phrase-blank {
   letter-spacing: 0.05em;
 }

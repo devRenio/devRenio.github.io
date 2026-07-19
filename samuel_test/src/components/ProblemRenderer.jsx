@@ -3,7 +3,7 @@ import { PHRASE_BLANK } from "../utils/problemText";
 /**
  * 문제 텍스트 렌더링.
  * - `{{S:..}}` 정답(초록), `{{F:..}}` 오답(빨강)
- * - 활성 빈칸(연속 빈칸 ON이면 첫 `…`, OFF면 첫 `_+`) 하나만 깜빡임
+ * - 활성 빈칸(빈칸 병합 ON이면 첫 `…`, OFF면 첫 `_+`) 하나만 깜빡임
  */
 const ProblemRenderer = ({ text, isError, activeBlankDisplay }) => {
   if (!text) return null;

@@ -1,4 +1,4 @@
-/** 연속 빈칸(phrase) 전용 표시 문자 — 단어 수·글자 수 힌트 없음, 일반 '_' 와 구분 */
+/** 빈칸 병합(phrase) 전용 표시 문자 — 단어 수·글자 수 힌트 없음, 일반 '_' 와 구분 */
 export const PHRASE_BLANK = "…";
 
 export function cleanText(text) {
@@ -6,12 +6,12 @@ export function cleanText(text) {
   return text.replace(/\{\{[SF]:(.*?)\}\}/g, "$1");
 }
 
-/** 첫 번째 활성 빈칸(_+)을 replacement로 치환 (연속 빈칸 OFF 경로) */
+/** 첫 번째 활성 빈칸(_+)을 replacement로 치환 (빈칸 병합 OFF 경로) */
 export function replaceFirstBlank(text, replacement) {
   return text.replace(/_+/, replacement);
 }
 
-/** 첫 번째 phrase 빈칸(…)을 replacement로 치환 (연속 빈칸 ON 경로) */
+/** 첫 번째 phrase 빈칸(…)을 replacement로 치환 (빈칸 병합 ON 경로) */
 export function replacePhraseBlank(text, replacement) {
   const idx = text.indexOf(PHRASE_BLANK);
   if (idx === -1) return replaceFirstBlank(text, replacement);

@@ -56,7 +56,7 @@ export default function ModeBar({
       <div className="mode-bar-options">
         <label
           className={`merge-blank-toggle ${mergeBlanks ? "on" : ""}`}
-          title="인접 빈칸을 한 번에 입력 (Enter로 제출)"
+          title="인접 빈칸을 하나로 병합해 한 번에 입력 (Enter로 제출)"
         >
           <input
             type="checkbox"
@@ -65,7 +65,7 @@ export default function ModeBar({
             onChange={(e) => onMergeBlanksChange(e.target.checked)}
           />
           <span className="merge-blank-switch" aria-hidden="true" />
-          <span className="merge-blank-text">연속 빈칸</span>
+          <span className="merge-blank-text">빈칸 병합</span>
         </label>
 
         <button className="mode-main-btn mode-help-btn" onClick={onOpenHelp}>
