@@ -53,19 +53,22 @@ export default function ModeBar({
         ))}
       </div>
 
-      <div className="mode-group merge-blank-toggle">
-        <label className="merge-blank-label">
+      <div className="mode-bar-options">
+        <label
+          className={`merge-blank-toggle ${mergeBlanks ? "on" : ""}`}
+          title="인접 빈칸을 한 번에 입력 (Enter로 제출)"
+        >
           <input
             type="checkbox"
+            className="merge-blank-input"
             checked={mergeBlanks}
             onChange={(e) => onMergeBlanksChange(e.target.checked)}
           />
-          <span>연속 빈칸</span>
+          <span className="merge-blank-switch" aria-hidden="true" />
+          <span className="merge-blank-text">연속 빈칸</span>
         </label>
-      </div>
 
-      <div className="mode-group">
-        <button className="mode-main-btn" onClick={onOpenHelp}>
+        <button className="mode-main-btn mode-help-btn" onClick={onOpenHelp}>
           도움말
         </button>
       </div>
