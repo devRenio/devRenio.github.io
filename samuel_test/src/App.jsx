@@ -1,3 +1,7 @@
+import AuthModal from "./components/AuthModal";
+import AccountModal from "./components/AccountModal";
+import AdminModal from "./components/AdminModal";
+import WithdrawModal from "./components/WithdrawModal";
 import Tutorial from "./components/Tutorial";
 import Navbar from "./components/Navbar";
 import ModeBar from "./components/ModeBar";
@@ -5,9 +9,53 @@ import StudyArea from "./components/StudyArea";
 import StatusBar from "./components/StatusBar";
 import ModalHost, { DEFAULT_FONT } from "./components/ModalHost";
 import { useSamuelApp } from "./hooks/useSamuelApp";
+import { useAuth } from "./hooks/useAuth";
+import { useProgressSync } from "./hooks/useProgressSync";
+import { isAdminUser } from "./constants/admin";
 
 function App() {
-  const app = useSamuelApp();
+  const auth = useAuth();
+  const app = useSamuelApp({ onboardingBlocked: auth.onboardingBlocked });
+  const progressSync = useProgressSync({
+    uid: auth.user?.uid ?? null,
+    firebaseEnabled: auth.firebaseEnabled,
+    emailVerified: auth.emailVerified,
+    getSnapshot: app.getProgressSnapshot,
+    applySnapshot: app.applyProgressSnapshot,
+  });
+
+  const handleLogout = async () => {
+    app.setActiveModal(null);
+    await auth.logout();
+  };
+
+  const handleOpenLoginFromAccount = () => {
+    app.setActiveModal(null);
+    auth.openAuthModal("login");
+  };
+
+  const handleOpenSignupFromAccount = () => {
+    app.setActiveModal(null);
+    auth.openAuthModal("signup");
+  };
+
+  const handleOpenWithdraw = () => {
+    auth.setError("");
+    app.setActiveModal("withdraw");
+  };
+
+  const handleWithdrawConfirm = async (password) => {
+    const ok = await auth.withdrawAccount(password);
+    if (ok) app.setActiveModal(null);
+  };
+
+  if (!auth.ready) {
+    return (
+      <div className="app-loading" data-theme={app.theme ?? "light"}>
+        불러오는 중…
+      </div>
+    );
+  }
 
   const handleOpenWrong = () => {
     if (app.wrongVerses.length === 0) app.setActiveModal("no-wrong");
@@ -30,6 +78,21 @@ function App() {
     });
   };
 
+  const handleSaveProgress = async () => {
+    progressSync.clearError();
+    await progressSync.save();
+  };
+
+  const handleLoadProgress = () => {
+    progressSync.clearError();
+    app.showConfirm(
+      "클라우드에 저장된 진행을 이 기기로 불러옵니다.\n현재 기기의 암송 진행·통계가 덮어씌워집니다.",
+      () => {
+        progressSync.load();
+      },
+    );
+  };
+
   return (
     <div
       className={[
@@ -41,14 +104,16 @@ function App() {
         .filter(Boolean)
         .join(" ")}
       data-theme={app.theme}
-      style={
-        app.keyboard.keyboardOpen
+      style={{
+        "--study-font-size": `${app.displayFontSize}px`,
+        "--study-input-font-size": `${app.inputFontSize}px`,
+        ...(app.keyboard.keyboardOpen
           ? {
               "--vv-height": `${app.keyboard.viewportHeight}px`,
               "--vv-offset-top": `${app.keyboard.viewportOffsetTop}px`,
             }
-          : undefined
-      }
+          : {}),
+      }}
     >
       <div className="app-chrome">
         <Navbar
@@ -65,6 +130,7 @@ function App() {
             app.setStatsTab("summary");
             app.setActiveModal("stats");
           }}
+          onOpenAccount={() => app.setActiveModal("account")}
           onOpenInfo={() => app.setActiveModal("info")}
           onToggleTheme={app.toggleTheme}
           onToggleFullscreen={app.toggleFullscreen}
@@ -158,7 +224,84 @@ function App() {
         onStartTutorial={app.startTutorial}
         onBlankLevel={app.handleBlankLevel}
         onWholeLevel={app.handleWholeLevel}
+        onOpenPrivacy={() => app.setActiveModal("privacy")}
       />
+
+      {app.activeModal === "account" && (
+        <AccountModal
+          isLoggedIn={auth.isLoggedIn}
+          emailVerified={auth.emailVerified}
+          isAdmin={isAdminUser(auth.user)}
+          userEmail={auth.user?.email ?? ""}
+          userDisplayName={
+            auth.userProfile?.name || auth.user?.displayName || ""
+          }
+          userChurch={auth.userProfile?.church ?? ""}
+          firebaseEnabled={auth.firebaseEnabled}
+          cloudSavedAt={progressSync.cloudSavedAt}
+          syncBusy={progressSync.busy}
+          syncError={progressSync.error}
+          syncLastAction={progressSync.lastAction}
+          saveCooldownMs={progressSync.saveCooldownMs}
+          loadCooldownMs={progressSync.loadCooldownMs}
+          verificationMessage={auth.verificationMessage}
+          resendCooldownMs={auth.resendCooldownMs}
+          verifyBusy={auth.busy}
+          onSaveProgress={handleSaveProgress}
+          onLoadProgress={handleLoadProgress}
+          onClearSyncFeedback={() => {
+            progressSync.clearError();
+            progressSync.clearLastAction();
+          }}
+          onResendVerification={auth.resendVerificationEmail}
+          onRefreshVerification={auth.refreshEmailVerification}
+          onClearVerificationMessage={() => auth.setVerificationMessage("")}
+          onOpenLogin={handleOpenLoginFromAccount}
+          onOpenSignup={handleOpenSignupFromAccount}
+          onLogout={handleLogout}
+          onOpenWithdraw={handleOpenWithdraw}
+          onOpenAdmin={() => app.setActiveModal("admin")}
+          onClose={() => app.setActiveModal(null)}
+        />
+      )}
+
+      {app.activeModal === "admin" && isAdminUser(auth.user) && (
+        <AdminModal onClose={() => app.setActiveModal("account")} />
+      )}
+
+      {app.activeModal === "withdraw" && (
+        <WithdrawModal
+          busy={auth.busy}
+          error={auth.error}
+          onConfirm={handleWithdrawConfirm}
+          onCancel={() => {
+            auth.setError("");
+            app.setActiveModal("account");
+          }}
+          onClearError={() => auth.setError("")}
+        />
+      )}
+
+      {auth.showAuthModal && (
+        <AuthModal
+          view={auth.authView}
+          onViewChange={auth.setAuthView}
+          variant={auth.authModalVariant}
+          firebaseEnabled={auth.firebaseEnabled}
+          busy={auth.busy}
+          error={auth.error}
+          verificationMessage={auth.verificationMessage}
+          pendingVerifyEmail={auth.pendingVerifyEmail}
+          resendCooldownMs={auth.resendCooldownMs}
+          onLogin={auth.login}
+          onSignup={auth.signup}
+          onResendVerification={auth.resendVerificationEmail}
+          onRefreshVerification={auth.refreshEmailVerification}
+          onClose={auth.closeAuthModal}
+          onClearError={() => auth.setError("")}
+          onOpenPrivacy={() => app.setActiveModal("privacy")}
+        />
+      )}
 
       <Tutorial
         active={app.tutorialActive}
