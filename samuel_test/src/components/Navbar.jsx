@@ -9,6 +9,7 @@ export default function Navbar({
   onRequestReset,
   onOpenFont,
   onOpenStats,
+  onOpenAccount,
   onOpenInfo,
   onToggleTheme,
   onToggleFullscreen,
@@ -131,6 +132,13 @@ export default function Navbar({
           onClick={onOpenStats}
         >
           통계
+        </button>
+        <button
+          className="theme-toggle"
+          data-tour="account-btn"
+          onClick={onOpenAccount}
+        >
+          계정
         </button>
         <button
           className="theme-toggle"
