@@ -125,6 +125,14 @@ export const TUTORIAL_STEPS = [
     placement: "bottom",
   },
   {
+    id: "account",
+    target: "account-btn",
+    title: "계정",
+    description:
+      "**계정**에서 로그인·회원가입 후 **이메일 인증**을 완료하면 클라우드 **저장하기** / **불러오기**를 할 수 있습니다.\n여러 기기를 오갈 때 이용하세요.",
+    placement: "bottom",
+  },
+  {
     id: "info",
     target: "info-btn",
     title: "프로그램 정보",

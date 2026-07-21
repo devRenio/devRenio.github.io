@@ -28,17 +28,40 @@ export default function ModalHost({
   onStartTutorial,
   onBlankLevel,
   onWholeLevel,
+  onOpenPrivacy,
 }) {
-  if (!activeModal) return null;
+  if (
+    !activeModal ||
+    activeModal === "withdraw" ||
+    activeModal === "account" ||
+    activeModal === "admin"
+  ) {
+    return null;
+  }
 
   const verseWrongByDay = getVerseWrongByDay(
     selectedScriptures,
     verseWrongCounts,
   );
 
+  const modalClass = [
+    "modal-content",
+    activeModal === "stats" && "modal-content--stats",
+    activeModal === "privacy" && "modal-content--privacy",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const overlayClass = [
+    "modal-overlay",
+    activeModal === "privacy" && "modal-overlay--privacy",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+    <div className={overlayClass} onClick={onClose}>
+      <div className={modalClass} onClick={(e) => e.stopPropagation()}>
         {activeModal === "alert" && (
           <>
             <h3 style={{ marginBottom: "15px" }}>알림</h3>
@@ -114,13 +137,11 @@ export default function ModalHost({
               <br />
               2. 원하는 모드를 선택하여 암송을 시작하세요.
               <br />
-              3. 정답을 입력하고 <strong>Space</strong>나{" "}
-              <strong>Enter</strong>를 누르세요.
+              3. 정답을 입력하고 <strong>Space</strong>나 <strong>Enter</strong>
+              를 누르세요.
               <br />
               4. 틀린 구절은 자동으로 저장됩니다.
               <br />
-              5. <strong>빈칸 병합</strong>을 켜면 인접 빈칸을 한 번에
-              입력합니다 (Enter로 제출).
             </p>
             <button
               className="full-width-btn"
@@ -144,7 +165,7 @@ export default function ModalHost({
             >
               <strong>사무엘학교 암송 프로그램</strong>
               <br />
-              제43기 사무엘학교
+              제44기 사무엘학교
               <br />
               <br />
               <span
@@ -180,6 +201,13 @@ export default function ModalHost({
                 (문의 : 깨사모 쪽지)
               </span>
             </p>
+            <button
+              type="button"
+              className="info-link-btn"
+              onClick={onOpenPrivacy}
+            >
+              개인정보 처리 안내
+            </button>
             <button
               type="button"
               className="tutorial-replay-btn"
@@ -419,7 +447,9 @@ export default function ModalHost({
             {statsTab === "verse-wrong" && (
               <div className="verse-wrong-stats">
                 {verseWrongByDay.length === 0 ? (
-                  <p className="verse-list-empty">기록된 구절별 오답이 없습니다.</p>
+                  <p className="verse-list-empty">
+                    기록된 구절별 오답이 없습니다.
+                  </p>
                 ) : (
                   verseWrongByDay.map((dayGroup) => (
                     <div key={dayGroup.day} className="verse-wrong-day">
@@ -430,7 +460,9 @@ export default function ModalHost({
                             <span className="verse-wrong-count">
                               {v.wrongCount}회
                             </span>
-                            <span className="verse-wrong-ref">{v.reference}</span>
+                            <span className="verse-wrong-ref">
+                              {v.reference}
+                            </span>
                           </li>
                         ))}
                       </ul>
@@ -444,6 +476,68 @@ export default function ModalHost({
               기록 초기화
             </button>
 
+            <button
+              className="full-width-btn"
+              style={{ marginBottom: 0 }}
+              onClick={onClose}
+            >
+              닫기
+            </button>
+          </>
+        )}
+
+        {activeModal === "privacy" && (
+          <>
+            <h3>개인정보 처리 안내</h3>
+            <div className="privacy-body">
+              <h4>1. 수집하는 정보</h4>
+              <ul>
+                <li>
+                  <strong>게스트</strong>: 브라우저 localStorage에만 암송
+                  진행·설정 저장 (서버 전송 없음)
+                </li>
+                <li>
+                  <strong>회원</strong>: 이메일, 이름, 교회명, 암송 진행
+                  통계(완료 구절·오답 횟수 등)
+                </li>
+              </ul>
+
+              <h4>2. 이용 목적</h4>
+              <ul>
+                <li>계정 식별 및 로그인</li>
+                <li>기기 간 암송 진행 동기화(회원, 이메일 인증 후)</li>
+                <li>사무엘학교 암송 프로그램 운영·통계</li>
+              </ul>
+
+              <h4>3. 보관·처리</h4>
+              <ul>
+                <li>
+                  회원 정보는 Google Firebase(Authentication, Firestore)에
+                  저장됩니다.
+                </li>
+                <li>
+                  클라우드 저장은 회원이 <strong>저장하기</strong>를 누를
+                  때만 이루어집니다.
+                </li>
+                <li>
+                  회원 탈퇴 시 계정 및 Firestore 프로필·진행 데이터를
+                  삭제합니다.
+                </li>
+              </ul>
+
+              <h4>4. 제3자 제공</h4>
+              <p>수집 정보를 마케팅 등 목적으로 제3자에게 제공하지 않습니다.</p>
+
+              <h4>5. 이용자 권리</h4>
+              <ul>
+                <li>계정 → 탈퇴로 데이터 삭제를 요청할 수 있습니다.</li>
+                <li>문의: 정보 모달의 개발자 연락처(깨사모 쪽지)</li>
+              </ul>
+
+              <p className="privacy-note">
+                본 안내는 서비스 이용에 적용되는 개인정보처리방침입니다.
+              </p>
+            </div>
             <button
               className="full-width-btn"
               style={{ marginBottom: 0 }}

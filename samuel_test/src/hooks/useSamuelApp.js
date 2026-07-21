@@ -24,12 +24,13 @@ import {
 } from "../utils/problemText";
 import { gradePhrase } from "../utils/phraseGrading";
 import { formatScriptureData, getDayProgress } from "../utils/scriptureHelpers";
+import { findVersesByRefs, parseCourseNum } from "../utils/progressPayload";
 import { useIsMobile } from "./useIsMobile";
 import { useKeyboardLayout } from "./useKeyboardLayout";
 
 const EMPTY_SELECTED = [[], [], [], [], [], []];
 
-export function useSamuelApp() {
+export function useSamuelApp({ onboardingBlocked = false } = {}) {
   const savedData = useMemo(() => loadStoredData(), []);
 
   const [originalScriptures, setOriginalScriptures] = useState([]);
@@ -89,15 +90,14 @@ export function useSamuelApp() {
   const attemptsRef = useRef(0);
   const mergeBlanksRef = useRef(mergeBlanks);
   mergeBlanksRef.current = mergeBlanks;
+  const pendingCourseNumRef = useRef(null);
 
   const isMobile = useIsMobile();
   const keyboard = useKeyboardLayout(isMobile, inputRef);
 
   const activeFontFamily = cssFontFamily(fontFamily);
-  const displayFontSize = isMobile
-    ? Math.min(fontSize, keyboard.typingMode ? 18 : 22)
-    : fontSize;
-  const inputFontSize = Math.max(16, displayFontSize * 0.7);
+  const displayFontSize = fontSize;
+  const inputFontSize = Math.max(16, Math.round(fontSize * 0.7));
 
   const [theme, setTheme] = useState(savedData.theme || "light");
   const [isError, setIsError] = useState(false);
@@ -491,7 +491,7 @@ export function useSamuelApp() {
     setActiveModal(null);
   };
 
-  const selectCourse = (num) => {
+  const selectCourse = useCallback((num) => {
     const newSelected = EMPTY_SELECTED.map(() => []);
     originalScriptures.forEach((dayList, i) => {
       dayList.forEach((v) => {
@@ -500,7 +500,7 @@ export function useSamuelApp() {
     });
     setSelectedScriptures(newSelected);
     setCourseName(`${num}과정`);
-  };
+  }, [originalScriptures]);
 
   const selectDay = (num) => {
     let toAdd = [];
@@ -698,13 +698,72 @@ export function useSamuelApp() {
     });
   }, [selectedScriptures, completedVerseRefs]);
 
+  const getProgressSnapshot = useCallback(
+    () => ({
+      cumulativeStats,
+      completedVerseRefs,
+      verseWrongCounts,
+      courseNum: parseCourseNum(courseName),
+      wrongVerseRefs: wrongVerses.map((v) => v.reference),
+    }),
+    [
+      cumulativeStats,
+      completedVerseRefs,
+      verseWrongCounts,
+      courseName,
+      wrongVerses,
+    ],
+  );
+
+  const applyProgressSnapshot = useCallback(
+    (data) => {
+      if (!data) return false;
+
+      setCumulativeStats(
+        data.cumulativeStats ?? { total: 0, correct: 0, wrong: 0 },
+      );
+      setVerseWrongCounts(data.verseWrongCounts ?? {});
+      setCompletedVerseRefs(data.completedVerseRefs ?? []);
+
+      if (data.courseNum) {
+        if (originalScriptures.length > 0) {
+          selectCourse(data.courseNum);
+          pendingCourseNumRef.current = null;
+        } else {
+          pendingCourseNumRef.current = data.courseNum;
+        }
+      }
+
+      if (data.wrongVerseRefs?.length && originalScriptures.length > 0) {
+        setWrongVerses(findVersesByRefs(originalScriptures, data.wrongVerseRefs));
+      } else {
+        setWrongVerses([]);
+      }
+
+      setScripture([]);
+      setLeftVerse(0);
+      setFailNum(0);
+      setCurrentProblem(null);
+      setUserInput("");
+      setHasFailedCurrent(false);
+      setIsCompleted(false);
+      setAttempts(0);
+      attemptsRef.current = 0;
+
+      return true;
+    },
+    [originalScriptures, selectCourse],
+  );
+
   useEffect(() => {
+    if (onboardingBlocked) return;
     if (isMobile) return;
     if (localStorage.getItem(MOBILE_NOTICE_KEY) === "true") return;
     setShowMobileNotice(true);
-  }, [isMobile]);
+  }, [isMobile, onboardingBlocked]);
 
   useEffect(() => {
+    if (onboardingBlocked) return;
     if (localStorage.getItem(TUTORIAL_STORAGE_KEY) === "true") return;
     if (showMobileNotice) return;
     const timer = window.setTimeout(() => {
@@ -712,13 +771,19 @@ export function useSamuelApp() {
       setTutorialStep(0);
     }, 400);
     return () => window.clearTimeout(timer);
-  }, [showMobileNotice]);
+  }, [showMobileNotice, onboardingBlocked]);
 
   useEffect(() => {
     fetch(`${import.meta.env.BASE_URL}data/scriptures.json`)
       .then((res) => res.json())
       .then((data) => setOriginalScriptures(formatScriptureData(data)));
   }, []);
+
+  useEffect(() => {
+    if (!pendingCourseNumRef.current || originalScriptures.length === 0) return;
+    selectCourse(pendingCourseNumRef.current);
+    pendingCourseNumRef.current = null;
+  }, [originalScriptures, selectCourse]);
 
   useEffect(() => {
     preloadBundledFonts();
@@ -883,5 +948,7 @@ export function useSamuelApp() {
     advanceTutorial,
     completeTutorial,
     dismissMobileNotice,
+    getProgressSnapshot,
+    applyProgressSnapshot,
   };
 }
