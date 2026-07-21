@@ -1,0 +1,108 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow delete: if isOwner(userId);
+      allow create, update: if isOwner(userId)
+        && validUserWrite(request.resource.data)
+        && (!hasProgressWrite(request.resource.data) || isEmailVerified());
+
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
+
+      function isEmailVerified() {
+        return request.auth.token.email_verified == true;
+      }
+
+      // VITE_ADMIN_EMAILS와 동기화 (Custom Claims 전환 시 여기도 수정)
+      function isAdmin() {
+        return request.auth != null
+          && request.auth.token.email_verified == true
+          && request.auth.token.email in ["eunho9684@gmail.com"];
+      }
+
+      function hasProgressWrite(data) {
+        return 'progress' in data || 'progressUpdatedAt' in data;
+      }
+
+      function validUserWrite(data) {
+        return data.keys().hasOnly([
+            'name', 'church', 'email', 'updatedAt', 'progress', 'progressUpdatedAt'
+          ])
+          && optionalProfileFields(data)
+          && optionalProgress(data)
+          && optionalProgressUpdatedAt(data);
+      }
+
+      function optionalProfileFields(data) {
+        return (!('name' in data) || (data.name is string && data.name.size() <= 40))
+          && (!('church' in data) || (data.church is string && data.church.size() <= 60))
+          && (!('email' in data) || (
+            data.email is string
+            && data.email.size() <= 254
+            && data.email == request.auth.token.email
+          ))
+          && (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 40));
+      }
+
+      function optionalProgressUpdatedAt(data) {
+        return !('progressUpdatedAt' in data)
+          || data.progressUpdatedAt is timestamp;
+      }
+
+      function optionalProgress(data) {
+        return !('progress' in data) || validProgress(data.progress);
+      }
+
+      function validRefString(ref) {
+        return ref is string
+          && ref.size() > 0
+          && ref.size() <= 32
+          && ref.matches('^\\([^)]+\\)$');
+      }
+
+      function validRefList(list, maxSize) {
+        return list is list
+          && list.size() <= maxSize
+          && list.all(ref, validRefString(ref));
+      }
+
+      function validStatValue(n) {
+        return n is int && n >= 0 && n <= 1000000;
+      }
+
+      function validCumulativeStats(s) {
+        return s is map
+          && s.keys().hasOnly(['total', 'correct', 'wrong'])
+          && validStatValue(s.total)
+          && validStatValue(s.correct)
+          && validStatValue(s.wrong);
+      }
+
+      function validVerseWrongCounts(m) {
+        return m is map && m.size() <= 150;
+      }
+
+      function validProgress(p) {
+        return p is map
+          && p.keys().hasOnly([
+            'version', 'savedAt', 'cumulativeStats', 'completedVerseRefs',
+            'verseWrongCounts', 'wrongVerseRefs', 'courseNum'
+          ])
+          && p.version == 1
+          && p.savedAt is string
+          && p.savedAt.size() <= 40
+          && validCumulativeStats(p.cumulativeStats)
+          && validRefList(p.completedVerseRefs, 150)
+          && validVerseWrongCounts(p.verseWrongCounts)
+          && validRefList(p.wrongVerseRefs, 100)
+          && (!('courseNum' in p) || p.courseNum == null
+            || (p.courseNum is int && p.courseNum >= 1 && p.courseNum <= 4));
+      }
+    }
+  }
+}
+
