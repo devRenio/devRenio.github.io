@@ -372,7 +372,7 @@ function App() {
           >
             <h3>업데이트 안내</h3>
             <p className="notice-body">
-              사무엘학교 암송 프로그램이 모바일 환경에서도 사용할 수 있도록
+              Samuel Memorizer가 모바일 환경에서도 사용할 수 있도록
               업데이트되었습니다.
             </p>
             <div className="notice-actions">

@@ -11,11 +11,11 @@ let render_projects = (slug) => {
   let projects_obj = [
     {
       image: "assets/images/memorization2.png",
-      link: "https://github.com/devRenio/devRenio.github.io/tree/main/samuel",
-      title: "Bible-verse-memorization(web)",
-      demo: "https://devrenio.github.io/samuel",
+      link: "https://github.com/devRenio/devRenio.github.io/tree/main/samuel-memorizer-app",
+      title: "Samuel Memorizer",
+      demo: "https://devrenio.github.io/samuel-memorizer/",
       technologies: ["React"],
-      description: "React project for the Memorization at Samuel School.",
+      description: "Samuel Memorizer — React web app for Bible verse memorization at Samuel School.",
       categories: ["featured", "react"],
     },
     {

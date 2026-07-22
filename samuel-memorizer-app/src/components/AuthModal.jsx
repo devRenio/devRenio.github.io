@@ -96,7 +96,7 @@ export default function AuthModal({
         className={`modal-content auth-modal${view === "signup" ? " auth-modal--signup" : ""}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="auth-modal-title">사무엘학교 암송</h3>
+        <h3 className="auth-modal-title">Samuel Memorizer</h3>
 
         {isVerifyView ? (
           <div className="auth-verify-panel">

@@ -9,14 +9,14 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["symbol.png", "fonts/*.TTF"],
       manifest: {
-        name: "사무엘학교 암송",
-        short_name: "사무엘 암송",
-        description: "사무엘학교 성경 암송 프로그램",
+        name: "Samuel Memorizer",
+        short_name: "Samuel Memo",
+        description: "Samuel Memorizer — Bible verse memorization for Samuel School",
         theme_color: "#eef0f3",
         background_color: "#eef0f3",
         display: "standalone",
-        start_url: "/samuel/",
-        scope: "/samuel/",
+        start_url: "/samuel-memorizer/",
+        scope: "/samuel-memorizer/",
         lang: "ko",
         icons: [
           {
@@ -56,5 +56,5 @@ export default defineConfig({
       },
     }),
   ],
-  base: "/samuel/",
+  base: "/samuel-memorizer/",
 });

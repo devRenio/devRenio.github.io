@@ -163,7 +163,7 @@ export default function ModalHost({
                 marginBottom: "20px",
               }}
             >
-              <strong>사무엘학교 암송 프로그램</strong>
+              <strong>Samuel Memorizer</strong>
               <br />
               제44기 사무엘학교
               <br />
@@ -506,7 +506,7 @@ export default function ModalHost({
               <ul>
                 <li>계정 식별 및 로그인</li>
                 <li>기기 간 암송 진행 동기화(회원, 이메일 인증 후)</li>
-                <li>사무엘학교 암송 프로그램 운영·통계</li>
+                <li>Samuel Memorizer 운영·통계</li>
               </ul>
 
               <h4>3. 보관·처리</h4>
