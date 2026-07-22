@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import { jbchFetchMember } from "../lib/jbchApi";
-import { getAdminUserids } from "../constants/admin";
 import AdminMemberDetailModal from "./AdminMemberDetailModal";
 
 function profileKey(profile) {
@@ -50,7 +49,7 @@ export default function AdminModal({ memberProfile, onClose }) {
     setBusy(true);
     setError("");
     try {
-      const fresh = await jbchFetchMember();
+      const { profile: fresh } = await jbchFetchMember();
       setProfiles([fresh]);
       setSelectedProfile((prev) => (prev ? fresh : prev));
     } catch (err) {
@@ -70,8 +69,7 @@ export default function AdminModal({ memberProfile, onClose }) {
         >
           <h3>관리자 콘솔</h3>
           <p className="admin-modal-desc">
-            회원 목록입니다. 항목을 눌러 상세 정보를 확인하세요. 관리자(
-            {getAdminUserids().join(", ") || "—"})만 이용할 수 있습니다.
+            회원 목록입니다. 항목을 눌러 상세 정보를 확인하세요.
           </p>
 
           {error && <p className="admin-error">{error}</p>}

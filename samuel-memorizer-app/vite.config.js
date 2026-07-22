@@ -8,9 +8,10 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["symbol.png", "fonts/*.TTF"],
       manifest: {
-        name: "Samuel Memorizer",
+        name: "사무엘학교 암송 도우미",
         short_name: "Samuel Memo",
-        description: "Samuel Memorizer — Bible verse memorization for Samuel School",
+        description:
+          "사무엘학교 과정·일차별 성경 구절 암송 연습. 빈칸·구절·장절·전체·주제 모드, 틀린 구절 복습, 통계, 글꼴·테마 설정, 깨사모 로그인·문의.",
         theme_color: "#eef0f3",
         background_color: "#eef0f3",
         display: "standalone",

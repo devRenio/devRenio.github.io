@@ -2345,10 +2345,37 @@ input[type="checkbox"] {
   word-break: break-all;
 }
 
-.admin-empty {
+.info-about-body {
   text-align: center;
+  line-height: 1.65;
+  margin-bottom: 20px;
+}
+
+.info-about-title {
+  font-size: 1.05em;
+  font-weight: 700;
+  margin: 0 0 4px;
+  color: var(--text-primary);
+}
+
+.info-about-school {
+  font-size: 0.9em;
+  margin: 0 0 20px;
   color: var(--text-secondary);
-  padding: 20px 0;
+}
+
+.info-about-verse {
+  font-size: 17px;
+  font-family: MaruBuriBold, serif;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.info-about-ref {
+  font-size: 15px;
+  font-family: MaruBuriSemiBold, serif;
+  margin: 6px 0 0;
+  color: var(--text-secondary);
 }
 
 .info-link-btn {

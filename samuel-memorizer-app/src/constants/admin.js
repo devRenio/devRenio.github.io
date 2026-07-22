@@ -1,18 +1,4 @@
-/** VITE_ADMIN_USERIDS=eunho715,otherid (쉼표 구분) */
-export function getAdminUserids() {
-  const raw = import.meta.env.VITE_ADMIN_USERIDS ?? "";
-  return raw
-    .split(",")
-    .map((id) => id.trim().toLowerCase())
-    .filter(Boolean);
-}
-
+/** 관리자 여부 — BFF /member 응답의 isAdmin (서버 env JBCH_ADMIN_USERIDS) */
 export function isAdminUser(user) {
-  const userid = user?.userid?.trim().toLowerCase();
-  if (!userid) return false;
-
-  const admins = getAdminUserids();
-  if (admins.length === 0) return false;
-
-  return admins.includes(userid);
+  return Boolean(user?.isAdmin);
 }

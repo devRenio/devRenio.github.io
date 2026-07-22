@@ -1,5 +1,11 @@
 import { DEFAULT_FONT } from "../utils/fonts";
 import { getVerseWrongByDay } from "../utils/scriptureHelpers";
+import {
+  APP_NAME_KO,
+  APP_SCHOOL_LABEL,
+  APP_VERSE_LINE,
+  APP_VERSE_REF,
+} from "../constants/appInfo";
 
 export default function ModalHost({
   activeModal,
@@ -158,38 +164,12 @@ export default function ModalHost({
         {activeModal === "info" && (
           <>
             <h3>프로그램 정보</h3>
-            <p
-              style={{
-                textAlign: "center",
-                lineHeight: "1.6",
-                marginBottom: "20px",
-              }}
-            >
-              <strong>Samuel Memorizer</strong>
-              <br />
-              제44기 사무엘학교
-              <br />
-              <br />
-              <span
-                style={{
-                  fontSize: "17px",
-                  fontFamily: "MaruBuriBold",
-                  display: "block",
-                }}
-              >
-                “구원의 투구와 성령의 검 곧 하나님의 말씀을 가지라”
-              </span>
-              <span
-                style={{
-                  fontSize: "15px",
-                  fontFamily: "MaruBuriSemiBold",
-                  marginTop: "3px",
-                  display: "block",
-                }}
-              >
-                에베소서 6장 17절
-              </span>
-            </p>
+            <div className="info-about-body">
+              <p className="info-about-title">{APP_NAME_KO}</p>
+              <p className="info-about-school">{APP_SCHOOL_LABEL}</p>
+              <p className="info-about-verse">{APP_VERSE_LINE}</p>
+              <p className="info-about-ref">{APP_VERSE_REF}</p>
+            </div>
             <button
               type="button"
               className="info-link-btn"
@@ -489,10 +469,6 @@ export default function ModalHost({
               <h4>1. 수집하는 정보</h4>
               <ul>
                 <li>
-                  <strong>게스트</strong>: 브라우저 localStorage에만 암송
-                  진행·설정 저장 (서버 전송 없음)
-                </li>
-                <li>
                   <strong>깨사모 로그인</strong>: 깨사모 API를 통해 이름·교회·
                   이메일 등 회원 프로필 조회, 문의(쪽지) 발송 시 로그인 세션
                   사용
@@ -503,14 +479,13 @@ export default function ModalHost({
               <ul>
                 <li>깨사모 계정으로 로그인 및 본인 확인</li>
                 <li>앱 내 문의(쪽지) 발송</li>
-                <li>Samuel Memorizer 운영</li>
+                <li>Samuel Memorizer(사무엘학교 암송 도우미) 운영</li>
               </ul>
 
               <h4>3. 보관·처리</h4>
               <ul>
                 <li>
-                  암송 진행·설정은 기기 localStorage에 저장됩니다(게스트·
-                  로그인 공통).
+                  암송 진행·설정은 기기 localStorage에 저장됩니다.
                 </li>
                 <li>
                   로그인 세션은 BFF 서버의 HttpOnly 쿠키로 관리되며, JavaScript에서

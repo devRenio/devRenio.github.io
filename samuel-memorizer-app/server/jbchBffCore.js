@@ -19,6 +19,13 @@ export function readEnv(env) {
   return { devName, tokenId };
 }
 
+export function parseAdminUserids(env) {
+  return String(env.JBCH_ADMIN_USERIDS ?? "")
+    .split(",")
+    .map((id) => id.trim().toLowerCase())
+    .filter(Boolean);
+}
+
 async function parseJsonResponse(res) {
   const text = await res.text();
   if (!text) return null;
@@ -183,7 +190,9 @@ export async function handleMember(env, hash) {
 
   const data = await jbchPost(env, "/in/member_json.php", { hash });
   if (data?.status === "ok" && data.result) {
-    return jsonResponse({ ok: true, result: data.result });
+    const userid = String(data.result?.userid ?? "").trim().toLowerCase();
+    const isAdmin = parseAdminUserids(env).includes(userid);
+    return jsonResponse({ ok: true, result: data.result, isAdmin });
   }
   return jsonResponse(
     { error: formatApiError(data, "회원 정보를 불러오지 못했습니다.") },

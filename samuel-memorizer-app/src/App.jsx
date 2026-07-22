@@ -21,16 +21,6 @@ function App() {
     await auth.logout();
   };
 
-  const handleOpenLoginFromAccount = () => {
-    app.setActiveModal(null);
-    auth.openAuthModal();
-  };
-
-  const handleOpenLoginFromContact = () => {
-    app.setActiveModal(null);
-    auth.openAuthModal();
-  };
-
   const handleOpenContact = () => {
     app.setActiveModal("contact");
   };
@@ -39,6 +29,20 @@ function App() {
     return (
       <div className="app-loading" data-theme={app.theme ?? "light"}>
         불러오는 중…
+      </div>
+    );
+  }
+
+  if (!auth.isLoggedIn) {
+    return (
+      <div className="app-loading" data-theme={app.theme ?? "light"}>
+        <AuthModal
+          jbchEnabled={auth.jbchEnabled}
+          busy={auth.busy}
+          error={auth.error}
+          onLogin={auth.login}
+          onClearError={() => auth.setError("")}
+        />
       </div>
     );
   }
@@ -201,7 +205,6 @@ function App() {
 
       {app.activeModal === "account" && (
         <AccountModal
-          isLoggedIn={auth.isLoggedIn}
           isAdmin={isAdminUser(auth.user)}
           userEmail={auth.user?.email ?? ""}
           userDisplayName={
@@ -210,8 +213,6 @@ function App() {
           userSex={auth.userProfile?.sex ?? ""}
           userChurch={auth.userProfile?.church ?? ""}
           userAvatar={auth.userProfile?.avatar ?? ""}
-          jbchEnabled={auth.jbchEnabled}
-          onOpenLogin={handleOpenLoginFromAccount}
           onLogout={handleLogout}
           onOpenAdmin={() => app.setActiveModal("admin")}
           onClose={() => app.setActiveModal(null)}
@@ -220,10 +221,8 @@ function App() {
 
       {app.activeModal === "contact" && (
         <ContactModal
-          isLoggedIn={auth.isLoggedIn}
           jbchEnabled={auth.jbchEnabled}
           onClose={() => app.setActiveModal("info")}
-          onOpenLogin={handleOpenLoginFromContact}
         />
       )}
 
@@ -231,18 +230,6 @@ function App() {
         <AdminModal
           memberProfile={auth.userProfile}
           onClose={() => app.setActiveModal("account")}
-        />
-      )}
-
-      {auth.showAuthModal && (
-        <AuthModal
-          variant={auth.authModalVariant}
-          jbchEnabled={auth.jbchEnabled}
-          busy={auth.busy}
-          error={auth.error}
-          onLogin={auth.login}
-          onClose={auth.closeAuthModal}
-          onClearError={() => auth.setError("")}
         />
       )}
 

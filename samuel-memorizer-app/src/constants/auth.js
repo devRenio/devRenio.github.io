@@ -1,4 +1,4 @@
-/** localStorage: 'guest' | 없음(로그인 세션) */
+/** @deprecated 게스트 모드 제거 — 기존 localStorage 값 정리용 */
 export const AUTH_CHOICE_KEY = "samuel_auth_choice";
 
 /** 인증 메일 재발송 최소 간격 (1분) */

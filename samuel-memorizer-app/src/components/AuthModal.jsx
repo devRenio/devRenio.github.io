@@ -1,22 +1,19 @@
 import { useState } from "react";
 import { PASSWORD_MAX } from "../utils/authValidation";
+import { APP_NAME_KO } from "../constants/appInfo";
 
 const USERID_MAX = 64;
 
 export default function AuthModal({
-  variant = "welcome",
   jbchEnabled,
   busy,
   error,
   onLogin,
-  onClose,
   onClearError,
 }) {
   const [userid, setUserid] = useState("");
   const [password, setPassword] = useState("");
   const [localError, setLocalError] = useState("");
-
-  const isWelcome = variant === "welcome";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,18 +40,16 @@ export default function AuthModal({
       onClick={(e) => e.stopPropagation()}
     >
       <div className="modal-content auth-modal" onClick={(e) => e.stopPropagation()}>
-        <h3 className="auth-modal-title">Samuel Memorizer</h3>
+        <h3 className="auth-modal-title">{APP_NAME_KO}</h3>
 
         <p className="auth-modal-sub">
-          {isWelcome
-            ? "깨사모 계정으로 로그인하거나, 닫기를 눌러 게스트로 이용할 수 있습니다."
-            : "깨사모 계정으로 로그인하세요."}
+          깨사모 계정으로 로그인해야 이용할 수 있습니다.
         </p>
 
         {!jbchEnabled && (
           <p className="auth-config-warning">
-            깨사모 API 설정이 없어 로그인을 사용할 수 없습니다. 닫기를 눌러
-            게스트로 이용해 주세요.
+            지금은 로그인할 수 없습니다. 잠시 후 다시 시도하거나 교회·학교
+            안내를 참고해 주세요.
           </p>
         )}
 
@@ -97,15 +92,6 @@ export default function AuthModal({
             {busy ? "로그인 중…" : "깨사모 로그인"}
           </button>
         </form>
-
-        <button
-          type="button"
-          className="full-width-btn auth-close-btn"
-          onClick={onClose}
-          disabled={busy}
-        >
-          닫기
-        </button>
       </div>
     </div>
   );
