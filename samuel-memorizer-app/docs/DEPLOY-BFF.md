@@ -351,7 +351,7 @@ git push
 Worker(`secure: true`):
 
 ```
-samuel_jbch_hash=<hash>; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=86400
+samuel_jbch_hash=<hash>; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=1209600
 ```
 
 - GitHub Pages(HTTPS) ↔ Worker(HTTPS) **cross-site** → `SameSite=None; Secure` 필수

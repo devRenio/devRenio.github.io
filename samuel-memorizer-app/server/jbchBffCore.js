@@ -1,5 +1,7 @@
 const JBCH_API_BASE = "https://api.jbch.org";
 export const SESSION_COOKIE = "samuel_jbch_hash";
+/** HttpOnly 세션 쿠키 유지 기간 (14일) */
+export const SESSION_MAX_AGE_SECONDS = 14 * 24 * 60 * 60;
 
 const LOGIN_ERRORS = {
   "아이디나 비번값이 없습니다.": "아이디와 비밀번호를 입력하세요.",
@@ -104,7 +106,7 @@ export function buildSessionCookie(hash, { secure }) {
     secure ? "SameSite=None" : "SameSite=Lax",
   ];
   if (secure) parts.push("Secure");
-  parts.push("Max-Age=86400");
+  parts.push(`Max-Age=${SESSION_MAX_AGE_SECONDS}`);
   return parts.join("; ");
 }
 
