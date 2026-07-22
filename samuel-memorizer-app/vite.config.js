@@ -15,8 +15,8 @@ export default defineConfig({
         theme_color: "#eef0f3",
         background_color: "#eef0f3",
         display: "standalone",
-        start_url: "/samuel-memorizer/",
-        scope: "/samuel-memorizer/",
+        start_url: "/samuel/",
+        scope: "/samuel/",
         lang: "ko",
         icons: [
           {
@@ -56,5 +56,5 @@ export default defineConfig({
       },
     }),
   ],
-  base: "/samuel-memorizer/",
+  base: "/samuel/",
 });

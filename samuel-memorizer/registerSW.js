@@ -1,1 +1,0 @@
-if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/samuel-memorizer/sw.js', { scope: '/samuel-memorizer/' })})}

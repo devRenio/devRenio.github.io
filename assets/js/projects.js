@@ -13,7 +13,7 @@ let render_projects = (slug) => {
       image: "assets/images/memorization2.png",
       link: "https://github.com/devRenio/devRenio.github.io/tree/main/samuel-memorizer-app",
       title: "Samuel Memorizer",
-      demo: "https://devrenio.github.io/samuel-memorizer/",
+      demo: "https://devrenio.github.io/samuel/",
       technologies: ["React"],
       description: "Samuel Memorizer — React web app for Bible verse memorization at Samuel School.",
       categories: ["featured", "react"],
