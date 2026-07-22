@@ -1,4 +1,4 @@
-/** localStorage: 'guest' | 없음(로그인 세션은 Firebase가 관리) */
+/** localStorage: 'guest' | 없음(로그인 세션) */
 export const AUTH_CHOICE_KEY = "samuel_auth_choice";
 
 /** 인증 메일 재발송 최소 간격 (1분) */

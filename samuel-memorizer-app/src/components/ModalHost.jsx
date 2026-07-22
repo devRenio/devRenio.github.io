@@ -29,12 +29,14 @@ export default function ModalHost({
   onBlankLevel,
   onWholeLevel,
   onOpenPrivacy,
+  onOpenContact,
 }) {
   if (
     !activeModal ||
     activeModal === "withdraw" ||
     activeModal === "account" ||
-    activeModal === "admin"
+    activeModal === "admin" ||
+    activeModal === "contact"
   ) {
     return null;
   }
@@ -197,10 +199,15 @@ export default function ModalHost({
               >
                 <br />
                 서울양천교회 공은호 형제
-                <br />
-                (문의 : 깨사모 쪽지)
               </span>
             </p>
+            <button
+              type="button"
+              className="info-link-btn"
+              onClick={onOpenContact}
+            >
+              문의하기 (깨사모 쪽지)
+            </button>
             <button
               type="button"
               className="info-link-btn"
@@ -497,31 +504,31 @@ export default function ModalHost({
                   진행·설정 저장 (서버 전송 없음)
                 </li>
                 <li>
-                  <strong>회원</strong>: 이메일, 이름, 교회명, 암송 진행
-                  통계(완료 구절·오답 횟수 등)
+                  <strong>깨사모 로그인</strong>: 깨사모 API를 통해 이름·교회·
+                  이메일 등 회원 프로필 조회, 문의(쪽지) 발송 시 로그인 세션
+                  사용
                 </li>
               </ul>
 
               <h4>2. 이용 목적</h4>
               <ul>
-                <li>계정 식별 및 로그인</li>
-                <li>기기 간 암송 진행 동기화(회원, 이메일 인증 후)</li>
-                <li>Samuel Memorizer 운영·통계</li>
+                <li>깨사모 계정으로 로그인 및 본인 확인</li>
+                <li>앱 내 문의(쪽지) 발송</li>
+                <li>Samuel Memorizer 운영</li>
               </ul>
 
               <h4>3. 보관·처리</h4>
               <ul>
                 <li>
-                  회원 정보는 Google Firebase(Authentication, Firestore)에
-                  저장됩니다.
+                  암송 진행·설정은 기기 localStorage에 저장됩니다(게스트·
+                  로그인 공통).
                 </li>
                 <li>
-                  클라우드 저장은 회원이 <strong>저장하기</strong>를 누를
-                  때만 이루어집니다.
+                  로그인 세션은 BFF 서버의 HttpOnly 쿠키로 관리되며, JavaScript에서
+                  읽을 수 없습니다.
                 </li>
                 <li>
-                  회원 탈퇴 시 계정 및 Firestore 프로필·진행 데이터를
-                  삭제합니다.
+                  회원 프로필·쪽지는 선교회(깨사모) API 서버에서 처리됩니다.
                 </li>
               </ul>
 
@@ -530,8 +537,8 @@ export default function ModalHost({
 
               <h4>5. 이용자 권리</h4>
               <ul>
-                <li>계정 → 탈퇴로 데이터 삭제를 요청할 수 있습니다.</li>
-                <li>문의: 정보 모달의 개발자 연락처(깨사모 쪽지)</li>
+                <li>로그아웃으로 이 기기의 로그인 세션을 해제할 수 있습니다.</li>
+                <li>문의: 정보 메뉴 → 문의하기(깨사모 쪽지)</li>
               </ul>
 
               <p className="privacy-note">

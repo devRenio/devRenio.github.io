@@ -1,15 +1,18 @@
-/** VITE_ADMIN_EMAILS=email1@example.com,email2@example.com (firestore.rules isAdmin 목록과 동기화) */
-export function getAdminEmails() {
-  const raw = import.meta.env.VITE_ADMIN_EMAILS ?? "";
+/** VITE_ADMIN_USERIDS=eunho715,otherid (쉼표 구분) */
+export function getAdminUserids() {
+  const raw = import.meta.env.VITE_ADMIN_USERIDS ?? "";
   return raw
     .split(",")
-    .map((email) => email.trim().toLowerCase())
+    .map((id) => id.trim().toLowerCase())
     .filter(Boolean);
 }
 
 export function isAdminUser(user) {
-  if (!user?.email || !user.emailVerified) return false;
-  const admins = getAdminEmails();
+  const userid = user?.userid?.trim().toLowerCase();
+  if (!userid) return false;
+
+  const admins = getAdminUserids();
   if (admins.length === 0) return false;
-  return admins.includes(user.email.trim().toLowerCase());
+
+  return admins.includes(userid);
 }

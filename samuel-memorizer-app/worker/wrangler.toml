@@ -1,0 +1,14 @@
+name = "samuel-jbch-bff"
+main = "index.js"
+compatibility_date = "2024-01-01"
+
+# Route: https://samuel-jbch-bff.<account>.workers.dev/api/jbch/*
+# 배포·env·CORS 상세: ../docs/DEPLOY-BFF.md
+#
+# wrangler secret put (민감 정보):
+#   JBCH_DEV_NAME, JBCH_TOKEN_ID, JBCH_SUPPORT_USERID
+#
+# JBCH_CORS_ORIGINS=https://devrenio.github.io
+
+[vars]
+JBCH_CORS_ORIGINS = "https://devrenio.github.io"

@@ -1,11 +1,10 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
+import { jbchBffPlugin } from "./vite-plugin-jbch-bff.js";
 
 export default defineConfig({
-  plugins: [
-    react(),
-    VitePWA({
+  plugins: [react(), jbchBffPlugin(), VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["symbol.png", "fonts/*.TTF"],
       manifest: {
