@@ -104,11 +104,8 @@ export default function StudyArea({
                 <p className="empty-queue-title">암송할 구절이 없습니다</p>
                 <p className="empty-queue-desc">
                   상단 메뉴에서 <strong>과정</strong>과 <strong>일차</strong>를
-                  선택해 구절을 추가하세요.
-                </p>
-                <p className="empty-queue-hint">
-                  구절을 추가한 뒤 원하는 <strong>모드</strong>를 눌러
-                  시작합니다.
+                  선택해 구절을 추가한 뒤, 원하는 <strong>모드</strong>를 눌러
+                  시작하세요.
                 </p>
               </div>
             ) : (

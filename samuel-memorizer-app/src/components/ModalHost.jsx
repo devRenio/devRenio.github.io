@@ -189,17 +189,6 @@ export default function ModalHost({
               >
                 에베소서 6장 17절
               </span>
-              <span
-                style={{
-                  fontSize: "12px",
-                  marginTop: "6px",
-                  paddingBottom: "10px",
-                  display: "block",
-                }}
-              >
-                <br />
-                서울양천교회 공은호 형제
-              </span>
             </p>
             <button
               type="button"

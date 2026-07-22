@@ -1225,23 +1225,24 @@ input[type="checkbox"] {
 
 /* --- 빈 큐 CTA --- */
 .empty-queue-cta {
-  max-width: 480px;
+  width: min(100%, 42rem);
   margin: 0 auto;
+  padding: 0 12px;
 }
 
 .empty-queue-title {
   font-size: 1.1em;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
   color: var(--text-primary);
 }
 
-.empty-queue-desc,
-.empty-queue-hint {
-  font-size: 0.85em;
+.empty-queue-desc {
+  font-size: 0.95em;
   color: var(--text-secondary);
-  line-height: 1.7;
-  margin: 8px 0;
+  line-height: 1.75;
+  margin: 0;
+  text-wrap: pretty;
 }
 
 /* --- 빈칸 병합 토글 --- */
