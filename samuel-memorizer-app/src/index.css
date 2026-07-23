@@ -2396,33 +2396,54 @@ input[type="checkbox"] {
   color: var(--text-secondary);
 }
 
-.info-version-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+.info-version-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
-.info-version-btn {
-  flex: 1 1 calc(50% - 4px);
-  min-width: 120px;
-  padding: 10px 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
+.info-version-list li:last-child .info-version-row {
+  border-bottom: none;
+}
+
+.info-version-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
   background: var(--card-bg);
   color: inherit;
   font-size: 14px;
   font-weight: 600;
+  text-align: left;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background 0.15s;
 }
 
-.info-version-btn:hover {
+.info-version-row:hover {
   background: var(--hover-bg);
 }
 
-.info-version-btn.is-active {
-  border-color: var(--text-primary);
+.info-version-row.is-active {
   background: var(--hover-bg);
+}
+
+.info-version-row-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.info-version-row-check {
+  flex-shrink: 0;
+  font-size: 15px;
+  color: var(--text-primary);
 }
 
 .info-notice-link {

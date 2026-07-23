@@ -179,23 +179,32 @@ export default function ModalHost({
             {scriptureVersions.length > 0 && (
               <div className="info-version-picker">
                 <p className="info-version-label">암송 구절 버전</p>
-                <div className="info-version-options">
+                <ul className="info-version-list">
                   {scriptureVersions.map((version) => (
-                    <button
-                      key={version.id}
-                      type="button"
-                      className={[
-                        "info-version-btn",
-                        version.id === scriptureVersionId ? "is-active" : "",
-                      ]
-                        .filter(Boolean)
-                        .join(" ")}
-                      onClick={() => onSelectScriptureVersion?.(version.id)}
-                    >
-                      {version.label}
-                    </button>
+                    <li key={version.id}>
+                      <button
+                        type="button"
+                        className={[
+                          "info-version-row",
+                          version.id === scriptureVersionId ? "is-active" : "",
+                        ]
+                          .filter(Boolean)
+                          .join(" ")}
+                        onClick={() => onSelectScriptureVersion?.(version.id)}
+                        aria-pressed={version.id === scriptureVersionId}
+                      >
+                        <span className="info-version-row-label">
+                          {version.schoolLabel || version.label}
+                        </span>
+                        {version.id === scriptureVersionId && (
+                          <span className="info-version-row-check" aria-hidden="true">
+                            ✓
+                          </span>
+                        )}
+                      </button>
+                    </li>
                   ))}
-                </div>
+                </ul>
               </div>
             )}
 
