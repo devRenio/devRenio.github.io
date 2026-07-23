@@ -2396,9 +2396,43 @@ input[type="checkbox"] {
   color: var(--text-secondary);
 }
 
+.info-version-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--card-bg);
+  color: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.info-version-toggle:hover,
+.info-version-toggle.is-open {
+  background: var(--hover-bg);
+}
+
+.info-version-toggle-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.info-version-chevron {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
 .info-version-list {
   list-style: none;
-  margin: 0;
+  margin: 8px 0 0;
   padding: 0;
   border: 1px solid var(--border-color);
   border-radius: 12px;

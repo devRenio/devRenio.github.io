@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { DEFAULT_FONT } from "../utils/fonts";
 import { getVerseWrongByDay } from "../utils/scriptureHelpers";
 import {
@@ -42,6 +43,18 @@ export default function ModalHost({
   onSelectScriptureVersion,
   noticeUrl,
 }) {
+  const [versionListOpen, setVersionListOpen] = useState(false);
+
+  useEffect(() => {
+    if (activeModal !== "info") {
+      setVersionListOpen(false);
+    }
+  }, [activeModal]);
+
+  const activeScriptureVersion =
+    scriptureVersions.find((version) => version.id === scriptureVersionId) ??
+    scriptureVersions[0];
+
   if (
     !activeModal ||
     activeModal === "withdraw" ||
@@ -179,32 +192,62 @@ export default function ModalHost({
             {scriptureVersions.length > 0 && (
               <div className="info-version-picker">
                 <p className="info-version-label">암송 구절 버전</p>
-                <ul className="info-version-list">
-                  {scriptureVersions.map((version) => (
-                    <li key={version.id}>
-                      <button
-                        type="button"
-                        className={[
-                          "info-version-row",
-                          version.id === scriptureVersionId ? "is-active" : "",
-                        ]
-                          .filter(Boolean)
-                          .join(" ")}
-                        onClick={() => onSelectScriptureVersion?.(version.id)}
-                        aria-pressed={version.id === scriptureVersionId}
-                      >
-                        <span className="info-version-row-label">
-                          {version.schoolLabel || version.label}
-                        </span>
-                        {version.id === scriptureVersionId && (
-                          <span className="info-version-row-check" aria-hidden="true">
-                            ✓
+                <button
+                  type="button"
+                  className={[
+                    "info-version-toggle",
+                    versionListOpen ? "is-open" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  onClick={() => setVersionListOpen((open) => !open)}
+                  aria-expanded={versionListOpen}
+                  aria-haspopup="listbox"
+                >
+                  <span className="info-version-toggle-label">
+                    {activeScriptureVersion?.schoolLabel ||
+                      activeScriptureVersion?.label ||
+                      "버전 선택"}
+                  </span>
+                  <span className="info-version-chevron" aria-hidden="true">
+                    {versionListOpen ? "▲" : "▼"}
+                  </span>
+                </button>
+                {versionListOpen && (
+                  <ul className="info-version-list" role="listbox">
+                    {scriptureVersions.map((version) => (
+                      <li key={version.id}>
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={version.id === scriptureVersionId}
+                          className={[
+                            "info-version-row",
+                            version.id === scriptureVersionId ? "is-active" : "",
+                          ]
+                            .filter(Boolean)
+                            .join(" ")}
+                          onClick={() => {
+                            setVersionListOpen(false);
+                            onSelectScriptureVersion?.(version.id);
+                          }}
+                        >
+                          <span className="info-version-row-label">
+                            {version.schoolLabel || version.label}
                           </span>
-                        )}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                          {version.id === scriptureVersionId && (
+                            <span
+                              className="info-version-row-check"
+                              aria-hidden="true"
+                            >
+                              ✓
+                            </span>
+                          )}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             )}
 
