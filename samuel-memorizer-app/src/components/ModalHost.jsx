@@ -6,6 +6,7 @@ import {
   APP_VERSE_LINE,
   APP_VERSE_REF,
 } from "../constants/appInfo";
+import PrivacyPolicyBody from "./PrivacyPolicyBody";
 
 export default function ModalHost({
   activeModal,
@@ -465,50 +466,7 @@ export default function ModalHost({
         {activeModal === "privacy" && (
           <>
             <h3>개인정보 처리 안내</h3>
-            <div className="privacy-body">
-              <h4>1. 수집하는 정보</h4>
-              <ul>
-                <li>
-                  <strong>깨사모 로그인</strong>: 깨사모 API를 통해 이름·교회·
-                  이메일 등 회원 프로필 조회, 문의(쪽지) 발송 시 로그인 세션
-                  사용
-                </li>
-              </ul>
-
-              <h4>2. 이용 목적</h4>
-              <ul>
-                <li>깨사모 계정으로 로그인 및 본인 확인</li>
-                <li>앱 내 문의(쪽지) 발송</li>
-                <li>Samuel Memorizer(사무엘학교 암송 도우미) 운영</li>
-              </ul>
-
-              <h4>3. 보관·처리</h4>
-              <ul>
-                <li>
-                  암송 진행·설정은 기기 localStorage에 저장됩니다.
-                </li>
-                <li>
-                  로그인 세션은 BFF 서버의 HttpOnly 쿠키로 관리되며, JavaScript에서
-                  읽을 수 없습니다.
-                </li>
-                <li>
-                  회원 프로필·쪽지는 선교회(깨사모) API 서버에서 처리됩니다.
-                </li>
-              </ul>
-
-              <h4>4. 제3자 제공</h4>
-              <p>수집 정보를 마케팅 등 목적으로 제3자에게 제공하지 않습니다.</p>
-
-              <h4>5. 이용자 권리</h4>
-              <ul>
-                <li>로그아웃으로 이 기기의 로그인 세션을 해제할 수 있습니다.</li>
-                <li>문의: 정보 메뉴 → 문의하기(깨사모 쪽지)</li>
-              </ul>
-
-              <p className="privacy-note">
-                본 안내는 서비스 이용에 적용되는 개인정보처리방침입니다.
-              </p>
-            </div>
+            <PrivacyPolicyBody />
             <button
               className="full-width-btn"
               style={{ marginBottom: 0 }}

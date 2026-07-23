@@ -80,7 +80,23 @@ export async function jbchFetchMember() {
   if (!profile) {
     throw new Error("회원 정보를 불러오지 못했습니다.");
   }
-  return { profile, isAdmin: Boolean(data.isAdmin) };
+  return {
+    profile,
+    isAdmin: Boolean(data.isAdmin),
+    needsConsent: Boolean(data.needsConsent),
+  };
+}
+
+export async function jbchAcceptConsent() {
+  await bffFetch("/consent", { method: "POST", body: "{}" });
+}
+
+export async function jbchFetchAdminMembers() {
+  const data = await bffFetch("/admin/members", { method: "GET" });
+  const members = Array.isArray(data.members) ? data.members : [];
+  return members
+    .map((item) => mapJbchMemberProfile(item))
+    .filter(Boolean);
 }
 
 export async function jbchCheckSession() {

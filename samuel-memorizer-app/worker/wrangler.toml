@@ -10,5 +10,9 @@ compatibility_date = "2024-01-01"
 #
 # JBCH_CORS_ORIGINS=https://devrenio.github.io
 
+[[kv_namespaces]]
+binding = "MEMBER_PROFILES"
+id = "03acbea0c993409d9d121cf3007d9daa"
+
 [vars]
 JBCH_CORS_ORIGINS = "https://devrenio.github.io"

@@ -1,6 +1,7 @@
 import { loadEnv } from "vite";
 import { Buffer } from "node:buffer";
 import { handleBffRequest } from "./server/jbchBffCore.js";
+import { createDevProfileStore } from "./server/memberProfileStoreFile.js";
 
 const BFF_PREFIX = "/api/jbch";
 
@@ -20,6 +21,7 @@ export function jbchBffPlugin() {
     configureServer(server) {
       const env = loadEnv(server.config.mode, server.config.envDir, "");
       const allowOrigins = buildAllowOrigins(env);
+      const profileStore = createDevProfileStore(env);
 
       server.middlewares.use(async (req, res, next) => {
         if (!req.url?.startsWith(BFF_PREFIX)) {
@@ -52,6 +54,7 @@ export function jbchBffPlugin() {
         const response = await handleBffRequest(request, env, {
           allowOrigins,
           secure: false,
+          profileStore,
         });
 
         res.statusCode = response.status;

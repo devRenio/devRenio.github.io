@@ -17,8 +17,8 @@ export function mapJbchMemberProfile(result) {
   const sex = stringifyField(result.sex || result.sexori);
 
   return {
-    name: stringifyField(result.username),
-    church: stringifyField(result.churchname),
+    name: stringifyField(result.username || result.name),
+    church: stringifyField(result.churchname || result.church),
     email: stringifyField(result.email),
     userid: stringifyField(result.userid),
     mid: stringifyField(result.mid),

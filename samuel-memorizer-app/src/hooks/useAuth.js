@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AUTH_CHOICE_KEY } from "../constants/auth";
 import { isJbchConfigured } from "../lib/jbchConfig";
 import {
+  jbchAcceptConsent,
   jbchFetchMember,
   jbchLogin,
   jbchLogout,
@@ -20,11 +21,14 @@ export function useAuth() {
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [needsConsent, setNeedsConsent] = useState(false);
+  const [consentError, setConsentError] = useState("");
 
   const jbchEnabled = isJbchConfigured();
 
   const applyMemberSession = useCallback(async () => {
-    const { profile, isAdmin } = await jbchFetchMember();
+    const { profile, isAdmin, needsConsent: pendingConsent } =
+      await jbchFetchMember();
     const mappedUser = mapJbchUser(profile, isAdmin);
     if (!mappedUser) {
       throw new Error("회원 정보를 불러오지 못했습니다.");
@@ -34,6 +38,8 @@ export function useAuth() {
     setUserProfile(profile);
     setUser(mappedUser);
     setAuthMode("user");
+    setNeedsConsent(Boolean(pendingConsent));
+    setConsentError("");
     return profile;
   }, []);
 
@@ -106,16 +112,33 @@ export function useAuth() {
 
   const logout = useCallback(async () => {
     setError("");
+    setConsentError("");
     await jbchLogout();
     localStorage.removeItem(AUTH_CHOICE_KEY);
     setUser(null);
     setUserProfile(null);
     setAuthMode(null);
+    setNeedsConsent(false);
+  }, []);
+
+  const acceptConsent = useCallback(async () => {
+    setBusy(true);
+    setConsentError("");
+    try {
+      await jbchAcceptConsent();
+      setNeedsConsent(false);
+      return true;
+    } catch (err) {
+      setConsentError(err.message || "동의 처리에 실패했습니다.");
+      return false;
+    } finally {
+      setBusy(false);
+    }
   }, []);
 
   const isLoggedIn = authMode === "user" && user != null;
   const showAuthModal = ready && !isLoggedIn;
-  const onboardingBlocked = !ready || !isLoggedIn;
+  const onboardingBlocked = !ready || !isLoggedIn || needsConsent;
 
   return {
     ready,
@@ -126,10 +149,13 @@ export function useAuth() {
     jbchEnabled,
     showAuthModal,
     onboardingBlocked,
+    needsConsent,
     busy,
     error,
+    consentError,
     setError,
     login,
     logout,
+    acceptConsent,
   };
 }

@@ -1,4 +1,5 @@
 import AuthModal from "./components/AuthModal";
+import SignupConsentModal from "./components/SignupConsentModal";
 import AccountModal from "./components/AccountModal";
 import AdminModal from "./components/AdminModal";
 import ContactModal from "./components/ContactModal";
@@ -42,6 +43,19 @@ function App() {
           error={auth.error}
           onLogin={auth.login}
           onClearError={() => auth.setError("")}
+        />
+      </div>
+    );
+  }
+
+  if (auth.needsConsent) {
+    return (
+      <div className="app-loading" data-theme={app.theme ?? "light"}>
+        <SignupConsentModal
+          busy={auth.busy}
+          error={auth.consentError}
+          onAccept={auth.acceptConsent}
+          onDecline={handleLogout}
         />
       </div>
     );
@@ -227,10 +241,7 @@ function App() {
       )}
 
       {app.activeModal === "admin" && isAdminUser(auth.user) && (
-        <AdminModal
-          memberProfile={auth.userProfile}
-          onClose={() => app.setActiveModal("account")}
-        />
+        <AdminModal onClose={() => app.setActiveModal("account")} />
       )}
 
       <Tutorial

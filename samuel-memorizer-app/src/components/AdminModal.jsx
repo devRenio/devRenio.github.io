@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { jbchFetchMember } from "../lib/jbchApi";
+import { jbchFetchAdminMembers } from "../lib/jbchApi";
 import AdminMemberDetailModal from "./AdminMemberDetailModal";
 
 function profileKey(profile) {
@@ -33,32 +33,33 @@ function MemberListRow({ profile, onSelect }) {
   );
 }
 
-export default function AdminModal({ memberProfile, onClose }) {
+export default function AdminModal({ onClose }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [profiles, setProfiles] = useState(() =>
-    memberProfile ? [memberProfile] : [],
-  );
+  const [profiles, setProfiles] = useState([]);
   const [selectedProfile, setSelectedProfile] = useState(null);
-
-  useEffect(() => {
-    setProfiles(memberProfile ? [memberProfile] : []);
-  }, [memberProfile]);
 
   const load = useCallback(async () => {
     setBusy(true);
     setError("");
     try {
-      const { profile: fresh } = await jbchFetchMember();
-      setProfiles([fresh]);
-      setSelectedProfile((prev) => (prev ? fresh : prev));
+      const members = await jbchFetchAdminMembers();
+      setProfiles(members);
+      setSelectedProfile((prev) => {
+        if (!prev) return prev;
+        return members.find((item) => profileKey(item) === profileKey(prev)) ?? prev;
+      });
     } catch (err) {
       console.error(err);
-      setError(err.message || "회원 정보를 불러오지 못했습니다.");
+      setError(err.message || "회원 목록을 불러오지 못했습니다.");
     } finally {
       setBusy(false);
     }
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   return (
     <>
@@ -69,7 +70,7 @@ export default function AdminModal({ memberProfile, onClose }) {
         >
           <h3>관리자 콘솔</h3>
           <p className="admin-modal-desc">
-            회원 목록입니다. 항목을 눌러 상세 정보를 확인하세요.
+            앱에 로그인한 회원 목록입니다. 항목을 눌러 상세 정보를 확인하세요.
           </p>
 
           {error && <p className="admin-error">{error}</p>}

@@ -1,5 +1,10 @@
+import {
+  getProfileStore,
+  upsertMemberFromJbchResult,
+} from "./memberProfileStore.js";
+
 const JBCH_API_BASE = "https://api.jbch.org";
-export const SESSION_COOKIE = "samuel_jbch_hash";
+export const SESSION_COOKIE = "samuel_jbch_hash_v2";
 /** HttpOnly 세션 쿠키 유지 기간 (14일) */
 export const SESSION_MAX_AGE_SECONDS = 14 * 24 * 60 * 60;
 
@@ -158,10 +163,11 @@ export async function handleLogin(env, body, cookieOptions) {
   });
 
   if (data?.result === "ok" && data.hash) {
+    const hash = String(data.hash);
     return jsonResponse(
       { ok: true },
       200,
-      { "Set-Cookie": buildSessionCookie(String(data.hash), cookieOptions) },
+      { "Set-Cookie": buildSessionCookie(hash, cookieOptions) },
     );
   }
 
@@ -183,7 +189,7 @@ export async function handleLogout(env, hash, cookieOptions) {
   );
 }
 
-export async function handleMember(env, hash) {
+export async function handleMember(env, hash, profileStore) {
   if (!hash) {
     return jsonResponse({ error: "로그인이 필요합니다." }, 401);
   }
@@ -192,12 +198,80 @@ export async function handleMember(env, hash) {
   if (data?.status === "ok" && data.result) {
     const userid = String(data.result?.userid ?? "").trim().toLowerCase();
     const isAdmin = parseAdminUserids(env).includes(userid);
-    return jsonResponse({ ok: true, result: data.result, isAdmin });
+    const hasConsent = await profileStore.hasConsent(userid);
+    if (hasConsent) {
+      try {
+        await upsertMemberFromJbchResult(data.result, profileStore);
+      } catch {
+        /* ignore */
+      }
+    }
+    return jsonResponse({
+      ok: true,
+      result: data.result,
+      isAdmin,
+      needsConsent: !hasConsent,
+    });
   }
   return jsonResponse(
     { error: formatApiError(data, "회원 정보를 불러오지 못했습니다.") },
     401,
   );
+}
+
+async function requireAdmin(env, hash) {
+  if (!hash) {
+    return { error: jsonResponse({ error: "로그인이 필요합니다." }, 401) };
+  }
+
+  const data = await jbchPost(env, "/in/member_json.php", { hash });
+  if (data?.status !== "ok" || !data.result) {
+    return {
+      error: jsonResponse(
+        { error: formatApiError(data, "회원 정보를 불러오지 못했습니다.") },
+        401,
+      ),
+    };
+  }
+
+  const userid = String(data.result?.userid ?? "").trim().toLowerCase();
+  if (!parseAdminUserids(env).includes(userid)) {
+    return { error: jsonResponse({ error: "권한이 없습니다." }, 403) };
+  }
+
+  return { ok: true };
+}
+
+export async function handleConsent(env, hash, profileStore) {
+  if (!hash) {
+    return jsonResponse({ error: "로그인이 필요합니다." }, 401);
+  }
+
+  const data = await jbchPost(env, "/in/member_json.php", { hash });
+  if (data?.status !== "ok" || !data.result) {
+    return jsonResponse(
+      { error: formatApiError(data, "회원 정보를 불러오지 못했습니다.") },
+      401,
+    );
+  }
+
+  const userid = String(data.result?.userid ?? "").trim().toLowerCase();
+  if (!userid) {
+    return jsonResponse({ error: "회원 정보를 확인할 수 없습니다." }, 400);
+  }
+
+  await profileStore.recordConsent(userid);
+  await upsertMemberFromJbchResult(data.result, profileStore);
+
+  return jsonResponse({ ok: true, needsConsent: false });
+}
+
+export async function handleAdminMembers(env, hash, profileStore) {
+  const auth = await requireAdmin(env, hash);
+  if (auth.error) return auth.error;
+
+  const members = await profileStore.listAll();
+  return jsonResponse({ ok: true, members });
 }
 
 export async function handleMessage(env, hash, body, supportUserId) {
@@ -276,6 +350,7 @@ export async function handleBffRequest(request, env, options = {}) {
   const cors = corsHeaders(origin, allowOrigins);
   const cookieOptions = { secure: options.secure !== false };
   const supportUserId = String(env.JBCH_SUPPORT_USERID ?? "").trim();
+  const profileStore = options.profileStore ?? getProfileStore(env);
 
   if (request.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: cors });
@@ -292,7 +367,7 @@ export async function handleBffRequest(request, env, options = {}) {
       response = await handleLogout(env, hash, cookieOptions);
     } else if (pathname.endsWith("/member") && request.method === "GET") {
       const hash = readSessionHash(request.headers.get("Cookie"));
-      response = await handleMember(env, hash);
+      response = await handleMember(env, hash, profileStore);
     } else if (pathname.endsWith("/message") && request.method === "POST") {
       const hash = readSessionHash(request.headers.get("Cookie"));
       const body = await request.json();
@@ -300,6 +375,15 @@ export async function handleBffRequest(request, env, options = {}) {
     } else if (pathname.endsWith("/session") && request.method === "GET") {
       const hash = readSessionHash(request.headers.get("Cookie"));
       response = jsonResponse({ loggedIn: Boolean(hash) });
+    } else if (
+      pathname.endsWith("/admin/members") &&
+      request.method === "GET"
+    ) {
+      const hash = readSessionHash(request.headers.get("Cookie"));
+      response = await handleAdminMembers(env, hash, profileStore);
+    } else if (pathname.endsWith("/consent") && request.method === "POST") {
+      const hash = readSessionHash(request.headers.get("Cookie"));
+      response = await handleConsent(env, hash, profileStore);
     } else {
       response = jsonResponse({ error: "Not found" }, 404);
     }
