@@ -10,7 +10,7 @@ function stringifyField(value) {
   return String(value).trim();
 }
 
-/** jbch member_json result → 저장용 프로필 (프로필 사진 제외) */
+/** jbch member_json result → 저장용 프로필 (프로필 사진 URL 포함) */
 export function mapStoredMemberProfile(result) {
   if (!result || typeof result !== "object") return null;
 
@@ -25,6 +25,7 @@ export function mapStoredMemberProfile(result) {
     mid: stringifyField(result.mid),
     chid: stringifyField(result.chid),
     sex: stringifyField(result.sex || result.sexori),
+    avatar: stringifyField(result.avatar),
     birth: stringifyField(result.birth),
     reborn: stringifyField(result.reborn),
     address: stringifyField(result.address),

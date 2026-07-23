@@ -1,3 +1,4 @@
+import MemberAvatar from "./MemberAvatar";
 import {
   ADMIN_MEMBER_DETAIL_FIELDS,
   getMemberFieldDisplay,
@@ -21,6 +22,11 @@ export default function AdminMemberDetailModal({ profile, onClose }) {
         <h3>회원 상세</h3>
 
         <div className="admin-profile-header">
+          <MemberAvatar
+            src={profile.avatar}
+            alt={`${displayName} 프로필`}
+            className="admin-profile-avatar"
+          />
           <div className="admin-profile-heading">
             <p className="admin-profile-name">
               {displayName}

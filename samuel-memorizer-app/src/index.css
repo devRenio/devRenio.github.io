@@ -2230,6 +2230,12 @@ input[type="checkbox"] {
   background: var(--hover-bg);
 }
 
+.admin-member-row-avatar {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
 .admin-member-row-main {
   flex: 1;
   min-width: 0;

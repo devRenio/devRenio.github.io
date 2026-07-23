@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { jbchFetchAdminMembers } from "../lib/jbchApi";
 import AdminMemberDetailModal from "./AdminMemberDetailModal";
+import MemberAvatar from "./MemberAvatar";
 
 function profileKey(profile) {
   return profile.userid || profile.mid || profile.email || profile.name;
@@ -17,6 +18,11 @@ function MemberListRow({ profile, onSelect }) {
       className="admin-member-row"
       onClick={() => onSelect(profile)}
     >
+      <MemberAvatar
+        src={profile.avatar}
+        alt=""
+        className="admin-member-row-avatar"
+      />
       <span className="admin-member-row-main">
         <span className="admin-member-row-name">
           {displayName}
