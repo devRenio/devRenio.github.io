@@ -9,6 +9,11 @@ import {
 } from "../utils/fonts";
 import { TUTORIAL_STORAGE_KEY, getStepsForDevice } from "../data/tutorialSteps";
 import { MOBILE_NOTICE_KEY } from "../constants/app";
+import { APP_SCHOOL_LABEL } from "../constants/appInfo";
+import {
+  getVersionById,
+  resolveInitialVersionId,
+} from "../constants/scriptureVersions";
 import { BUNDLED_FONTS, INITIAL_FONTS, KOREAN_FONT_MAP } from "../constants/fonts";
 import { loadStoredData, saveStoredData } from "../utils/storage";
 import { mergeConsecutiveBlanks } from "../utils/mergeBlanks";
@@ -34,6 +39,11 @@ export function useSamuelApp({ onboardingBlocked = false } = {}) {
   const savedData = useMemo(() => loadStoredData(), []);
 
   const [originalScriptures, setOriginalScriptures] = useState([]);
+  const [scriptureManifest, setScriptureManifest] = useState(null);
+  const [scriptureVersionId, setScriptureVersionId] = useState(
+    savedData.scriptureDataVersion || null,
+  );
+  const [schoolLabel, setSchoolLabel] = useState(APP_SCHOOL_LABEL);
   const [selectedScriptures, setSelectedScriptures] = useState(
     savedData.selectedScriptures || EMPTY_SELECTED.map((a) => [...a]),
   );
@@ -502,6 +512,78 @@ export function useSamuelApp({ onboardingBlocked = false } = {}) {
     setCourseName(`${num}과정`);
   }, [originalScriptures]);
 
+  const applyCourseToScriptures = useCallback((formatted, courseNum) => {
+    if (!courseNum) {
+      setSelectedScriptures(EMPTY_SELECTED.map((items) => [...items]));
+      return;
+    }
+
+    const newSelected = EMPTY_SELECTED.map(() => []);
+    formatted.forEach((dayList, i) => {
+      dayList.forEach((v) => {
+        if (v.course <= courseNum) newSelected[i].push(v);
+      });
+    });
+    setSelectedScriptures(newSelected);
+  }, []);
+
+  const applyScriptureVersion = useCallback(
+    async (versionId) => {
+      if (!scriptureManifest) return;
+
+      const version = getVersionById(scriptureManifest, versionId);
+      if (!version) return;
+
+      const dataRes = await fetch(
+        `${import.meta.env.BASE_URL}data/${version.dataFile}`,
+      );
+      if (!dataRes.ok) {
+        throw new Error("암송 구절 데이터를 불러오지 못했습니다.");
+      }
+
+      const data = await dataRes.json();
+      const formatted = formatScriptureData(data);
+      const courseNum = parseCourseNum(courseName);
+
+      setOriginalScriptures(formatted);
+      setScriptureVersionId(version.id);
+      setSchoolLabel(version.schoolLabel);
+      applyCourseToScriptures(formatted, courseNum);
+      setScripture([]);
+      setLeftVerse(0);
+      setFailNum(0);
+      setWrongVerses([]);
+      setCurrentProblem(null);
+      setUserInput("");
+      setHasFailedCurrent(false);
+      setCompletedVerseRefs([]);
+      setVerseWrongCounts({});
+    },
+    [applyCourseToScriptures, courseName, scriptureManifest],
+  );
+
+  const selectScriptureVersion = useCallback(
+    (versionId) => {
+      if (!scriptureManifest || versionId === scriptureVersionId) return;
+
+      const version = getVersionById(scriptureManifest, versionId);
+      if (!version) return;
+
+      showConfirm(
+        `${version.label} 암송 구절로 변경하시겠습니까?\n현재 암송 목록과 해당 기록이 초기화됩니다.`,
+        () => {
+          applyScriptureVersion(versionId).catch((err) => {
+            showConfirm(
+              err.message || "구절 데이터를 불러오지 못했습니다.",
+              () => {},
+            );
+          });
+        },
+      );
+    },
+    [applyScriptureVersion, scriptureManifest, scriptureVersionId],
+  );
+
   const selectDay = (num) => {
     let toAdd = [];
     if (num === 7) {
@@ -774,10 +856,51 @@ export function useSamuelApp({ onboardingBlocked = false } = {}) {
   }, [showMobileNotice, onboardingBlocked]);
 
   useEffect(() => {
-    fetch(`${import.meta.env.BASE_URL}data/scriptures.json`)
-      .then((res) => res.json())
-      .then((data) => setOriginalScriptures(formatScriptureData(data)));
-  }, []);
+    let cancelled = false;
+
+    async function loadScriptureData() {
+      try {
+        const base = import.meta.env.BASE_URL;
+        const manifestRes = await fetch(`${base}data/scriptures-manifest.json`);
+        if (!manifestRes.ok) {
+          throw new Error("manifest");
+        }
+
+        const manifest = await manifestRes.json();
+        if (cancelled) return;
+
+        setScriptureManifest(manifest);
+        const versionId = resolveInitialVersionId(
+          manifest,
+          savedData.scriptureDataVersion,
+        );
+        const version = getVersionById(manifest, versionId);
+        if (!version) return;
+
+        setScriptureVersionId(version.id);
+        setSchoolLabel(version.schoolLabel);
+
+        const dataRes = await fetch(`${base}data/${version.dataFile}`);
+        if (!dataRes.ok) {
+          throw new Error("data");
+        }
+
+        const data = await dataRes.json();
+        if (cancelled) return;
+        setOriginalScriptures(formatScriptureData(data));
+      } catch (err) {
+        console.error(err);
+        if (!cancelled) {
+          setOriginalScriptures([]);
+        }
+      }
+    }
+
+    loadScriptureData();
+    return () => {
+      cancelled = true;
+    };
+  }, [savedData.scriptureDataVersion]);
 
   useEffect(() => {
     if (!pendingCourseNumRef.current || originalScriptures.length === 0) return;
@@ -851,6 +974,7 @@ export function useSamuelApp({ onboardingBlocked = false } = {}) {
       verseWrongCounts,
       completedVerseRefs,
       mergeBlanks,
+      scriptureDataVersion: scriptureVersionId,
     });
   }, [
     theme,
@@ -871,6 +995,7 @@ export function useSamuelApp({ onboardingBlocked = false } = {}) {
     verseWrongCounts,
     completedVerseRefs,
     mergeBlanks,
+    scriptureVersionId,
   ]);
 
   return {
@@ -883,6 +1008,11 @@ export function useSamuelApp({ onboardingBlocked = false } = {}) {
     activeMenu,
     toggleMenu,
     courseName,
+    schoolLabel,
+    scriptureVersionId,
+    scriptureVersions: scriptureManifest?.versions ?? [],
+    noticeUrl: scriptureManifest?.noticeUrl ?? "",
+    selectScriptureVersion,
     leftVerse,
     failNum,
     scripture,

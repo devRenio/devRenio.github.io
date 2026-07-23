@@ -1,0 +1,20 @@
+{
+  "defaultVersionId": "v44",
+  "noticeUrl": "https://www.jbch.org/ko/ksm/fellowship/list.php?flag=3&chId=14&uid=5035021&use_kind=1&boardId=5373&page=1&cId=629",
+  "versions": [
+    {
+      "id": "v44",
+      "label": "제44기",
+      "schoolLabel": "제44기 사무엘학교",
+      "term": 44,
+      "dataFile": "scriptures-v44.json"
+    },
+    {
+      "id": "v43",
+      "label": "제43기",
+      "schoolLabel": "제43기 사무엘학교",
+      "term": 43,
+      "dataFile": "scriptures-v43.json"
+    }
+  ]
+}

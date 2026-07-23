@@ -61,6 +61,7 @@ export function buildStoragePayload(state) {
     verseWrongCounts: state.verseWrongCounts,
     completedVerseRefs: state.completedVerseRefs,
     mergeBlanks: state.mergeBlanks,
+    scriptureDataVersion: state.scriptureDataVersion,
   };
 }
 

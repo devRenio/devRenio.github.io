@@ -2384,6 +2384,52 @@ input[type="checkbox"] {
   color: var(--text-secondary);
 }
 
+.info-version-picker {
+  margin: 0 0 16px;
+  text-align: left;
+}
+
+.info-version-label {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.info-version-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.info-version-btn {
+  flex: 1 1 calc(50% - 4px);
+  min-width: 120px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-bg);
+  color: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.info-version-btn:hover {
+  background: var(--hover-bg);
+}
+
+.info-version-btn.is-active {
+  border-color: var(--text-primary);
+  background: var(--hover-bg);
+}
+
+.info-notice-link {
+  text-align: center;
+  text-decoration: none;
+}
+
 .info-link-btn {
   display: block;
   width: 100%;

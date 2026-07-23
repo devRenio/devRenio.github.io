@@ -2,7 +2,6 @@ import { DEFAULT_FONT } from "../utils/fonts";
 import { getVerseWrongByDay } from "../utils/scriptureHelpers";
 import {
   APP_NAME_KO,
-  APP_SCHOOL_LABEL,
   APP_VERSE_LINE,
   APP_VERSE_REF,
 } from "../constants/appInfo";
@@ -37,6 +36,11 @@ export default function ModalHost({
   onWholeLevel,
   onOpenPrivacy,
   onOpenContact,
+  schoolLabel,
+  scriptureVersions,
+  scriptureVersionId,
+  onSelectScriptureVersion,
+  noticeUrl,
 }) {
   if (
     !activeModal ||
@@ -167,10 +171,45 @@ export default function ModalHost({
             <h3>프로그램 정보</h3>
             <div className="info-about-body">
               <p className="info-about-title">{APP_NAME_KO}</p>
-              <p className="info-about-school">{APP_SCHOOL_LABEL}</p>
+              <p className="info-about-school">{schoolLabel}</p>
               <p className="info-about-verse">{APP_VERSE_LINE}</p>
               <p className="info-about-ref">{APP_VERSE_REF}</p>
             </div>
+
+            {scriptureVersions.length > 0 && (
+              <div className="info-version-picker">
+                <p className="info-version-label">암송 구절 버전</p>
+                <div className="info-version-options">
+                  {scriptureVersions.map((version) => (
+                    <button
+                      key={version.id}
+                      type="button"
+                      className={[
+                        "info-version-btn",
+                        version.id === scriptureVersionId ? "is-active" : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      onClick={() => onSelectScriptureVersion?.(version.id)}
+                    >
+                      {version.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {noticeUrl && (
+              <a
+                className="info-link-btn info-notice-link"
+                href={noticeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                사무엘학교 공지글 보기
+              </a>
+            )}
+
             <button
               type="button"
               className="info-link-btn"

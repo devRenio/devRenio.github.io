@@ -215,6 +215,11 @@ function App() {
         onWholeLevel={app.handleWholeLevel}
         onOpenPrivacy={() => app.setActiveModal("privacy")}
         onOpenContact={handleOpenContact}
+        schoolLabel={app.schoolLabel}
+        scriptureVersions={app.scriptureVersions}
+        scriptureVersionId={app.scriptureVersionId}
+        onSelectScriptureVersion={app.selectScriptureVersion}
+        noticeUrl={app.noticeUrl}
       />
 
       {app.activeModal === "account" && (
