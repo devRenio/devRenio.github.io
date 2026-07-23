@@ -192,62 +192,74 @@ export default function ModalHost({
             {scriptureVersions.length > 0 && (
               <div className="info-version-picker">
                 <p className="info-version-label">암송 구절 버전</p>
-                <button
-                  type="button"
+                <div
                   className={[
-                    "info-version-toggle",
+                    "info-version-list",
                     versionListOpen ? "is-open" : "",
                   ]
                     .filter(Boolean)
                     .join(" ")}
-                  onClick={() => setVersionListOpen((open) => !open)}
-                  aria-expanded={versionListOpen}
-                  aria-haspopup="listbox"
                 >
-                  <span className="info-version-toggle-label">
-                    {activeScriptureVersion?.schoolLabel ||
-                      activeScriptureVersion?.label ||
-                      "버전 선택"}
-                  </span>
-                  <span className="info-version-chevron" aria-hidden="true">
-                    {versionListOpen ? "▲" : "▼"}
-                  </span>
-                </button>
-                {versionListOpen && (
-                  <ul className="info-version-list" role="listbox">
-                    {scriptureVersions.map((version) => (
-                      <li key={version.id}>
-                        <button
-                          type="button"
-                          role="option"
-                          aria-selected={version.id === scriptureVersionId}
-                          className={[
-                            "info-version-row",
-                            version.id === scriptureVersionId ? "is-active" : "",
-                          ]
-                            .filter(Boolean)
-                            .join(" ")}
-                          onClick={() => {
-                            setVersionListOpen(false);
-                            onSelectScriptureVersion?.(version.id);
-                          }}
-                        >
-                          <span className="info-version-row-label">
-                            {version.schoolLabel || version.label}
-                          </span>
-                          {version.id === scriptureVersionId && (
-                            <span
-                              className="info-version-row-check"
-                              aria-hidden="true"
-                            >
-                              ✓
-                            </span>
-                          )}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                  <button
+                    type="button"
+                    className="info-version-row info-version-trigger is-active"
+                    onClick={() => setVersionListOpen((open) => !open)}
+                    aria-expanded={versionListOpen}
+                    aria-haspopup="listbox"
+                  >
+                    <span className="info-version-row-label">
+                      {activeScriptureVersion?.schoolLabel ||
+                        activeScriptureVersion?.label ||
+                        "버전 선택"}
+                    </span>
+                    <span className="info-version-row-trailing">
+                      <span
+                        className="info-version-row-check"
+                        aria-hidden="true"
+                      >
+                        ✓
+                      </span>
+                      <span className="info-version-chevron" aria-hidden="true">
+                        ▼
+                      </span>
+                    </span>
+                  </button>
+                  <div
+                    className={[
+                      "info-version-list-wrap",
+                      versionListOpen ? "is-open" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                    aria-hidden={!versionListOpen}
+                  >
+                    <div className="info-version-list-inner">
+                      <ul role="listbox">
+                        {scriptureVersions
+                          .filter((version) => version.id !== scriptureVersionId)
+                          .map((version) => (
+                            <li key={version.id}>
+                              <button
+                                type="button"
+                                role="option"
+                                aria-selected={false}
+                                tabIndex={versionListOpen ? 0 : -1}
+                                className="info-version-row"
+                                onClick={() => {
+                                  setVersionListOpen(false);
+                                  onSelectScriptureVersion?.(version.id);
+                                }}
+                              >
+                                <span className="info-version-row-label">
+                                  {version.schoolLabel || version.label}
+                                </span>
+                              </button>
+                            </li>
+                          ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 

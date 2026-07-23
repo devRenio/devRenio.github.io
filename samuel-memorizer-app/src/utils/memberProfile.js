@@ -31,6 +31,12 @@ export function mapJbchMemberProfile(result) {
     tel: stringifyField(result.tel),
     hand: stringifyField(result.hand),
     service: stringifyField(result.service),
+    joinedAt: stringifyField(
+      result.joinedAt ||
+        result.createdAt ||
+        result.acceptedAt ||
+        result.updatedAt,
+    ),
   };
 }
 

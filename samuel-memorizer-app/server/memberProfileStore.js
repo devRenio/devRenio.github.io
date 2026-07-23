@@ -64,6 +64,9 @@ function createNoopStore() {
       return false;
     },
     async recordConsent() {},
+    async getConsentAt() {
+      return null;
+    },
   };
 }
 
@@ -72,10 +75,23 @@ export function createKvProfileStore(kv) {
     async upsert(profile) {
       const userid = normalizeUserid(profile.userid);
       if (!userid) return;
+
+      const existingRaw = await kv.get(`${KV_PREFIX}${userid}`);
+      let existing = null;
+      if (existingRaw) {
+        try {
+          existing = JSON.parse(existingRaw);
+        } catch {
+          existing = null;
+        }
+      }
+
+      const now = new Date().toISOString();
       const record = {
         ...profile,
         userid: profile.userid || userid,
-        updatedAt: new Date().toISOString(),
+        createdAt: existing?.createdAt || now,
+        updatedAt: now,
       };
       await kv.put(`${KV_PREFIX}${userid}`, JSON.stringify(record));
 
@@ -118,6 +134,19 @@ export function createKvProfileStore(kv) {
         `${CONSENT_PREFIX}${id}`,
         JSON.stringify({ acceptedAt: new Date().toISOString() }),
       );
+    },
+
+    async getConsentAt(userid) {
+      const id = normalizeUserid(userid);
+      if (!id) return null;
+      const raw = await kv.get(`${CONSENT_PREFIX}${id}`);
+      if (!raw) return null;
+      try {
+        const parsed = JSON.parse(raw);
+        return parsed?.acceptedAt ?? null;
+      } catch {
+        return null;
+      }
     },
   };
 }

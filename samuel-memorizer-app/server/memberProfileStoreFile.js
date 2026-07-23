@@ -43,10 +43,13 @@ export function createFileProfileStore(filePath) {
       const userid = normalizeUserid(profile.userid);
       if (!userid) return;
       const all = await readAll();
+      const existing = all[userid];
+      const now = new Date().toISOString();
       all[userid] = {
         ...profile,
         userid: profile.userid || userid,
-        updatedAt: new Date().toISOString(),
+        createdAt: existing?.createdAt || now,
+        updatedAt: now,
       };
       await writeAll(all);
     },
@@ -76,6 +79,13 @@ function createFileConsentStore(filePath) {
       all[id] = { acceptedAt: new Date().toISOString() };
       await writeAll(all);
     },
+
+    async getConsentAt(userid) {
+      const id = normalizeUserid(userid);
+      if (!id) return null;
+      const all = await readAll();
+      return all[id]?.acceptedAt ?? null;
+    },
   };
 }
 
@@ -94,5 +104,6 @@ export function createDevProfileStore(env) {
     listAll: members.listAll.bind(members),
     hasConsent: consents.hasConsent.bind(consents),
     recordConsent: consents.recordConsent.bind(consents),
+    getConsentAt: consents.getConsentAt.bind(consents),
   };
 }

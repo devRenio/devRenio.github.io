@@ -903,10 +903,33 @@ export function useSamuelApp({ onboardingBlocked = false } = {}) {
   }, [savedData.scriptureDataVersion]);
 
   useEffect(() => {
-    if (!pendingCourseNumRef.current || originalScriptures.length === 0) return;
-    selectCourse(pendingCourseNumRef.current);
+    if (originalScriptures.length === 0) return;
+
+    const courseNum =
+      pendingCourseNumRef.current ?? parseCourseNum(courseName);
     pendingCourseNumRef.current = null;
-  }, [originalScriptures, selectCourse]);
+
+    if (courseNum) {
+      selectCourse(courseNum);
+    }
+
+    setScripture((prev) =>
+      prev?.length
+        ? findVersesByRefs(
+            originalScriptures,
+            prev.map((verse) => verse.reference),
+          )
+        : prev,
+    );
+    setWrongVerses((prev) =>
+      prev?.length
+        ? findVersesByRefs(
+            originalScriptures,
+            prev.map((verse) => verse.reference),
+          )
+        : prev,
+    );
+  }, [originalScriptures, selectCourse, courseName]);
 
   useEffect(() => {
     preloadBundledFonts();

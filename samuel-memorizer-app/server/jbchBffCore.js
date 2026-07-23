@@ -296,7 +296,24 @@ export async function handleAdminMembers(env, hash, profileStore) {
   if (auth.error) return auth.error;
 
   const members = await profileStore.listAll();
-  return jsonResponse({ ok: true, members });
+  const enriched = await Promise.all(
+    members.map(async (member) => {
+      const acceptedAt =
+        typeof profileStore.getConsentAt === "function"
+          ? await profileStore.getConsentAt(member.userid)
+          : null;
+      const joinedAt =
+        member.createdAt || acceptedAt || member.updatedAt || null;
+
+      return {
+        ...member,
+        acceptedAt,
+        joinedAt,
+      };
+    }),
+  );
+
+  return jsonResponse({ ok: true, members: enriched });
 }
 
 export async function handleMessage(env, hash, body, supportUserId) {

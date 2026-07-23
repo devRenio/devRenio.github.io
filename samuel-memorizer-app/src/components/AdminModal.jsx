@@ -1,5 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { jbchFetchAdminMembers } from "../lib/jbchApi";
+import {
+  ADMIN_MEMBER_SORT_OPTIONS,
+  sortAdminMembers,
+} from "../utils/adminMemberSort";
 import AdminMemberDetailModal from "./AdminMemberDetailModal";
 import MemberAvatar from "./MemberAvatar";
 
@@ -44,6 +48,12 @@ export default function AdminModal({ onClose }) {
   const [error, setError] = useState("");
   const [profiles, setProfiles] = useState([]);
   const [selectedProfile, setSelectedProfile] = useState(null);
+  const [sortBy, setSortBy] = useState("name");
+
+  const sortedProfiles = useMemo(
+    () => sortAdminMembers(profiles, sortBy),
+    [profiles, sortBy],
+  );
 
   const load = useCallback(async () => {
     setBusy(true);
@@ -87,9 +97,33 @@ export default function AdminModal({ onClose }) {
             <p className="admin-empty">표시할 회원이 없습니다.</p>
           ) : (
             <>
-              <p className="admin-count">총 {profiles.length}명</p>
+              <div className="admin-list-toolbar">
+                <p className="admin-count">총 {profiles.length}명</p>
+                <div
+                  className="admin-sort-bar"
+                  role="group"
+                  aria-label="회원 정렬"
+                >
+                  {ADMIN_MEMBER_SORT_OPTIONS.map((option) => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      className={[
+                        "admin-sort-btn",
+                        sortBy === option.id ? "is-active" : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      onClick={() => setSortBy(option.id)}
+                      aria-pressed={sortBy === option.id}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <ul className="admin-member-list">
-                {profiles.map((profile) => (
+                {sortedProfiles.map((profile) => (
                   <li key={profileKey(profile)}>
                     <MemberListRow
                       profile={profile}
