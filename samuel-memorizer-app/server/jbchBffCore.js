@@ -4,7 +4,7 @@ import {
 } from "./memberProfileStore.js";
 
 const JBCH_API_BASE = "https://api.jbch.org";
-export const SESSION_COOKIE = "samuel_jbch_hash_v2";
+export const SESSION_COOKIE = "samuel_jbch_hash_v3";
 /** HttpOnly 세션 쿠키 유지 기간 (14일) */
 export const SESSION_MAX_AGE_SECONDS = 14 * 24 * 60 * 60;
 

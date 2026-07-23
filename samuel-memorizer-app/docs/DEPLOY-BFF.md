@@ -9,7 +9,7 @@ Samuel Memorizer는 깨사모(jbch) API를 **브라우저에서 직접 호출하
 | 구분 | 저장·처리 위치 |
 |------|----------------|
 | `JBCH_DEV_NAME`, `JBCH_TOKEN_ID` | BFF 서버 env만 (Worker secret / 로컬 `.env`) |
-| 로그인 `hash` | HttpOnly 쿠키 `samuel_jbch_hash_v2` (JS에서 읽을 수 없음) |
+| 로그인 `hash` | HttpOnly 쿠키 `samuel_jbch_hash_v3` (JS에서 읽을 수 없음) |
 | 문의 수신자 `userid` | BFF env `JBCH_SUPPORT_USERID` (클라이언트에 노출 안 함) |
 | 관리자 UI 표시 | 클라이언트 `VITE_ADMIN_USERIDS` (UI용, 서버 권한 아님) |
 
@@ -22,7 +22,7 @@ Samuel Memorizer는 깨사모(jbch) API를 **브라우저에서 직접 호출하
 ```
 ┌─────────────────────┐         credentials: include          ┌──────────────────────┐
 │  React (GitHub Pages│  ────── POST /api/jbch/login ───────► │  BFF                 │
-│  devrenio.github.io │  ◄──── Set-Cookie: samuel_jbch_hash_v2 ─ │  (Vite dev 또는       │
+│  devrenio.github.io │  ◄──── Set-Cookie: samuel_jbch_hash_v3 ─ │  (Vite dev 또는       │
 │  /samuel/)          │         GET  /api/jbch/member         │   Cloudflare Worker)  │
 └─────────────────────┘                                       └──────────┬───────────┘
                                                                            │ dev_name + tokenId
@@ -78,7 +78,7 @@ Base path: `/api/jbch`
 { "ok": true }
 ```
 
-+ `Set-Cookie: samuel_jbch_hash_v2=<hash>; Path=/; HttpOnly; ...`
++ `Set-Cookie: samuel_jbch_hash_v3=<hash>; Path=/api/jbch; HttpOnly; ...`
 
 **실패 (401)**
 
@@ -223,7 +223,7 @@ npm run dev
 
 1. DevTools → Network → `POST /api/jbch/login` → 200 + `Set-Cookie`
 2. 이후 `GET /api/jbch/member` → 200 + 회원 JSON
-3. Application → Cookies → `samuel_jbch_hash_v2` (HttpOnly ✓)
+3. Application → Cookies → `samuel_jbch_hash_v3` (HttpOnly ✓)
 
 로컬 쿠키: `SameSite=Lax` (Secure 없음). same-origin이라 `/api/jbch`와 `/samuel/` 모두 `localhost:5173`에서 동작.
 
@@ -351,7 +351,7 @@ git push
 Worker(`secure: true`):
 
 ```
-samuel_jbch_hash_v2=<hash>; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=1209600
+samuel_jbch_hash_v3=<hash>; Path=/api/jbch; HttpOnly; SameSite=None; Secure; Partitioned; Max-Age=1209600
 ```
 
 - GitHub Pages(HTTPS) ↔ Worker(HTTPS) **cross-site** → `SameSite=None; Secure` 필수
