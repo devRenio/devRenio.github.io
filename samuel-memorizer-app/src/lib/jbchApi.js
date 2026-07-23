@@ -56,7 +56,7 @@ export function mapJbchUser(profile, isAdmin = false) {
 }
 
 export async function jbchLogin(userid, password) {
-  await bffFetch("/login", {
+  return bffFetch("/login", {
     method: "POST",
     body: JSON.stringify({
       Userid: userid.trim(),

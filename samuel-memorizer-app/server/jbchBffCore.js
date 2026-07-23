@@ -113,11 +113,14 @@ function encodeMessageField(value) {
 export function buildSessionCookie(hash, { secure }) {
   const parts = [
     `${SESSION_COOKIE}=${encodeURIComponent(hash)}`,
-    "Path=/",
+    "Path=/api/jbch",
     "HttpOnly",
     secure ? "SameSite=None" : "SameSite=Lax",
   ];
-  if (secure) parts.push("Secure");
+  if (secure) {
+    parts.push("Secure");
+    parts.push("Partitioned");
+  }
   parts.push(`Max-Age=${SESSION_MAX_AGE_SECONDS}`);
   return parts.join("; ");
 }
@@ -125,12 +128,15 @@ export function buildSessionCookie(hash, { secure }) {
 export function clearSessionCookie({ secure }) {
   const parts = [
     `${SESSION_COOKIE}=`,
-    "Path=/",
+    "Path=/api/jbch",
     "HttpOnly",
     secure ? "SameSite=None" : "SameSite=Lax",
     "Max-Age=0",
   ];
-  if (secure) parts.push("Secure");
+  if (secure) {
+    parts.push("Secure");
+    parts.push("Partitioned");
+  }
   return parts.join("; ");
 }
 
@@ -147,7 +153,7 @@ export function readSessionHash(cookieHeader) {
   }
 }
 
-export async function handleLogin(env, body, cookieOptions) {
+export async function handleLogin(env, body, cookieOptions, profileStore) {
   const userid = String(body?.Userid ?? body?.userid ?? "").trim();
   const password = String(body?.password ?? "");
   const device = String(body?.device ?? "Web").trim() || "Web";
@@ -164,11 +170,30 @@ export async function handleLogin(env, body, cookieOptions) {
 
   if (data?.result === "ok" && data.hash) {
     const hash = String(data.hash);
-    return jsonResponse(
-      { ok: true },
-      200,
-      { "Set-Cookie": buildSessionCookie(hash, cookieOptions) },
-    );
+    const payload = { ok: true };
+
+    try {
+      const memberData = await jbchPost(env, "/in/member_json.php", { hash });
+      if (memberData?.status === "ok" && memberData.result) {
+        const memberUserid = String(memberData.result?.userid ?? "")
+          .trim()
+          .toLowerCase();
+        const isAdmin = parseAdminUserids(env).includes(memberUserid);
+        const hasConsent = await profileStore.hasConsent(memberUserid);
+        if (hasConsent) {
+          await upsertMemberFromJbchResult(memberData.result, profileStore);
+        }
+        payload.result = memberData.result;
+        payload.isAdmin = isAdmin;
+        payload.needsConsent = !hasConsent;
+      }
+    } catch {
+      /* 쿠키는 설정하고, 클라이언트가 /member 재시도 가능 */
+    }
+
+    return jsonResponse(payload, 200, {
+      "Set-Cookie": buildSessionCookie(hash, cookieOptions),
+    });
   }
 
   return jsonResponse({ error: formatLoginError(data) }, 401);
@@ -361,7 +386,7 @@ export async function handleBffRequest(request, env, options = {}) {
 
     if (pathname.endsWith("/login") && request.method === "POST") {
       const body = await request.json();
-      response = await handleLogin(env, body, cookieOptions);
+      response = await handleLogin(env, body, cookieOptions, profileStore);
     } else if (pathname.endsWith("/logout") && request.method === "POST") {
       const hash = readSessionHash(request.headers.get("Cookie"));
       response = await handleLogout(env, hash, cookieOptions);

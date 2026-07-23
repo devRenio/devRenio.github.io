@@ -26,9 +26,22 @@ export function useAuth() {
 
   const jbchEnabled = isJbchConfigured();
 
-  const applyMemberSession = useCallback(async () => {
-    const { profile, isAdmin, needsConsent: pendingConsent } =
-      await jbchFetchMember();
+  const applyMemberSession = useCallback(async (loginSession) => {
+    let profile;
+    let isAdmin;
+    let pendingConsent;
+
+    if (loginSession?.result) {
+      profile = mapJbchMemberProfile(loginSession.result);
+      isAdmin = Boolean(loginSession.isAdmin);
+      pendingConsent = Boolean(loginSession.needsConsent);
+    } else {
+      const member = await jbchFetchMember();
+      profile = member.profile;
+      isAdmin = member.isAdmin;
+      pendingConsent = member.needsConsent;
+    }
+
     const mappedUser = mapJbchUser(profile, isAdmin);
     if (!mappedUser) {
       throw new Error("회원 정보를 불러오지 못했습니다.");
@@ -38,7 +51,7 @@ export function useAuth() {
     setUserProfile(profile);
     setUser(mappedUser);
     setAuthMode("user");
-    setNeedsConsent(Boolean(pendingConsent));
+    setNeedsConsent(pendingConsent);
     setConsentError("");
     return profile;
   }, []);
@@ -97,8 +110,8 @@ export function useAuth() {
       setBusy(true);
       setError("");
       try {
-        await jbchLogin(trimmedUserid, password);
-        await applyMemberSession();
+        const session = await jbchLogin(trimmedUserid, password);
+        await applyMemberSession(session);
         return true;
       } catch (err) {
         setError(err.message || "로그인에 실패했습니다.");

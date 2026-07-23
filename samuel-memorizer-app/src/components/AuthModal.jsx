@@ -29,6 +29,14 @@ export default function AuthModal({
       return;
     }
 
+    if (typeof document.requestStorageAccess === "function") {
+      try {
+        await document.requestStorageAccess();
+      } catch {
+        /* Safari 등에서 거부되어도 로그인 시도 */
+      }
+    }
+
     await onLogin(userid, password);
   };
 
