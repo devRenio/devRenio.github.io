@@ -6,6 +6,7 @@ import {
   jbchFetchMember,
   jbchLogin,
   jbchLogout,
+  mapJbchMemberProfile,
   mapJbchUser,
 } from "../lib/jbchApi";
 
