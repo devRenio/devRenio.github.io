@@ -16,8 +16,12 @@ const LOGIN_ERRORS = {
 };
 
 export function readEnv(env) {
-  const devName = String(env.JBCH_DEV_NAME ?? "").trim();
-  const tokenId = String(env.JBCH_TOKEN_ID ?? "").trim();
+  const devName = String(env.JBCH_DEV_NAME ?? "")
+    .trim()
+    .replace(/\r/g, "");
+  const tokenId = String(env.JBCH_TOKEN_ID ?? "")
+    .trim()
+    .replace(/\r/g, "");
   if (!devName || !tokenId) {
     throw new Error("JBCH_DEV_NAME / JBCH_TOKEN_ID가 설정되지 않았습니다.");
   }
@@ -46,7 +50,11 @@ async function parseJsonResponse(res) {
         hash: parts[2] ?? "",
       };
     }
-    throw new Error("서버 응답을 해석할 수 없습니다.");
+    const contentType = res.headers.get("content-type") ?? "unknown";
+    const preview = text.replace(/\s+/g, " ").slice(0, 160);
+    throw new Error(
+      `서버 응답을 해석할 수 없습니다. (jbch ${res.status}, ${contentType}: ${preview})`,
+    );
   }
 }
 
@@ -55,7 +63,11 @@ export async function jbchPost(env, path, payload) {
 
   const res = await fetch(`${JBCH_API_BASE}${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json, text/plain, */*",
+      "User-Agent": "SamuelMemorizer-BFF/1.0",
+    },
     body: JSON.stringify({
       dev_name: devName,
       tokenId,
