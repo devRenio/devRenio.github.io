@@ -3,6 +3,7 @@ import { DEFAULT_FONT } from "../utils/fonts";
 import { getVerseWrongByDay } from "../utils/scriptureHelpers";
 import {
   APP_NAME_KO,
+  APP_SCHOOL_SINCE_LABEL,
   APP_VERSE_LINE,
   APP_VERSE_REF,
 } from "../constants/appInfo";
@@ -37,7 +38,6 @@ export default function ModalHost({
   onWholeLevel,
   onOpenPrivacy,
   onOpenContact,
-  schoolLabel,
   scriptureVersions,
   scriptureVersionId,
   onSelectScriptureVersion,
@@ -184,7 +184,7 @@ export default function ModalHost({
             <h3>프로그램 정보</h3>
             <div className="info-about-body">
               <p className="info-about-title">{APP_NAME_KO}</p>
-              <p className="info-about-school">{schoolLabel}</p>
+              <p className="info-about-school">{APP_SCHOOL_SINCE_LABEL}</p>
               <p className="info-about-verse">{APP_VERSE_LINE}</p>
               <p className="info-about-ref">{APP_VERSE_REF}</p>
             </div>

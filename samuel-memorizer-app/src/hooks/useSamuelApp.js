@@ -8,7 +8,6 @@ import {
   resolveInitialFont,
 } from "../utils/fonts";
 import { TUTORIAL_STORAGE_KEY, getStepsForDevice } from "../data/tutorialSteps";
-import { APP_SCHOOL_LABEL } from "../constants/appInfo";
 import {
   getVersionById,
   resolveInitialVersionId,
@@ -42,7 +41,6 @@ export function useSamuelApp({ onboardingBlocked = false } = {}) {
   const [scriptureVersionId, setScriptureVersionId] = useState(
     savedData.scriptureDataVersion || null,
   );
-  const [schoolLabel, setSchoolLabel] = useState(APP_SCHOOL_LABEL);
   const [selectedScriptures, setSelectedScriptures] = useState(
     savedData.selectedScriptures || EMPTY_SELECTED.map((a) => [...a]),
   );
@@ -545,7 +543,6 @@ export function useSamuelApp({ onboardingBlocked = false } = {}) {
 
       setOriginalScriptures(formatted);
       setScriptureVersionId(version.id);
-      setSchoolLabel(version.schoolLabel);
       applyCourseToScriptures(formatted, courseNum);
       setScripture([]);
       setLeftVerse(0);
@@ -861,7 +858,6 @@ export function useSamuelApp({ onboardingBlocked = false } = {}) {
         if (!version) return;
 
         setScriptureVersionId(version.id);
-        setSchoolLabel(version.schoolLabel);
 
         const dataRes = await fetch(`${base}data/${version.dataFile}`);
         if (!dataRes.ok) {
@@ -1014,7 +1010,6 @@ export function useSamuelApp({ onboardingBlocked = false } = {}) {
     activeMenu,
     toggleMenu,
     courseName,
-    schoolLabel,
     scriptureVersionId,
     scriptureVersions: scriptureManifest?.versions ?? [],
     noticeUrl: scriptureManifest?.noticeUrl ?? "",
