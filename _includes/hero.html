@@ -1,0 +1,23 @@
+{%- assign p = site.data.profile -%}
+<header class="hero" id="top">
+  <div class="hero__brand">
+    <h1 class="hero__title" data-hero-title>{{ p.handle }}</h1>
+    <p class="hero__meta" data-hero-line>
+      <span class="hero__name">{{ p.name }}</span>
+      <span class="hero__dot" aria-hidden="true"></span>
+      <span class="hero__tagline">{{ p.tagline }}</span>
+    </p>
+  </div>
+
+  <div class="hero__socials" data-hero-line>
+    <a href="{{ p.github }}" target="_blank" rel="noopener" aria-label="GitHub">
+      <svg class="icon" aria-hidden="true"><use href="#i-github" /></svg>
+    </a>
+    <a href="mailto:{{ p.email }}" aria-label="이메일">
+      <svg class="icon" aria-hidden="true"><use href="#i-mail" /></svg>
+    </a>
+    <a href="{{ p.blog | relative_url }}" aria-label="블로그">
+      <svg class="icon" aria-hidden="true"><use href="#i-book" /></svg>
+    </a>
+  </div>
+</header>

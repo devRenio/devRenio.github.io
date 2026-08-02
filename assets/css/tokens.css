@@ -1,0 +1,98 @@
+:root {
+  /* ---- surface (밝은 프레젠테이션) ---- */
+  --bg: #eef2ff;
+  --bg-deep: #e0e7ff;
+
+  /* ---- mesh blobs ---- */
+  --blob-violet: #c4b5fd;
+  --blob-cyan: #7dd3fc;
+  --blob-magenta: #f9a8d4;
+  --blob-indigo: #a5b4fc;
+
+  /* ---- text ---- */
+  --fg: #1c1930;
+  --fg-muted: #4f4a6a;
+  --fg-dim: #7a7496;
+
+  /* ---- accent ---- */
+  --accent: #6d5ef7;
+  --accent-soft: #5b4cf0;
+  --accent-glow: rgb(109 94 247 / 0.22);
+
+  /* ---- glass ---- */
+  --glass-top: rgb(255 255 255 / 0.62);
+  --glass-bottom: rgb(255 255 255 / 0.34);
+  --glass-border: rgb(255 255 255 / 0.72);
+  --glass-border-hi: rgb(255 255 255 / 0.95);
+  --glass-blur: 22px;
+  --glass-sat: 160%;
+  --glass-fallback: rgb(255 255 255 / 0.82);
+
+  /* ---- elevation ---- */
+  --shadow-card: 0 10px 36px rgb(80 70 140 / 0.12);
+  --shadow-lift: 0 18px 48px rgb(80 70 140 / 0.18);
+  --shadow-inset: inset 0 1px 0 rgb(255 255 255 / 0.85);
+
+  /* ---- scrollbar ---- */
+  --scroll-size: 8px;
+  --scroll-thumb: rgb(109 94 247 / 0.28);
+  --scroll-thumb-hover: rgb(109 94 247 / 0.48);
+
+  /* ---- radius ---- */
+  --r-xs: 6px;
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-pill: 999px;
+
+  /* ---- spacing ---- */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4.5rem;
+  --s-9: 7rem;
+
+  /* ---- type ---- */
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system,
+    BlinkMacSystemFont, system-ui, "Segoe UI", "Malgun Gothic", sans-serif;
+  /* UI 라벨·힌트까지 동일 계열로 통일 (JetBrains Mono 제거) */
+  --font-mono: var(--font-sans);
+
+  /* 최소 13px 미만은 쓰지 않는다. */
+  --t-display: clamp(1.75rem, 2.6vw, 2.25rem);
+  --t-h1: clamp(1.75rem, 4vw, 2.5rem);
+  --t-h2: clamp(1.2rem, 1.9vw, 1.45rem);
+  --t-body: 1.0625rem;
+  --t-sm: 1rem;
+  --t-xs: 0.875rem;
+  --t-label: 0.8125rem;
+
+  /* ---- motion (slow → fast → slow) ---- */
+  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-out: var(--ease-inout);
+  --d-fast: 220ms;
+  --d-base: 380ms;
+  --d-slow: 900ms;
+
+  /* ---- layout ---- */
+  --wrap: 1180px;
+  --gap: 0.9rem;
+  --stage-pad: clamp(0.85rem, 1.6vw, 1.4rem);
+  --rail-size: clamp(4.5rem, 7vw, 6.25rem);
+
+  /* ---- layers ---- */
+  --z-mesh: 0;
+  --z-content: 1;
+  --z-float: 60;
+}
+
+@media (max-width: 900px) {
+  :root {
+    --glass-blur: 14px;
+    --gap: 0.75rem;
+  }
+}

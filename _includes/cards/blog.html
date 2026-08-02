@@ -1,0 +1,81 @@
+{%- comment -%}
+  기존 featured-posts.js는 Jekyll 4.1+ 전용 `find` 필터에 의존해
+  프로덕션(Jekyll 3.x)에서 title/url이 null로 출력됐다.
+  여기서는 표준 필터만 써서 date 기준으로 정렬한다.
+{%- endcomment -%}
+{%- assign recent = site.blog | sort: "date" | reverse -%}
+{%- assign cats = "" | split: "" -%}
+{%- for post in site.blog -%}
+  {%- assign c = post.categories | first -%}
+  {%- if c -%}{%- assign cats = cats | push: c -%}{%- endif -%}
+{%- endfor -%}
+{%- assign cats = cats | uniq | sort -%}
+
+<article class="card card--blog" id="blog" data-card="blog">
+  <span class="card__glow" aria-hidden="true"></span>
+
+  <header class="card__head">
+    <span class="card__icon" aria-hidden="true">
+      <svg class="icon"><use href="#i-book" /></svg>
+    </span>
+    <h2 class="card__title">Blog</h2>
+    <button
+      type="button"
+      class="card__toggle"
+      data-card-toggle
+      aria-expanded="false"
+      aria-controls="blog-detail"
+    >
+      <span class="card__hint">{{ site.blog.size }}편</span>
+      <span class="sr-only">Blog 카드 펼치기</span>
+    </button>
+    <button type="button" class="card__close" data-card-close>
+      <svg class="icon" aria-hidden="true"><use href="#i-x" /></svg>
+      <span class="sr-only">카드 접기</span>
+    </button>
+  </header>
+
+  <div class="card__preview" data-card-content>
+    <div class="post-list">
+      {%- for post in recent limit: 3 %}
+      <a class="post" href="{{ post.url | relative_url }}">
+        <time class="post__date" datetime="{{ post.date | date_to_xmlschema }}">
+          {{ post.date | date: "%y.%m.%d" }}
+        </time>
+        <span class="post__title">{{ post.title }}</span>
+        <span class="post__cat">{{ post.categories | first }}</span>
+      </a>
+      {%- endfor %}
+    </div>
+  </div>
+
+  <div class="card__detail" id="blog-detail" data-card-content hidden>
+    <div class="blog-panel">
+      <div class="post-list post-list--expanded">
+        {%- for post in recent limit: 8 %}
+        <a class="post" href="{{ post.url | relative_url }}" data-stagger>
+          <time class="post__date" datetime="{{ post.date | date_to_xmlschema }}">
+            {{ post.date | date: "%Y.%m.%d" }}
+          </time>
+          <span class="post__title">{{ post.title }}</span>
+          <span class="post__cat">{{ post.categories | first }}</span>
+        </a>
+        {%- endfor %}
+      </div>
+
+      <div class="blog-foot" data-stagger>
+        <div class="chip-row">
+          {%- for c in cats %}
+          <a class="chip" href="{{ '/blog/' | relative_url }}?category={{ c | uri_escape }}">
+            {{ c }}
+          </a>
+          {%- endfor %}
+        </div>
+        <a class="link-out" href="{{ '/blog/' | relative_url }}">
+          블로그 전체 보기
+          <svg class="icon" aria-hidden="true"><use href="#i-arrow-out" /></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</article>

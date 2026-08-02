@@ -1,18 +1,14 @@
 <!DOCTYPE html>
-<html lang="en-us">
+<html lang="{{ site.lang | default: 'ko-KR' }}">
   {% include head.html %}
 
-  <body>
-    <div id="smooth-wrapper">
-      <button id="to-top-btn" class="scroll-fake-fixed">▲</button>
-      <button id="to-blog-btn" class="scroll-fake-fixed">
-        <i class="fas fa-comment"></i>
-      </button>
-      <div id="smooth-content">
-        {% include nav.html %} {% include about.html %} {% include skills.html
-        %} {% include projects.html %} {% include blogs.html %} {% include
-        extra.html %} {% include footer.html %} {% include scripts.html %}
-      </div>
+  <body class="is-stage is-booting">
+    {% include icons.html %} {% include mesh.html %} {% include splash.html %}
+
+    <div class="stage">
+      {% include hero.html %} {% include bento.html %} {% include footer.html %}
     </div>
+
+    {% include scripts.html %}
   </body>
 </html>

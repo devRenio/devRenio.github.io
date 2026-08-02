@@ -4,7 +4,7 @@ author: Renio
 site_title: "devRenio"
 lang: ko-KR
 timezone: Asia/Seoul
-url: "https://devRenio.github.io/"
+url: "https://devrenio.github.io"
 
 paginate: 5
 paginate_path: "/blog/page:num"
@@ -20,12 +20,24 @@ highlighter: none
 markdown: kramdown
 kramdown:
   input: GFM
-exclude: [vendor/ruby]
+include:
+  - .nojekyll
+
+exclude:
+  - vendor/ruby
+  - vendor/bundle
+  - samuel-memorizer-app
+  - node_modules
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - to-do-list.txt
+  - test.py
 
 # Personalization
 github_username: devRenio
 blog_url: ""
-email: eunho9684@naver.com
+email: eunho9684@gmail.com
 keybase_username: Renio
 twitter_username: Renio
 reddit_username: Renio

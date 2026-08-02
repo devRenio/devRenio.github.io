@@ -1,0 +1,64 @@
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(
+      120% 90% at 50% 0%,
+      #f8faff 0%,
+      var(--bg) 48%,
+      var(--bg-deep) 100%
+    );
+  pointer-events: none;
+}
+
+.splash__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-4);
+  padding: var(--s-6);
+  text-align: center;
+}
+
+.splash__mark {
+  font-size: clamp(2.4rem, 7vw, 3.75rem);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  background: linear-gradient(120deg, var(--fg) 15%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.splash__tag {
+  max-width: 28ch;
+  font-size: var(--t-sm);
+  color: var(--fg-muted);
+  line-height: 1.5;
+}
+
+.splash__bar {
+  display: block;
+  width: 72px;
+  height: 2px;
+  margin-top: var(--s-2);
+  border-radius: var(--r-pill);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--accent-soft),
+    transparent
+  );
+  transform-origin: center;
+}
+
+body.is-booting .stage {
+  opacity: 0;
+}
+
+body.is-booting {
+  overflow: hidden;
+}

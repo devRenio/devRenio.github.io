@@ -1,0 +1,17 @@
+- title: Samuel Memorizer
+  description: 사무엘학교 성경 암송을 위한 React 웹 앱. 오프라인 지원 PWA로 만들어 설치 없이 쓸 수 있다.
+  image: assets/images/memorization2.png
+  repo: https://github.com/devRenio/devRenio.github.io/tree/main/samuel-memorizer-app
+  demo: https://devrenio.github.io/samuel/
+  year: 2026
+  featured: true
+  tags: [React, PWA, Vite]
+
+- title: Bible Verse Memorization
+  description: 같은 문제를 데스크톱에서 먼저 풀어본 Python 앱. Samuel Memorizer의 전신이다.
+  image: assets/images/memorization1.png
+  repo: https://github.com/devRenio/Bible-verse-memorization
+  demo: https://github.com/devRenio/Bible-verse-memorization/releases/download/42SS/samuel_memorization.exe
+  year: 2025
+  featured: false
+  tags: [Python, Desktop]

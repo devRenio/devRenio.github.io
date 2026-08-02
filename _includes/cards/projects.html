@@ -1,0 +1,98 @@
+{%- assign projects = site.data.projects -%}
+{%- assign all_tags = "" | split: "" -%}
+{%- for pr in projects -%}
+  {%- assign all_tags = all_tags | concat: pr.tags -%}
+{%- endfor -%}
+{%- assign all_tags = all_tags | uniq | sort -%}
+
+<article class="card card--projects" id="projects" data-card="projects">
+  <span class="card__glow" aria-hidden="true"></span>
+
+  <header class="card__head">
+    <span class="card__icon" aria-hidden="true">
+      <svg class="icon"><use href="#i-folder" /></svg>
+    </span>
+    <h2 class="card__title">Projects</h2>
+    <button
+      type="button"
+      class="card__toggle"
+      data-card-toggle
+      aria-expanded="false"
+      aria-controls="projects-detail"
+    >
+      <span class="card__hint">{{ projects.size }}개</span>
+      <span class="sr-only">Projects 카드 펼치기</span>
+    </button>
+    <button type="button" class="card__close" data-card-close>
+      <svg class="icon" aria-hidden="true"><use href="#i-x" /></svg>
+      <span class="sr-only">카드 접기</span>
+    </button>
+  </header>
+
+  <div class="card__preview" data-card-content>
+    <div class="post-list">
+      {%- for pr in projects limit: 3 %}
+      <div class="post">
+        <span class="post__date">{{ pr.year }}</span>
+        <span class="post__title">{{ pr.title }}</span>
+        <span class="post__cat">{{ pr.tags | first }}</span>
+      </div>
+      {%- endfor %}
+    </div>
+  </div>
+
+  <div class="card__detail" id="projects-detail" data-card-content hidden>
+    {%- comment -%}
+    프로젝트가 3개 이하면 필터가 정보를 만들지 못하므로 숨긴다.
+    {%- endcomment -%}
+    {%- if projects.size > 3 %}
+    <div class="filter-bar" data-project-filter>
+      <button type="button" class="filter-btn is-active" data-filter="all">All</button>
+      {%- for tag in all_tags %}
+      <button type="button" class="filter-btn" data-filter="{{ tag }}">{{ tag }}</button>
+      {%- endfor %}
+    </div>
+    {%- endif %}
+
+    <div class="project-list" data-project-list>
+      {%- for pr in projects %}
+      <div class="project" data-stagger data-tags="{{ pr.tags | join: ',' }}">
+        {%- if pr.image %}
+        <img
+          class="project__thumb"
+          src="{{ pr.image | relative_url }}"
+          alt="{{ pr.title }} 스크린샷"
+          loading="lazy"
+        />
+        {%- endif %}
+        <div class="project__body">
+          <h3 class="project__title">
+            {{ pr.title }}
+            <span class="project__year mono">{{ pr.year }}</span>
+          </h3>
+          <p class="project__desc">{{ pr.description }}</p>
+          <div class="chip-row">
+            {%- for tag in pr.tags %}
+            <span class="chip">{{ tag }}</span>
+            {%- endfor %}
+          </div>
+          <div class="project__links">
+            {%- if pr.repo %}
+            <a class="link-out" href="{{ pr.repo }}" target="_blank" rel="noopener">
+              Code
+              <svg class="icon" aria-hidden="true"><use href="#i-arrow-out" /></svg>
+            </a>
+            {%- endif %}
+            {%- if pr.demo %}
+            <a class="link-out" href="{{ pr.demo }}" target="_blank" rel="noopener">
+              Demo
+              <svg class="icon" aria-hidden="true"><use href="#i-arrow-out" /></svg>
+            </a>
+            {%- endif %}
+          </div>
+        </div>
+      </div>
+      {%- endfor %}
+    </div>
+  </div>
+</article>

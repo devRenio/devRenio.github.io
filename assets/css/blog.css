@@ -328,3 +328,29 @@ body {
 .category-link:hover {
   text-decoration: underline;
 }
+
+/* 블로그 푸터 — 예전 main.css에 있던 스타일을 여기로 옮김 */
+.footer.footer-text {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 35px;
+  color: #fff;
+  font-family: "PT Sans", Arial, Helvetica, sans-serif;
+  background: url("../images/background.png") repeat fixed;
+}
+
+.footer.footer-text a {
+  color: inherit;
+}
+
+.post-navigation {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.nav-box {
+  box-sizing: border-box;
+}

@@ -1,0 +1,99 @@
+{%- assign p = site.data.profile -%}
+<article class="card card--contact" id="contact" data-card="contact">
+  <span class="card__glow" aria-hidden="true"></span>
+
+  <header class="card__head">
+    <span class="card__icon" aria-hidden="true">
+      <svg class="icon"><use href="#i-at" /></svg>
+    </span>
+    <h2 class="card__title">Contact</h2>
+    <button
+      type="button"
+      class="card__toggle"
+      data-card-toggle
+      aria-expanded="false"
+      aria-controls="contact-detail"
+    >
+      <span class="card__hint">열기</span>
+      <span class="sr-only">Contact 카드 펼치기</span>
+    </button>
+    <button type="button" class="card__close" data-card-close>
+      <svg class="icon" aria-hidden="true"><use href="#i-x" /></svg>
+      <span class="sr-only">카드 접기</span>
+    </button>
+  </header>
+
+  <div class="card__preview" data-card-content>
+    <div class="contact-peek">
+      {%- if p.availability %}
+      <span class="contact-badge">{{ p.availability }}</span>
+      {%- endif %}
+
+      <div class="post-list">
+        <div class="post">
+          <span class="post__date">
+            <svg class="icon" aria-hidden="true"><use href="#i-mail" /></svg>
+          </span>
+          <span class="post__title">{{ p.email }}</span>
+        </div>
+        <div class="post">
+          <span class="post__date">
+            <svg class="icon" aria-hidden="true"><use href="#i-github" /></svg>
+          </span>
+          <span class="post__title">GitHub</span>
+          <span class="post__cat">Code</span>
+        </div>
+        <div class="post">
+          <span class="post__date">
+            <svg class="icon" aria-hidden="true"><use href="#i-book" /></svg>
+          </span>
+          <span class="post__title">Blog</span>
+          <span class="post__cat">Posts</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card__detail" id="contact-detail" data-card-content hidden>
+    <div class="contact-panel">
+      <div class="contact-meta" data-stagger>
+        {%- if p.availability %}
+        <span class="contact-badge">{{ p.availability }}</span>
+        {%- endif %}
+        {%- if p.location %}
+        <span class="contact-meta__item">{{ p.location }}</span>
+        {%- endif %}
+      </div>
+
+      <div class="contact-mail-lg" data-stagger>
+        <a href="mailto:{{ p.email }}">{{ p.email }}</a>
+        <button type="button" class="copy-btn" data-copy="{{ p.email }}">
+          <svg class="icon" aria-hidden="true"><use href="#i-copy" /></svg>
+          <span data-copy-label>Copy</span>
+        </button>
+      </div>
+
+      <a class="contact-cta" href="mailto:{{ p.email }}" data-stagger>
+        <svg class="icon" aria-hidden="true"><use href="#i-mail" /></svg>
+        메일 보내기
+      </a>
+
+      <div class="contact-links" data-stagger>
+        <a class="contact-link" href="{{ p.github }}" target="_blank" rel="noopener">
+          <svg class="icon" aria-hidden="true"><use href="#i-github" /></svg>
+          <span class="contact-link__text">
+            <strong>GitHub</strong>
+            <small>코드와 활동</small>
+          </span>
+        </a>
+        <a class="contact-link" href="{{ p.blog | relative_url }}">
+          <svg class="icon" aria-hidden="true"><use href="#i-book" /></svg>
+          <span class="contact-link__text">
+            <strong>Blog</strong>
+            <small>글 보러 가기</small>
+          </span>
+        </a>
+      </div>
+    </div>
+  </div>
+</article>

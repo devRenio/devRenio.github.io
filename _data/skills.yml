@@ -1,0 +1,41 @@
+# preview 개수만큼만 접힌 카드에 노출되고, 나머지는 카드를 펼쳤을 때 드러난다.
+- group: Languages
+  icon: code
+  note: 알고리즘과 시스템 프로그래밍의 기반
+  preview: 4
+  items:
+    - C
+    - C++
+    - Python
+    - Java
+    - JavaScript
+    - TypeScript
+
+- group: Web
+  icon: layout
+  note: 프론트엔드부터 API·백엔드까지
+  preview: 4
+  items:
+    - HTML / CSS
+    - React
+    - Vite
+    - Tailwind CSS
+    - Node.js
+    - Django
+    - Flask
+    - Jekyll
+    - PHP
+
+- group: Data & Systems
+  icon: terminal
+  note: 데이터, 인프라, 협업 도구
+  preview: 4
+  items:
+    - SQL
+    - PostgreSQL
+    - Prisma
+    - Linux
+    - Docker
+    - Git
+    - Figma
+    - Postman

@@ -1,0 +1,75 @@
+<article class="card card--skills" id="skills" data-card="skills">
+  <span class="card__glow" aria-hidden="true"></span>
+
+  <header class="card__head">
+    <span class="card__icon" aria-hidden="true">
+      <svg class="icon"><use href="#i-code" /></svg>
+    </span>
+    <h2 class="card__title">Skills</h2>
+    <button
+      type="button"
+      class="card__toggle"
+      data-card-toggle
+      aria-expanded="false"
+      aria-controls="skills-detail"
+    >
+      <span class="card__hint">열기</span>
+      <span class="sr-only">Skills 카드 펼치기</span>
+    </button>
+    <button type="button" class="card__close" data-card-close>
+      <svg class="icon" aria-hidden="true"><use href="#i-x" /></svg>
+      <span class="sr-only">카드 접기</span>
+    </button>
+  </header>
+
+  <div class="card__preview" data-card-content>
+    {%- for g in site.data.skills %}
+    <div class="skill-group">
+      <span class="skill-group__name label">{{ g.group }}</span>
+      <div class="chip-row">
+        {%- for item in g.items limit: g.preview %}
+        <span class="chip">{{ item }}</span>
+        {%- endfor %}
+        {%- assign rest = g.items.size | minus: g.preview -%}
+        {%- if rest > 0 %}
+        <span class="chip">+{{ rest }}</span>
+        {%- endif %}
+      </div>
+    </div>
+    {%- endfor %}
+  </div>
+
+  <div class="card__detail" id="skills-detail" data-card-content hidden>
+    <div class="skills-panel">
+      <div class="detail-grid">
+        {%- for g in site.data.skills %}
+        <div class="skill-group skill-group--panel" data-stagger>
+          <span class="skill-group__name label">
+            <svg class="icon" aria-hidden="true"><use href="#i-{{ g.icon }}" /></svg>
+            {{ g.group }}
+          </span>
+          <p class="skill-group__note">{{ g.note }}</p>
+          <div class="chip-row chip-row--lg">
+            {%- for item in g.items %}
+            <span class="chip chip--lg">{{ item }}</span>
+            {%- endfor %}
+          </div>
+        </div>
+        {%- endfor %}
+      </div>
+
+      {%- if site.data.profile.focus %}
+      <div class="skills-spotlight" data-stagger>
+        <p class="skills-spotlight__label label">
+          {{ site.data.profile.focus_label | default: "Now focusing" }}
+        </p>
+        <div class="chip-row chip-row--lg">
+          {%- for item in site.data.profile.focus %}
+          <span class="chip chip--accent">{{ item }}</span>
+          {%- endfor %}
+        </div>
+      </div>
+      {%- endif %}
+    </div>
+  </div>
+</article>
