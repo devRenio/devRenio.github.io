@@ -1,3 +1,13 @@
+import {
+  ADMIN_DIRECTORY_KEY,
+  ADMIN_DIRECTORY_REBUILD_MS,
+  ADMIN_META_KEY,
+  buildAdminDirectory,
+  enrichMemberRecord,
+  sortMembers,
+  toAdminListEntry,
+} from "./adminMemberCache.js";
+
 function stringifyField(value) {
   if (value == null || value === "") return "";
   if (typeof value === "object") {
@@ -43,22 +53,20 @@ function normalizeUserid(userid) {
   return String(userid ?? "").trim().toLowerCase();
 }
 
-function sortMembers(members) {
-  return [...members].sort((a, b) => {
-    const nameCmp = (a.name || a.userid || "").localeCompare(
-      b.name || b.userid || "",
-      "ko",
-    );
-    if (nameCmp !== 0) return nameCmp;
-    return (a.userid || "").localeCompare(b.userid || "", "ko");
-  });
-}
-
 function createNoopStore() {
   return {
     async upsert() {},
     async listAll() {
       return [];
+    },
+    async listForAdmin() {
+      return { members: [], cachedAt: null, lastFullRebuildAt: null };
+    },
+    async getMember() {
+      return null;
+    },
+    async rebuildAdminDirectory() {
+      return { members: [], cachedAt: null, lastFullRebuildAt: null };
     },
     async hasConsent() {
       return false;
@@ -68,6 +76,77 @@ function createNoopStore() {
       return null;
     },
   };
+}
+
+async function readMemberRecords(kv, ids) {
+  const members = (
+    await Promise.all(
+      ids.map(async (userid) => {
+        const raw = await kv.get(`${KV_PREFIX}${userid}`);
+        if (!raw) return null;
+        try {
+          return JSON.parse(raw);
+        } catch {
+          return null;
+        }
+      }),
+    )
+  ).filter(Boolean);
+
+  return sortMembers(members);
+}
+
+async function writeAdminDirectory(kv, members) {
+  const directory = buildAdminDirectory(members);
+  const now = directory.updatedAt;
+
+  await kv.put(ADMIN_DIRECTORY_KEY, JSON.stringify(directory));
+  await kv.put(
+    ADMIN_META_KEY,
+    JSON.stringify({ lastFullRebuildAt: now, updatedAt: now }),
+  );
+
+  return {
+    members: directory.members,
+    cachedAt: now,
+    lastFullRebuildAt: now,
+  };
+}
+
+async function patchAdminDirectoryEntry(kv, profile) {
+  const raw = await kv.get(ADMIN_DIRECTORY_KEY);
+  let directory = null;
+
+  if (raw) {
+    try {
+      directory = JSON.parse(raw);
+    } catch {
+      directory = null;
+    }
+  }
+
+  if (!directory?.members) return;
+
+  const entry = toAdminListEntry(profile);
+  const nextMembers = [...directory.members];
+  const index = nextMembers.findIndex(
+    (item) => normalizeUserid(item.userid) === normalizeUserid(profile.userid),
+  );
+
+  if (index >= 0) {
+    nextMembers[index] = entry;
+  } else {
+    nextMembers.push(entry);
+  }
+
+  const updatedAt = new Date().toISOString();
+  await kv.put(
+    ADMIN_DIRECTORY_KEY,
+    JSON.stringify({
+      updatedAt,
+      members: sortMembers(nextMembers),
+    }),
+  );
 }
 
 export function createKvProfileStore(kv) {
@@ -86,38 +165,69 @@ export function createKvProfileStore(kv) {
         }
       }
 
-      const now = new Date().toISOString();
-      const record = {
-        ...profile,
-        userid: profile.userid || userid,
-        createdAt: existing?.createdAt || now,
-        updatedAt: now,
-      };
+      const record = enrichMemberRecord(
+        {
+          ...profile,
+          userid: profile.userid || userid,
+        },
+        existing,
+      );
+
       await kv.put(`${KV_PREFIX}${userid}`, JSON.stringify(record));
 
       const index = (await kv.get(KV_INDEX, "json")) ?? [];
       const ids = new Set(Array.isArray(index) ? index : []);
       ids.add(userid);
       await kv.put(KV_INDEX, JSON.stringify([...ids]));
+
+      await patchAdminDirectoryEntry(kv, record);
     },
 
     async listAll() {
       const index = (await kv.get(KV_INDEX, "json")) ?? [];
       const ids = Array.isArray(index) ? index : [];
-      const members = (
-        await Promise.all(
-          ids.map(async (userid) => {
-            const raw = await kv.get(`${KV_PREFIX}${userid}`);
-            if (!raw) return null;
-            try {
-              return JSON.parse(raw);
-            } catch {
-              return null;
-            }
-          }),
-        )
-      ).filter(Boolean);
-      return sortMembers(members);
+      return readMemberRecords(kv, ids);
+    },
+
+    async listForAdmin() {
+      const directoryRaw = await kv.get(ADMIN_DIRECTORY_KEY);
+      const meta = (await kv.get(ADMIN_META_KEY, "json")) ?? {};
+
+      if (directoryRaw) {
+        try {
+          const directory = JSON.parse(directoryRaw);
+          if (Array.isArray(directory?.members)) {
+            return {
+              members: directory.members,
+              cachedAt: directory.updatedAt ?? null,
+              lastFullRebuildAt: meta.lastFullRebuildAt ?? directory.updatedAt ?? null,
+            };
+          }
+        } catch {
+          /* rebuild below */
+        }
+      }
+
+      return this.rebuildAdminDirectory();
+    },
+
+    async getMember(userid) {
+      const id = normalizeUserid(userid);
+      if (!id) return null;
+
+      const raw = await kv.get(`${KV_PREFIX}${id}`);
+      if (!raw) return null;
+
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return null;
+      }
+    },
+
+    async rebuildAdminDirectory() {
+      const members = await this.listAll();
+      return writeAdminDirectory(kv, members);
     },
 
     async hasConsent(userid) {
@@ -130,10 +240,27 @@ export function createKvProfileStore(kv) {
     async recordConsent(userid) {
       const id = normalizeUserid(userid);
       if (!id) return;
+
+      const acceptedAt = new Date().toISOString();
       await kv.put(
         `${CONSENT_PREFIX}${id}`,
-        JSON.stringify({ acceptedAt: new Date().toISOString() }),
+        JSON.stringify({ acceptedAt }),
       );
+
+      const existingRaw = await kv.get(`${KV_PREFIX}${id}`);
+      if (!existingRaw) return;
+
+      try {
+        const existing = JSON.parse(existingRaw);
+        const record = enrichMemberRecord(existing, {
+          ...existing,
+          acceptedAt,
+        });
+        await kv.put(`${KV_PREFIX}${id}`, JSON.stringify(record));
+        await patchAdminDirectoryEntry(kv, record);
+      } catch {
+        /* ignore */
+      }
     },
 
     async getConsentAt(userid) {
@@ -163,3 +290,5 @@ export async function upsertMemberFromJbchResult(jbchResult, profileStore) {
   if (!profile || !profileStore) return;
   await profileStore.upsert(profile);
 }
+
+export { ADMIN_DIRECTORY_REBUILD_MS };

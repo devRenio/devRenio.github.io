@@ -307,39 +307,6 @@ function App() {
         </div>
       )}
 
-      {app.showMobileNotice && (
-        <div
-          className="modal-overlay notice-overlay"
-          onClick={() => app.dismissMobileNotice(false)}
-        >
-          <div
-            className="modal-content notice-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3>업데이트 안내</h3>
-            <p className="notice-body">
-              Samuel Memorizer가 모바일 환경에서도 사용할 수 있도록
-              업데이트되었습니다.
-            </p>
-            <div className="notice-actions">
-              <button
-                type="button"
-                className="full-width-btn"
-                onClick={() => app.dismissMobileNotice(false)}
-              >
-                확인
-              </button>
-              <button
-                type="button"
-                className="notice-dismiss-btn"
-                onClick={() => app.dismissMobileNotice(true)}
-              >
-                다시 보지 않기
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

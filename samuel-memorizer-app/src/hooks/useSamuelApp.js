@@ -8,7 +8,6 @@ import {
   resolveInitialFont,
 } from "../utils/fonts";
 import { TUTORIAL_STORAGE_KEY, getStepsForDevice } from "../data/tutorialSteps";
-import { MOBILE_NOTICE_KEY } from "../constants/app";
 import { APP_SCHOOL_LABEL } from "../constants/appInfo";
 import {
   getVersionById,
@@ -117,7 +116,6 @@ export function useSamuelApp({ onboardingBlocked = false } = {}) {
 
   const [alertMessage, setAlertMessage] = useState("");
   const [onConfirm, setOnConfirm] = useState(null);
-  const [showMobileNotice, setShowMobileNotice] = useState(false);
   const [tutorialActive, setTutorialActive] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
   const [showTutorialSkipConfirm, setShowTutorialSkipConfirm] = useState(false);
@@ -761,13 +759,6 @@ export function useSamuelApp({ onboardingBlocked = false } = {}) {
     }
   };
 
-  const dismissMobileNotice = (permanent = false) => {
-    if (permanent) {
-      localStorage.setItem(MOBILE_NOTICE_KEY, "true");
-    }
-    setShowMobileNotice(false);
-  };
-
   const dayProgressLabels = useMemo(() => {
     return [1, 2, 3, 4, 5, 6].map((dayNum) => {
       const progress = getDayProgress(
@@ -839,21 +830,13 @@ export function useSamuelApp({ onboardingBlocked = false } = {}) {
 
   useEffect(() => {
     if (onboardingBlocked) return;
-    if (isMobile) return;
-    if (localStorage.getItem(MOBILE_NOTICE_KEY) === "true") return;
-    setShowMobileNotice(true);
-  }, [isMobile, onboardingBlocked]);
-
-  useEffect(() => {
-    if (onboardingBlocked) return;
     if (localStorage.getItem(TUTORIAL_STORAGE_KEY) === "true") return;
-    if (showMobileNotice) return;
     const timer = window.setTimeout(() => {
       setTutorialActive(true);
       setTutorialStep(0);
     }, 400);
     return () => window.clearTimeout(timer);
-  }, [showMobileNotice, onboardingBlocked]);
+  }, [onboardingBlocked]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1061,7 +1044,6 @@ export function useSamuelApp({ onboardingBlocked = false } = {}) {
     setStatsTab,
     alertMessage,
     onConfirm,
-    showMobileNotice,
     tutorialActive,
     tutorialStep,
     tutorialSteps,
@@ -1100,7 +1082,6 @@ export function useSamuelApp({ onboardingBlocked = false } = {}) {
     startTutorial,
     advanceTutorial,
     completeTutorial,
-    dismissMobileNotice,
     getProgressSnapshot,
     applyProgressSnapshot,
   };

@@ -2119,6 +2119,13 @@ input[type="checkbox"] {
   margin: 0 0 12px;
 }
 
+.admin-cache-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: left;
+  margin: 0 0 12px;
+}
+
 .admin-count {
   font-size: 13px;
   color: var(--text-secondary);

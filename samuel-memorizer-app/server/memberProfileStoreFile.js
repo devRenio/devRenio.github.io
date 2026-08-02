@@ -1,16 +1,12 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-
-function sortMembers(members) {
-  return [...members].sort((a, b) => {
-    const nameCmp = (a.name || a.userid || "").localeCompare(
-      b.name || b.userid || "",
-      "ko",
-    );
-    if (nameCmp !== 0) return nameCmp;
-    return (a.userid || "").localeCompare(b.userid || "", "ko");
-  });
-}
+import {
+  ADMIN_DIRECTORY_REBUILD_MS,
+  buildAdminDirectory,
+  enrichMemberRecord,
+  sortMembers,
+  toAdminListEntry,
+} from "./adminMemberCache.js";
 
 function normalizeUserid(userid) {
   return String(userid ?? "").trim().toLowerCase();
@@ -35,33 +31,105 @@ function createJsonFileStore(filePath) {
   return { readAll, writeAll };
 }
 
-export function createFileProfileStore(filePath) {
+function createFileProfileStore(filePath, metaPath) {
   const { readAll, writeAll } = createJsonFileStore(filePath);
+  const metaStore = createJsonFileStore(metaPath);
+
+  async function readMembers() {
+    return readAll();
+  }
+
+  async function writeDirectoryFromMembers(all) {
+    const members = sortMembers(Object.values(all));
+    const directory = buildAdminDirectory(members);
+    await metaStore.writeAll({
+      lastFullRebuildAt: directory.updatedAt,
+      updatedAt: directory.updatedAt,
+      members: directory.members,
+    });
+    return {
+      members: directory.members,
+      cachedAt: directory.updatedAt,
+      lastFullRebuildAt: directory.updatedAt,
+    };
+  }
+
+  async function patchDirectoryEntry(record) {
+    const meta = await metaStore.readAll();
+    if (!Array.isArray(meta.members)) return;
+
+    const entry = toAdminListEntry(record);
+    const nextMembers = [...meta.members];
+    const index = nextMembers.findIndex(
+      (item) => normalizeUserid(item.userid) === normalizeUserid(record.userid),
+    );
+
+    if (index >= 0) {
+      nextMembers[index] = entry;
+    } else {
+      nextMembers.push(entry);
+    }
+
+    const updatedAt = new Date().toISOString();
+    await metaStore.writeAll({
+      ...meta,
+      updatedAt,
+      members: sortMembers(nextMembers),
+    });
+  }
 
   return {
     async upsert(profile) {
       const userid = normalizeUserid(profile.userid);
       if (!userid) return;
-      const all = await readAll();
+
+      const all = await readMembers();
       const existing = all[userid];
-      const now = new Date().toISOString();
-      all[userid] = {
-        ...profile,
-        userid: profile.userid || userid,
-        createdAt: existing?.createdAt || now,
-        updatedAt: now,
-      };
+      const record = enrichMemberRecord(
+        {
+          ...profile,
+          userid: profile.userid || userid,
+        },
+        existing,
+      );
+
+      all[userid] = record;
       await writeAll(all);
+      await patchDirectoryEntry(record);
     },
 
     async listAll() {
-      const all = await readAll();
+      const all = await readMembers();
       return sortMembers(Object.values(all));
+    },
+
+    async listForAdmin() {
+      const meta = await metaStore.readAll();
+      if (Array.isArray(meta.members) && meta.members.length > 0) {
+        return {
+          members: meta.members,
+          cachedAt: meta.updatedAt ?? null,
+          lastFullRebuildAt: meta.lastFullRebuildAt ?? meta.updatedAt ?? null,
+        };
+      }
+
+      return writeDirectoryFromMembers(await readMembers());
+    },
+
+    async getMember(userid) {
+      const id = normalizeUserid(userid);
+      if (!id) return null;
+      const all = await readMembers();
+      return all[id] ?? null;
+    },
+
+    async rebuildAdminDirectory() {
+      return writeDirectoryFromMembers(await readMembers());
     },
   };
 }
 
-function createFileConsentStore(filePath) {
+function createFileConsentStore(filePath, membersStore) {
   const { readAll, writeAll } = createJsonFileStore(filePath);
 
   return {
@@ -75,9 +143,16 @@ function createFileConsentStore(filePath) {
     async recordConsent(userid) {
       const id = normalizeUserid(userid);
       if (!id) return;
+
+      const acceptedAt = new Date().toISOString();
       const all = await readAll();
-      all[id] = { acceptedAt: new Date().toISOString() };
+      all[id] = { acceptedAt };
       await writeAll(all);
+
+      const existing = await membersStore.getMember(id);
+      if (existing) {
+        await membersStore.upsert({ ...existing, acceptedAt });
+      }
     },
 
     async getConsentAt(userid) {
@@ -96,14 +171,24 @@ export function createDevProfileStore(env) {
     process.cwd(),
     String(env?.MEMBER_CONSENTS_FILE ?? ".data/member-consents.json"),
   );
-  const members = createFileProfileStore(membersPath);
-  const consents = createFileConsentStore(consentsPath);
+  const adminMetaPath = path.resolve(
+    process.cwd(),
+    String(env?.MEMBER_ADMIN_META_FILE ?? ".data/member-admin-directory.json"),
+  );
+
+  const members = createFileProfileStore(membersPath, adminMetaPath);
+  const consents = createFileConsentStore(consentsPath, members);
 
   return {
     upsert: members.upsert.bind(members),
     listAll: members.listAll.bind(members),
+    listForAdmin: members.listForAdmin.bind(members),
+    getMember: members.getMember.bind(members),
+    rebuildAdminDirectory: members.rebuildAdminDirectory.bind(members),
     hasConsent: consents.hasConsent.bind(consents),
     recordConsent: consents.recordConsent.bind(consents),
     getConsentAt: consents.getConsentAt.bind(consents),
   };
 }
+
+export { ADMIN_DIRECTORY_REBUILD_MS };
