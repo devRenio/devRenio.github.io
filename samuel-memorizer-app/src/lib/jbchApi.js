@@ -91,30 +91,12 @@ export async function jbchAcceptConsent() {
   await bffFetch("/consent", { method: "POST", body: "{}" });
 }
 
-export async function jbchFetchAdminMembers({ rebuild = false } = {}) {
-  const query = rebuild ? "?rebuild=1" : "";
-  const data = await bffFetch(`/admin/members${query}`, { method: "GET" });
+export async function jbchFetchAdminMembers() {
+  const data = await bffFetch("/admin/members", { method: "GET" });
   const members = Array.isArray(data.members) ? data.members : [];
-  return {
-    members: members.map((item) => mapJbchMemberProfile(item)).filter(Boolean),
-    cachedAt: data.cachedAt ?? null,
-    lastFullRebuildAt: data.lastFullRebuildAt ?? null,
-  };
-}
-
-export async function jbchFetchAdminMemberDetail(userid) {
-  const id = String(userid ?? "").trim();
-  if (!id) throw new Error("회원 ID가 필요합니다.");
-
-  const data = await bffFetch(
-    `/admin/member?userid=${encodeURIComponent(id)}`,
-    { method: "GET" },
-  );
-  const profile = mapJbchMemberProfile(data.member);
-  if (!profile) {
-    throw new Error("회원 정보를 불러오지 못했습니다.");
-  }
-  return profile;
+  return members
+    .map((item) => mapJbchMemberProfile(item))
+    .filter(Boolean);
 }
 
 export async function jbchCheckSession() {

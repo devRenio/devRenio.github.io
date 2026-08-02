@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  jbchFetchAdminMemberDetail,
-  jbchFetchAdminMembers,
-} from "../lib/jbchApi";
+import { jbchFetchAdminMembers } from "../lib/jbchApi";
 import {
   ADMIN_MEMBER_SORT_OPTIONS,
   sortAdminMembers,
@@ -11,7 +8,7 @@ import AdminMemberDetailModal from "./AdminMemberDetailModal";
 import MemberAvatar from "./MemberAvatar";
 
 function profileKey(profile) {
-  return profile.userid || profile.mid || profile.email || profile.name;
+  return profile.userid || profile.email || profile.name;
 }
 
 function MemberListRow({ profile, onSelect }) {
@@ -46,23 +43,11 @@ function MemberListRow({ profile, onSelect }) {
   );
 }
 
-function formatCacheTime(iso) {
-  if (!iso) return null;
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return null;
-  return date.toLocaleString("ko-KR");
-}
-
 export default function AdminModal({ onClose }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [profiles, setProfiles] = useState([]);
   const [selectedProfile, setSelectedProfile] = useState(null);
-  const [detailBusy, setDetailBusy] = useState(false);
-  const [cacheInfo, setCacheInfo] = useState({
-    cachedAt: null,
-    lastFullRebuildAt: null,
-  });
   const [sortBy, setSortBy] = useState("name");
 
   const sortedProfiles = useMemo(
@@ -70,22 +55,16 @@ export default function AdminModal({ onClose }) {
     [profiles, sortBy],
   );
 
-  const load = useCallback(async ({ rebuild = false } = {}) => {
+  const load = useCallback(async () => {
     setBusy(true);
     setError("");
     try {
-      const result = await jbchFetchAdminMembers({ rebuild });
-      setProfiles(result.members);
-      setCacheInfo({
-        cachedAt: result.cachedAt,
-        lastFullRebuildAt: result.lastFullRebuildAt,
-      });
+      const members = await jbchFetchAdminMembers();
+      setProfiles(members);
       setSelectedProfile((prev) => {
         if (!prev) return prev;
         return (
-          result.members.find(
-            (item) => profileKey(item) === profileKey(prev),
-          ) ?? prev
+          members.find((item) => profileKey(item) === profileKey(prev)) ?? prev
         );
       });
     } catch (err) {
@@ -93,20 +72,6 @@ export default function AdminModal({ onClose }) {
       setError(err.message || "회원 목록을 불러오지 못했습니다.");
     } finally {
       setBusy(false);
-    }
-  }, []);
-
-  const openMemberDetail = useCallback(async (profile) => {
-    setDetailBusy(true);
-    setError("");
-    try {
-      const detail = await jbchFetchAdminMemberDetail(profile.userid);
-      setSelectedProfile(detail);
-    } catch (err) {
-      console.error(err);
-      setError(err.message || "회원 상세 정보를 불러오지 못했습니다.");
-    } finally {
-      setDetailBusy(false);
     }
   }, []);
 
@@ -123,15 +88,9 @@ export default function AdminModal({ onClose }) {
         >
           <h3>관리자 콘솔</h3>
           <p className="admin-modal-desc">
-            앱에 로그인·동의한 회원 목록입니다(KV 캐시). 항목을 눌러 상세
-            정보를 확인하세요. 회원 정보는 해당 회원이 로그인할 때 갱신되며,
-            목록 전체는 7일마다 자동으로 재구성됩니다.
+            앱에 로그인·동의한 회원 목록입니다. 항목을 눌러 상세 정보를
+            확인하세요.
           </p>
-          {cacheInfo.lastFullRebuildAt && (
-            <p className="admin-cache-meta">
-              목록 기준 시각: {formatCacheTime(cacheInfo.lastFullRebuildAt)}
-            </p>
-          )}
 
           {error && <p className="admin-error">{error}</p>}
 
@@ -171,7 +130,7 @@ export default function AdminModal({ onClose }) {
                   <li key={profileKey(profile)}>
                     <MemberListRow
                       profile={profile}
-                      onSelect={openMemberDetail}
+                      onSelect={setSelectedProfile}
                     />
                   </li>
                 ))}
@@ -184,10 +143,10 @@ export default function AdminModal({ onClose }) {
               type="button"
               className="full-width-btn"
               style={{ marginBottom: 0 }}
-              onClick={() => load({ rebuild: true })}
-              disabled={busy || detailBusy}
+              onClick={load}
+              disabled={busy}
             >
-              {busy ? "불러오는 중…" : "목록 재구성"}
+              {busy ? "불러오는 중…" : "새로고침"}
             </button>
             <button
               type="button"

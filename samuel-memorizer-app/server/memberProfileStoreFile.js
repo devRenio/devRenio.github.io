@@ -1,15 +1,49 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import {
-  ADMIN_DIRECTORY_REBUILD_MS,
-  buildAdminDirectory,
-  enrichMemberRecord,
-  sortMembers,
-  toAdminListEntry,
-} from "./adminMemberCache.js";
+import { mapMemberProfileFromJbch, stripInternalCodes } from "../shared/memberProfileCore.js";
 
 function normalizeUserid(userid) {
   return String(userid ?? "").trim().toLowerCase();
+}
+
+function sortMembers(members) {
+  return [...members].sort((a, b) => {
+    const nameCmp = (a.name || a.userid || "").localeCompare(
+      b.name || b.userid || "",
+      "ko",
+    );
+    if (nameCmp !== 0) return nameCmp;
+    return (a.userid || "").localeCompare(b.userid || "", "ko");
+  });
+}
+
+function resolveJoinedAt(profile) {
+  return (
+    profile.joinedAt ||
+    profile.acceptedAt ||
+    profile.createdAt ||
+    profile.updatedAt ||
+    null
+  );
+}
+
+function enrichMemberRecord(profile, existing = null) {
+  const now = new Date().toISOString();
+  const acceptedAt = profile.acceptedAt || existing?.acceptedAt || null;
+  const createdAt = existing?.createdAt || profile.createdAt || now;
+
+  return stripInternalCodes({
+    ...profile,
+    createdAt,
+    acceptedAt,
+    updatedAt: now,
+    joinedAt: resolveJoinedAt({
+      ...existing,
+      ...profile,
+      acceptedAt,
+      createdAt,
+    }),
+  });
 }
 
 function createJsonFileStore(filePath) {
@@ -31,59 +65,15 @@ function createJsonFileStore(filePath) {
   return { readAll, writeAll };
 }
 
-function createFileProfileStore(filePath, metaPath) {
+export function createFileProfileStore(filePath) {
   const { readAll, writeAll } = createJsonFileStore(filePath);
-  const metaStore = createJsonFileStore(metaPath);
-
-  async function readMembers() {
-    return readAll();
-  }
-
-  async function writeDirectoryFromMembers(all) {
-    const members = sortMembers(Object.values(all));
-    const directory = buildAdminDirectory(members);
-    await metaStore.writeAll({
-      lastFullRebuildAt: directory.updatedAt,
-      updatedAt: directory.updatedAt,
-      members: directory.members,
-    });
-    return {
-      members: directory.members,
-      cachedAt: directory.updatedAt,
-      lastFullRebuildAt: directory.updatedAt,
-    };
-  }
-
-  async function patchDirectoryEntry(record) {
-    const meta = await metaStore.readAll();
-    if (!Array.isArray(meta.members)) return;
-
-    const entry = toAdminListEntry(record);
-    const nextMembers = [...meta.members];
-    const index = nextMembers.findIndex(
-      (item) => normalizeUserid(item.userid) === normalizeUserid(record.userid),
-    );
-
-    if (index >= 0) {
-      nextMembers[index] = entry;
-    } else {
-      nextMembers.push(entry);
-    }
-
-    const updatedAt = new Date().toISOString();
-    await metaStore.writeAll({
-      ...meta,
-      updatedAt,
-      members: sortMembers(nextMembers),
-    });
-  }
 
   return {
     async upsert(profile) {
       const userid = normalizeUserid(profile.userid);
       if (!userid) return;
 
-      const all = await readMembers();
+      const all = await readAll();
       const existing = all[userid];
       const record = enrichMemberRecord(
         {
@@ -95,36 +85,11 @@ function createFileProfileStore(filePath, metaPath) {
 
       all[userid] = record;
       await writeAll(all);
-      await patchDirectoryEntry(record);
     },
 
     async listAll() {
-      const all = await readMembers();
+      const all = await readAll();
       return sortMembers(Object.values(all));
-    },
-
-    async listForAdmin() {
-      const meta = await metaStore.readAll();
-      if (Array.isArray(meta.members) && meta.members.length > 0) {
-        return {
-          members: meta.members,
-          cachedAt: meta.updatedAt ?? null,
-          lastFullRebuildAt: meta.lastFullRebuildAt ?? meta.updatedAt ?? null,
-        };
-      }
-
-      return writeDirectoryFromMembers(await readMembers());
-    },
-
-    async getMember(userid) {
-      const id = normalizeUserid(userid);
-      if (!id) return null;
-      const all = await readMembers();
-      return all[id] ?? null;
-    },
-
-    async rebuildAdminDirectory() {
-      return writeDirectoryFromMembers(await readMembers());
     },
   };
 }
@@ -149,7 +114,9 @@ function createFileConsentStore(filePath, membersStore) {
       all[id] = { acceptedAt };
       await writeAll(all);
 
-      const existing = await membersStore.getMember(id);
+      const existing = await membersStore.listAll().then((members) =>
+        members.find((item) => normalizeUserid(item.userid) === id),
+      );
       if (existing) {
         await membersStore.upsert({ ...existing, acceptedAt });
       }
@@ -171,24 +138,19 @@ export function createDevProfileStore(env) {
     process.cwd(),
     String(env?.MEMBER_CONSENTS_FILE ?? ".data/member-consents.json"),
   );
-  const adminMetaPath = path.resolve(
-    process.cwd(),
-    String(env?.MEMBER_ADMIN_META_FILE ?? ".data/member-admin-directory.json"),
-  );
 
-  const members = createFileProfileStore(membersPath, adminMetaPath);
+  const members = createFileProfileStore(membersPath);
   const consents = createFileConsentStore(consentsPath, members);
 
   return {
     upsert: members.upsert.bind(members),
     listAll: members.listAll.bind(members),
-    listForAdmin: members.listForAdmin.bind(members),
-    getMember: members.getMember.bind(members),
-    rebuildAdminDirectory: members.rebuildAdminDirectory.bind(members),
     hasConsent: consents.hasConsent.bind(consents),
     recordConsent: consents.recordConsent.bind(consents),
     getConsentAt: consents.getConsentAt.bind(consents),
   };
 }
 
-export { ADMIN_DIRECTORY_REBUILD_MS };
+export function mapStoredMemberProfile(result) {
+  return mapMemberProfileFromJbch(result);
+}

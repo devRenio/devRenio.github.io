@@ -1,9 +1,8 @@
 import {
   getProfileStore,
   upsertMemberFromJbchResult,
-  ADMIN_DIRECTORY_REBUILD_MS,
 } from "./memberProfileStore.js";
-import { toAdminListEntry } from "./adminMemberCache.js";
+import { stripInternalCodes } from "../shared/memberProfileCore.js";
 
 const JBCH_API_BASE = "https://api.jbch.org";
 export const SESSION_COOKIE = "samuel_jbch_hash_v3";
@@ -305,57 +304,24 @@ export async function handleConsent(env, hash, profileStore) {
   return jsonResponse({ ok: true, needsConsent: false });
 }
 
-export async function handleAdminMembers(env, hash, profileStore, options = {}) {
+export async function handleAdminMembers(env, hash, profileStore) {
   const auth = await requireAdmin(env, hash);
   if (auth.error) return auth.error;
 
-  const forceRebuild = Boolean(options.forceRebuild);
-  let cache =
-    typeof profileStore.listForAdmin === "function"
-      ? await profileStore.listForAdmin()
-      : { members: [], cachedAt: null, lastFullRebuildAt: null };
+  const members = await profileStore.listAll();
+  const enriched = members.map((member) =>
+    stripInternalCodes({
+      ...member,
+      joinedAt:
+        member.joinedAt ||
+        member.acceptedAt ||
+        member.createdAt ||
+        member.updatedAt ||
+        null,
+    }),
+  );
 
-  const lastRebuildMs = Date.parse(cache.lastFullRebuildAt || "") || 0;
-  const rebuildDue =
-    forceRebuild ||
-    !cache.members?.length ||
-    Date.now() - lastRebuildMs >= ADMIN_DIRECTORY_REBUILD_MS;
-
-  if (
-    rebuildDue &&
-    typeof profileStore.rebuildAdminDirectory === "function"
-  ) {
-    cache = await profileStore.rebuildAdminDirectory();
-  }
-
-  return jsonResponse({
-    ok: true,
-    members: (cache.members ?? []).map((member) => toAdminListEntry(member)),
-    cachedAt: cache.cachedAt ?? null,
-    lastFullRebuildAt: cache.lastFullRebuildAt ?? null,
-    source: "kv-cache",
-  });
-}
-
-export async function handleAdminMemberDetail(env, hash, profileStore, userid) {
-  const auth = await requireAdmin(env, hash);
-  if (auth.error) return auth.error;
-
-  const id = String(userid ?? "").trim();
-  if (!id) {
-    return jsonResponse({ error: "회원 ID가 필요합니다." }, 400);
-  }
-
-  if (typeof profileStore.getMember !== "function") {
-    return jsonResponse({ error: "회원 정보를 불러올 수 없습니다." }, 500);
-  }
-
-  const member = await profileStore.getMember(id);
-  if (!member) {
-    return jsonResponse({ error: "저장된 회원 정보가 없습니다." }, 404);
-  }
-
-  return jsonResponse({ ok: true, member });
+  return jsonResponse({ ok: true, members: enriched });
 }
 
 export async function handleMessage(env, hash, body, supportUserId) {
@@ -460,26 +426,11 @@ export async function handleBffRequest(request, env, options = {}) {
       const hash = readSessionHash(request.headers.get("Cookie"));
       response = jsonResponse({ loggedIn: Boolean(hash) });
     } else if (
-      pathname.endsWith("/admin/member") &&
-      request.method === "GET"
-    ) {
-      const hash = readSessionHash(request.headers.get("Cookie"));
-      const userid = url.searchParams.get("userid");
-      response = await handleAdminMemberDetail(
-        env,
-        hash,
-        profileStore,
-        userid,
-      );
-    } else if (
       pathname.endsWith("/admin/members") &&
       request.method === "GET"
     ) {
       const hash = readSessionHash(request.headers.get("Cookie"));
-      const forceRebuild = url.searchParams.get("rebuild") === "1";
-      response = await handleAdminMembers(env, hash, profileStore, {
-        forceRebuild,
-      });
+      response = await handleAdminMembers(env, hash, profileStore);
     } else if (pathname.endsWith("/consent") && request.method === "POST") {
       const hash = readSessionHash(request.headers.get("Cookie"));
       response = await handleConsent(env, hash, profileStore);

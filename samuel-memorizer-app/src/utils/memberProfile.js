@@ -1,43 +1,20 @@
-function stringifyField(value) {
-  if (value == null || value === "") return "";
-  if (typeof value === "object") {
-    try {
-      return JSON.stringify(value);
-    } catch {
-      return String(value);
-    }
-  }
-  return String(value).trim();
-}
+import {
+  getAdminDetailFields,
+  getMemberFieldDisplay,
+  mapMemberProfileFromJbch,
+  stripInternalCodes,
+} from "../../shared/memberProfileCore.js";
+
+export {
+  getAdminDetailFields,
+  getMemberFieldDisplay,
+  mapMemberProfileFromJbch,
+  stripInternalCodes,
+} from "../../shared/memberProfileCore.js";
 
 /** member_json result → 앱 프로필 객체 */
 export function mapJbchMemberProfile(result) {
-  if (!result || typeof result !== "object") return null;
-
-  const sex = stringifyField(result.sex || result.sexori);
-
-  return {
-    name: stringifyField(result.username || result.name),
-    church: stringifyField(result.churchname || result.church),
-    email: stringifyField(result.email),
-    userid: stringifyField(result.userid),
-    mid: stringifyField(result.mid),
-    chid: stringifyField(result.chid),
-    avatar: stringifyField(result.avatar),
-    sex,
-    birth: stringifyField(result.birth),
-    reborn: stringifyField(result.reborn),
-    address: stringifyField(result.address),
-    tel: stringifyField(result.tel),
-    hand: stringifyField(result.hand),
-    service: stringifyField(result.service),
-    joinedAt: stringifyField(
-      result.joinedAt ||
-        result.createdAt ||
-        result.acceptedAt ||
-        result.updatedAt,
-    ),
-  };
+  return mapMemberProfileFromJbch(result);
 }
 
 export const ADMIN_MEMBER_DETAIL_FIELDS = [
@@ -50,10 +27,3 @@ export const ADMIN_MEMBER_DETAIL_FIELDS = [
   { key: "hand", label: "휴대전화" },
   { key: "service", label: "선교회(섬김)" },
 ];
-
-export function getMemberFieldDisplay(key, profile) {
-  if (!profile) return "—";
-  const value = profile[key];
-  if (value == null || value === "") return "—";
-  return value;
-}
