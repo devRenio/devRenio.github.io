@@ -16,9 +16,22 @@
   var current = null;
   var animating = false;
   var lastFocus = null;
+  var listeners = [];
 
   var canFlip = !!(window.gsap && window.Flip);
   var canTween = !!window.gsap;
+
+  window.Renio = window.Renio || {};
+  window.Renio.bento = {
+    open: open,
+    close: close,
+    current: function () {
+      return current;
+    },
+    onChange: function (fn) {
+      if (typeof fn === "function") listeners.push(fn);
+    },
+  };
 
   cards.forEach(function (card) {
     var detail = detailOf(card);
@@ -77,6 +90,7 @@
       current = next;
       syncHash(next);
       settle(next, previous, true);
+      notify(next, previous);
       animating = false;
       return;
     }
@@ -110,6 +124,7 @@
       bento.classList.remove("is-transitioning");
       hardSyncVisibility(next);
       settle(next, previous, false);
+      notify(next, previous);
     }
 
     if (outgoing.length) {
@@ -322,7 +337,9 @@
     if (toggle) toggle.setAttribute("aria-expanded", value ? "true" : "false");
   }
 
-  /* ---------- 해시 연동 ---------- */
+  /* ---------- 해시 연동 ----------
+     #skills | #blog | #blog/posts/slug 형태.
+     카드 이름은 첫 세그먼트만 본다. 하위 경로는 blog-card.js가 처리. */
 
   function cardByName(name) {
     if (!name) return null;
@@ -332,18 +349,42 @@
     return null;
   }
 
+  function hashCardName() {
+    var h = location.hash.slice(1);
+    if (!h) return null;
+    return h.split("/")[0] || null;
+  }
+
   function syncHash(card) {
     if (!window.history || !history.replaceState) return;
-    var url = card
-      ? "#" + card.getAttribute("data-card")
-      : location.pathname + location.search;
-    history.replaceState(null, "", url);
+    if (!card) {
+      history.replaceState(null, "", location.pathname + location.search);
+      return;
+    }
+    var name = card.getAttribute("data-card");
+    var h = location.hash.slice(1);
+    /* 이미 #blog/posts/... 같은 하위 경로면 덮지 않는다. */
+    if (h === name || h.indexOf(name + "/") === 0) return;
+    history.replaceState(null, "", "#" + name);
+  }
+
+  function notify(next, previous) {
+    var name = next ? next.getAttribute("data-card") : null;
+    var prevName = previous ? previous.getAttribute("data-card") : null;
+    listeners.forEach(function (fn) {
+      try {
+        fn({ card: next, name: name, previous: prevName });
+      } catch (err) {
+        /* ignore listener errors */
+      }
+    });
   }
 
   document.addEventListener("click", function (e) {
     var link = e.target.closest('a[href^="#"]');
     if (link) {
-      var target = cardByName(link.getAttribute("href").slice(1));
+      var href = link.getAttribute("href").slice(1);
+      var target = cardByName(href.split("/")[0]);
       if (target) {
         e.preventDefault();
         open(target);
@@ -357,11 +398,13 @@
   });
 
   window.addEventListener("hashchange", function () {
-    var card = cardByName(location.hash.slice(1));
+    var name = hashCardName();
+    var card = cardByName(name);
     if (card) open(card);
+    else if (!name && current) close();
   });
 
-  var initial = cardByName(location.hash.slice(1));
+  var initial = cardByName(hashCardName());
   if (initial) apply(initial, true);
 
   document.addEventListener("keydown", function (e) {
@@ -371,10 +414,13 @@
     }
   });
 
-  /* ---------- 프로젝트 필터 ---------- */
+  /* ---------- 프로젝트 필터 ----------
+     Flip absolute는 CSS grid 아이템에 inline position/size를 남겨
+     필터 후 레이아웃이 깨지므로, 표시 전환 + stagger 페이드만 사용한다. */
 
   var filterBar = document.querySelector("[data-project-filter]");
   var projectList = document.querySelector("[data-project-list]");
+  var filterTween = null;
 
   if (filterBar && projectList) {
     filterBar.addEventListener("click", function (e) {
@@ -389,37 +435,36 @@
         }
       );
 
-      var tag = btn.getAttribute("data-filter");
+      var filter = btn.getAttribute("data-filter");
       var items = projectList.querySelectorAll(".project");
-      var state = canFlip && !R.reduced ? Flip.getState(items) : null;
+      var visible = [];
 
       Array.prototype.forEach.call(items, function (item) {
-        var tags = (item.getAttribute("data-tags") || "").split(",");
-        item.hidden = tag !== "all" && tags.indexOf(tag) === -1;
+        /* Flip 잔여 inline 스타일 제거 */
+        item.style.cssText = "";
+        var platforms = (item.getAttribute("data-platforms") || "").split("|");
+        var show =
+          filter === "all" || platforms.indexOf(filter) !== -1;
+        item.hidden = !show;
+        if (show) visible.push(item);
       });
 
-      if (state) {
-        Flip.from(state, {
-          duration: 0.7,
+      if (filterTween && filterTween.kill) filterTween.kill();
+
+      if (!visible.length || !canTween || R.reduced) return;
+
+      filterTween = gsap.fromTo(
+        visible,
+        { opacity: 0, y: 14 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.45,
+          stagger: 0.06,
           ease: ease,
-          absolute: true,
-          onEnter: function (els) {
-            gsap.fromTo(
-              els,
-              { opacity: 0, scale: 0.96 },
-              { opacity: 1, scale: 1, duration: 0.55, ease: ease }
-            );
-          },
-          onLeave: function (els) {
-            gsap.to(els, {
-              opacity: 0,
-              scale: 0.96,
-              duration: 0.45,
-              ease: ease,
-            });
-          },
-        });
-      }
+          clearProps: "opacity,transform",
+        }
+      );
     });
   }
 

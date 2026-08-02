@@ -1,0 +1,22 @@
+---
+permalink: /assets/data/blog-index.json
+layout: null
+---
+[
+{%- assign posts = site.blog | sort: "date" | reverse -%}
+{%- for post in posts -%}
+  {%- assign slug = post.url | remove_first: "/blog/posts/" | remove: "/" -%}
+  {
+    "slug": {{ slug | jsonify }},
+    "url": {{ post.url | relative_url | jsonify }},
+    "title": {{ post.title | jsonify }},
+    "date": {{ post.date | date_to_xmlschema | jsonify }},
+    "dateShort": {{ post.date | date: "%y.%m.%d" | jsonify }},
+    "dateLabel": {{ post.date | date: "%Y년 %m월 %d일 %H시" | jsonify }},
+    "categories": {{ post.categories | jsonify }},
+    "excerpt": {{ post.excerpt | strip_html | strip_newlines | truncate: 160 | jsonify }},
+    "search": {{ post.content | strip_html | strip_newlines | truncate: 2400 | jsonify }},
+    "useMath": {% if post.use_math %}true{% else %}false{% endif %}
+  }{% unless forloop.last %},{% endunless %}
+{%- endfor -%}
+]

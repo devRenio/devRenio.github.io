@@ -1,0 +1,62 @@
+# 카드 사이드바 카테고리 트리 (필터 키 = 포스트 categories 값과 일치)
+- label: TIL
+  key: TIL
+  children:
+    - label: SQLD
+      key: sqld
+      children:
+        - label: 1 데이터 모델링의 이해
+          key: 1_데이터_모델링의_이해
+        - label: 2 데이터 모델과 SQL
+          key: 2_데이터_모델과_SQL
+        - label: 3 SQL 기본
+          key: 3_SQL_기본
+        - label: 4 SQL 활용
+          key: 4_SQL_활용
+        - label: 5 관리구문
+          key: 5_관리구문
+        - label: 복원 기출문제
+          key: 복원_기출문제
+    - label: flutter
+      key: flutter
+      children:
+        - label: 1 Dart 기초
+          key: 1_Dart_기초
+        - label: 2 Flutter 기초
+          key: 2_Flutter_기초
+        - label: 3 앱 제작
+          key: 3_앱_제작
+        - label: 4 심화 학습 및 배포
+          key: 4_심화_학습_및_배포
+- label: LECTURE
+  key: LECTURE
+  children:
+    - label: 인공지능개론
+      key: 인공지능개론
+    - label: 객체지향프로그래밍II
+      key: 객체지향프로그래밍II
+    - label: 웹서비스응용
+      key: 웹서비스응용
+    - label: 서버프로그래밍
+      key: 서버프로그래밍
+    - label: 데이터베이스실무
+      key: 데이터베이스실무
+    - label: JAVA프로그래밍I
+      key: JAVA프로그래밍I
+    - label: 인터넷보안
+      key: 인터넷보안
+    - label: 영상미디어처리
+      key: 영상미디어처리
+- label: TECH
+  key: TECH
+  children:
+    - label: 기술조사
+      key: research
+- label: COTE
+  key: COTE
+  children:
+    - label: 백준
+      key: beakjoon
+- label: PROJECT
+  key: PROJECT
+  children: []

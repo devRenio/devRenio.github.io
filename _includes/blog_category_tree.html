@@ -1,0 +1,85 @@
+{%- comment -%}아코디언 카테고리 트리 (최대 3단){%- endcomment -%}
+<ul class="blog-cat">
+  {%- for node in include.nodes -%}
+  <li class="blog-cat__node{% if node.children and node.children.size > 0 %} has-children{% endif %}" data-blog-cat-node>
+    <div class="blog-cat__row">
+      <button
+        type="button"
+        class="blog-cat__btn"
+        data-blog-category="{{ node.key | escape }}"
+        {% if node.children and node.children.size > 0 %}data-blog-cat-expand{% endif %}
+      >
+        <span class="blog-cat__dot" aria-hidden="true"></span>
+        <span class="blog-cat__label">{{ node.label }}</span>
+      </button>
+      {%- if node.children and node.children.size > 0 -%}
+      <button
+        type="button"
+        class="blog-cat__chevron"
+        data-blog-cat-toggle
+        aria-expanded="false"
+        aria-label="{{ node.label }} 하위 펼치기"
+      >
+        <svg class="icon" aria-hidden="true"><use href="#i-chevron" /></svg>
+      </button>
+      {%- endif -%}
+    </div>
+    {%- if node.children and node.children.size > 0 -%}
+    <div class="blog-cat__panel" data-blog-cat-panel>
+      <div class="blog-cat__panel-inner">
+        <ul class="blog-cat">
+          {%- for child in node.children -%}
+          <li class="blog-cat__node{% if child.children and child.children.size > 0 %} has-children{% endif %}" data-blog-cat-node>
+            <div class="blog-cat__row">
+              <button
+                type="button"
+                class="blog-cat__btn"
+                data-blog-category="{{ child.key | escape }}"
+                {% if child.children and child.children.size > 0 %}data-blog-cat-expand{% endif %}
+              >
+                <span class="blog-cat__dot" aria-hidden="true"></span>
+                <span class="blog-cat__label">{{ child.label }}</span>
+              </button>
+              {%- if child.children and child.children.size > 0 -%}
+              <button
+                type="button"
+                class="blog-cat__chevron"
+                data-blog-cat-toggle
+                aria-expanded="false"
+                aria-label="{{ child.label }} 하위 펼치기"
+              >
+                <svg class="icon" aria-hidden="true"><use href="#i-chevron" /></svg>
+              </button>
+              {%- endif -%}
+            </div>
+            {%- if child.children and child.children.size > 0 -%}
+            <div class="blog-cat__panel" data-blog-cat-panel>
+              <div class="blog-cat__panel-inner">
+                <ul class="blog-cat">
+                  {%- for leaf in child.children -%}
+                  <li class="blog-cat__node" data-blog-cat-node>
+                    <div class="blog-cat__row">
+                      <button
+                        type="button"
+                        class="blog-cat__btn"
+                        data-blog-category="{{ leaf.key | escape }}"
+                      >
+                        <span class="blog-cat__dot" aria-hidden="true"></span>
+                        <span class="blog-cat__label">{{ leaf.label }}</span>
+                      </button>
+                    </div>
+                  </li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+            </div>
+            {%- endif -%}
+          </li>
+          {%- endfor -%}
+        </ul>
+      </div>
+    </div>
+    {%- endif -%}
+  </li>
+  {%- endfor -%}
+</ul>

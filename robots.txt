@@ -1,3 +1,4 @@
 User-agent: *
 Allow: /
-Sitemap: https://USERNAME.github.io/sitemap.xml
+
+Sitemap: https://devrenio.github.io/sitemap.xml

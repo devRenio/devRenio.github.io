@@ -1,17 +1,12 @@
-{%- comment -%}
-  기존 featured-posts.js는 Jekyll 4.1+ 전용 `find` 필터에 의존해
-  프로덕션(Jekyll 3.x)에서 title/url이 null로 출력됐다.
-  여기서는 표준 필터만 써서 date 기준으로 정렬한다.
-{%- endcomment -%}
 {%- assign recent = site.blog | sort: "date" | reverse -%}
-{%- assign cats = "" | split: "" -%}
-{%- for post in site.blog -%}
-  {%- assign c = post.categories | first -%}
-  {%- if c -%}{%- assign cats = cats | push: c -%}{%- endif -%}
-{%- endfor -%}
-{%- assign cats = cats | uniq | sort -%}
 
-<article class="card card--blog" id="blog" data-card="blog">
+<article
+  class="card card--blog"
+  id="blog"
+  data-card="blog"
+  data-blog-card
+  data-blog-json="{{ '/assets/data/blog-index.json' | relative_url }}"
+>
   <span class="card__glow" aria-hidden="true"></span>
 
   <header class="card__head">
@@ -38,43 +33,95 @@
   <div class="card__preview" data-card-content>
     <div class="post-list">
       {%- for post in recent limit: 3 %}
-      <a class="post" href="{{ post.url | relative_url }}">
+      {%- assign slug = post.url | remove_first: "/blog/posts/" | remove: "/" -%}
+      <button
+        type="button"
+        class="post"
+        data-blog-open="{{ slug | escape }}"
+      >
         <time class="post__date" datetime="{{ post.date | date_to_xmlschema }}">
           {{ post.date | date: "%y.%m.%d" }}
         </time>
         <span class="post__title">{{ post.title }}</span>
         <span class="post__cat">{{ post.categories | first }}</span>
-      </a>
+      </button>
       {%- endfor %}
     </div>
   </div>
 
   <div class="card__detail" id="blog-detail" data-card-content hidden>
-    <div class="blog-panel">
-      <div class="post-list post-list--expanded">
-        {%- for post in recent limit: 8 %}
-        <a class="post" href="{{ post.url | relative_url }}" data-stagger>
-          <time class="post__date" datetime="{{ post.date | date_to_xmlschema }}">
-            {{ post.date | date: "%Y.%m.%d" }}
-          </time>
-          <span class="post__title">{{ post.title }}</span>
-          <span class="post__cat">{{ post.categories | first }}</span>
-        </a>
-        {%- endfor %}
+    <div class="blog-panel" data-blog-panel>
+      <div class="blog-panel__list" data-blog-list>
+        <aside class="blog-nav" data-blog-nav data-stagger>
+          <p class="blog-nav__label">Categories</p>
+          <div class="blog-nav__head">
+            <div class="blog-cat__row">
+              <button type="button" class="blog-cat__btn is-active" data-blog-category="">
+                <span class="blog-cat__dot" aria-hidden="true"></span>
+                <span class="blog-cat__label">전체 글</span>
+              </button>
+            </div>
+          </div>
+          {% include blog_category_tree.html nodes=site.data.blog_categories %}
+        </aside>
+
+        <div class="blog-browse" data-stagger>
+          <div class="blog-search">
+            <input
+              type="search"
+              class="blog-search__input"
+              data-blog-search
+              placeholder="제목 / 본문 검색…"
+              aria-label="포스트 검색"
+            />
+            <button type="button" class="blog-search__btn" data-blog-search-btn>
+              검색
+            </button>
+          </div>
+
+          <p class="blog-browse__title" data-blog-title>최근 포스트</p>
+          <p
+            class="blog-browse__empty"
+            data-blog-empty
+            role="status"
+            aria-live="polite"
+            hidden
+          >
+            검색 결과가 없습니다.
+          </p>
+
+          <div class="post-list post-list--expanded" data-blog-entries></div>
+          <div class="blog-pagination" data-blog-pagination></div>
+        </div>
       </div>
 
-      <div class="blog-foot" data-stagger>
-        <div class="chip-row">
-          {%- for c in cats %}
-          <a class="chip" href="{{ '/blog/' | relative_url }}?category={{ c | uri_escape }}">
-            {{ c }}
-          </a>
-          {%- endfor %}
+      <div class="blog-panel__reader" data-blog-reader hidden>
+        <div class="blog-reader__toolbar">
+          <button type="button" class="blog-reader__back" data-blog-back>
+            <svg class="icon" aria-hidden="true"><use href="#i-arrow-left" /></svg>
+            <span>목록으로</span>
+          </button>
+          <div class="blog-reader__pager" role="group" aria-label="글 이동">
+            <button type="button" class="blog-reader__step" data-blog-prev disabled>
+              <svg class="icon blog-reader__step-icon blog-reader__step-icon--prev" aria-hidden="true"><use href="#i-chevron" /></svg>
+              <span>이전 글</span>
+            </button>
+            <button type="button" class="blog-reader__step" data-blog-next disabled>
+              <span>다음 글</span>
+              <svg class="icon blog-reader__step-icon" aria-hidden="true"><use href="#i-chevron" /></svg>
+            </button>
+          </div>
         </div>
-        <a class="link-out" href="{{ '/blog/' | relative_url }}">
-          블로그 전체 보기
-          <svg class="icon" aria-hidden="true"><use href="#i-arrow-out" /></svg>
-        </a>
+        <div
+          class="blog-reader__status"
+          data-blog-status
+          role="status"
+          aria-live="polite"
+          hidden
+        ></div>
+        <div class="blog-reader__scroll" data-blog-scroll>
+          <div class="blog-reader__mount" data-blog-mount></div>
+        </div>
       </div>
     </div>
   </div>

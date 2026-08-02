@@ -1,0 +1,29 @@
+{%- comment -%}단문 본문. 풀페이지·카드 fetch 추출용.{%- endcomment -%}
+<article
+  class="blog-article"
+  data-blog-article
+  {% if page.use_math %}data-use-math="true"{% endif %}
+>
+  <header class="blog-article__head">
+    <h1 class="blog-article__title">{{ page.title }}</h1>
+    <div class="blog-article__meta">
+      <time class="blog-article__date" datetime="{{ page.date | date_to_xmlschema }}">
+        {{ page.date | date: "%Y년 %m월 %d일 %H시" }}
+      </time>
+      {%- if page.categories and page.categories.size > 0 %}
+      <div class="blog-article__cats">
+        {%- for category in page.categories %}
+        <a
+          class="blog-article__cat"
+          href="{{ site.baseurl }}/#blog/category/{{ category | uri_escape }}"
+          >{{ category }}</a
+        >
+        {%- endfor %}
+      </div>
+      {%- endif %}
+    </div>
+  </header>
+  <div class="blog-article__body">
+    {{ include.content }}
+  </div>
+</article>

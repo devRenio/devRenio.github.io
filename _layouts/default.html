@@ -2,7 +2,8 @@
 <html lang="{{ site.lang | default: 'ko-KR' }}">
   {% include head.html %}
 
-  <body class="is-stage is-booting">
+  <body class="is-stage is-booting" data-baseurl="{{ site.baseurl }}">
+    <a class="skip-link" href="#bento">본문으로 건너뛰기</a>
     {% include icons.html %} {% include mesh.html %} {% include splash.html %}
 
     <div class="stage">

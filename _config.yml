@@ -1,5 +1,5 @@
 title: devRenio
-description: "Kong Eunho"
+description: "Eunho Kong"
 author: Renio
 site_title: "devRenio"
 lang: ko-KR
@@ -45,8 +45,8 @@ reddit_username: Renio
 # absolute or relative
 profile_picture: assets/images/pp.jpg
 
-# Google Analytics ID
-google_analytics:
+# Google Analytics (unused — dead UA snippet removed)
+# google_analytics:
 
 plugins:
   - jekyll-sitemap

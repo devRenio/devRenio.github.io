@@ -1,9 +1,15 @@
 {%- assign projects = site.data.projects -%}
-{%- assign all_tags = "" | split: "" -%}
+{%- assign used = "" | split: "" -%}
 {%- for pr in projects -%}
-  {%- assign all_tags = all_tags | concat: pr.tags -%}
+  {%- assign used = used | concat: pr.platforms -%}
 {%- endfor -%}
-{%- assign all_tags = all_tags | uniq | sort -%}
+{%- assign used = used | uniq -%}
+{%- assign platforms = "" | split: "" -%}
+{%- for p in site.data.project_platforms -%}
+  {%- if used contains p -%}
+    {%- assign platforms = platforms | push: p -%}
+  {%- endif -%}
+{%- endfor -%}
 
 <article class="card card--projects" id="projects" data-card="projects">
   <span class="card__glow" aria-hidden="true"></span>
@@ -35,28 +41,29 @@
       <div class="post">
         <span class="post__date">{{ pr.year }}</span>
         <span class="post__title">{{ pr.title }}</span>
-        <span class="post__cat">{{ pr.tags | first }}</span>
+        <span class="post__cat">{{ pr.platforms | first }}</span>
       </div>
       {%- endfor %}
     </div>
   </div>
 
   <div class="card__detail" id="projects-detail" data-card-content hidden>
-    {%- comment -%}
-    프로젝트가 3개 이하면 필터가 정보를 만들지 못하므로 숨긴다.
-    {%- endcomment -%}
-    {%- if projects.size > 3 %}
+    {%- if platforms.size > 1 %}
     <div class="filter-bar" data-project-filter>
       <button type="button" class="filter-btn is-active" data-filter="all">All</button>
-      {%- for tag in all_tags %}
-      <button type="button" class="filter-btn" data-filter="{{ tag }}">{{ tag }}</button>
+      {%- for p in platforms %}
+      <button type="button" class="filter-btn" data-filter="{{ p }}">{{ p }}</button>
       {%- endfor %}
     </div>
     {%- endif %}
 
     <div class="project-list" data-project-list>
       {%- for pr in projects %}
-      <div class="project" data-stagger data-tags="{{ pr.tags | join: ',' }}">
+      <div
+        class="project"
+        data-stagger
+        data-platforms="{{ pr.platforms | join: '|' }}"
+      >
         {%- if pr.image %}
         <img
           class="project__thumb"
@@ -70,8 +77,17 @@
             {{ pr.title }}
             <span class="project__year mono">{{ pr.year }}</span>
           </h3>
+          {%- if pr.role %}
+          <p class="project__role">{{ pr.role }}</p>
+          {%- endif %}
           <p class="project__desc">{{ pr.description }}</p>
+          {%- if pr.outcome %}
+          <p class="project__outcome">{{ pr.outcome }}</p>
+          {%- endif %}
           <div class="chip-row">
+            {%- for p in pr.platforms %}
+            <span class="chip chip--accent">{{ p }}</span>
+            {%- endfor %}
             {%- for tag in pr.tags %}
             <span class="chip">{{ tag }}</span>
             {%- endfor %}

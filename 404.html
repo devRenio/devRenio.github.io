@@ -1,0 +1,91 @@
+---
+layout: null
+permalink: /404.html
+title: Page not found
+---
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: 'ko-KR' }}">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>404 &mdash; {{ site.data.profile.handle }}</title>
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#eef2ff" />
+    <link rel="icon" href="{{ '/assets/images/favicon.ico' | relative_url }}" sizes="any" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+    />
+    <link rel="stylesheet" href="{{ '/assets/css/tokens.css' | relative_url }}" />
+    <link rel="stylesheet" href="{{ '/assets/css/post.css' | relative_url }}" />
+    <style>
+      .error-page {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 2rem;
+        text-align: center;
+      }
+      .error-page__code {
+        margin: 0;
+        font-size: clamp(4rem, 12vw, 7rem);
+        font-weight: 800;
+        letter-spacing: -0.06em;
+        line-height: 1;
+        color: var(--fg);
+      }
+      .error-page__title {
+        margin: 0.5rem 0 0.75rem;
+        font-size: 1.35rem;
+        font-weight: 700;
+      }
+      .error-page__desc {
+        margin: 0 0 1.75rem;
+        color: var(--fg-muted);
+      }
+      .error-page__actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.65rem;
+      }
+      .error-page__actions a {
+        display: inline-flex;
+        padding: 0.55rem 1rem;
+        font-size: var(--t-sm);
+        font-weight: 600;
+        color: var(--fg-muted);
+        text-decoration: none;
+        border: 1px solid rgb(28 25 48 / 0.12);
+        border-radius: 999px;
+        background: rgb(255 255 255 / 0.55);
+      }
+      .error-page__actions a:hover {
+        color: var(--fg);
+        border-color: rgb(28 25 48 / 0.2);
+      }
+      .error-page__actions a.is-primary {
+        color: #fff;
+        background: var(--accent);
+        border-color: var(--accent);
+      }
+    </style>
+  </head>
+  <body class="post-page">
+    <main class="error-page">
+      <div>
+        <p class="error-page__code">404</p>
+        <h1 class="error-page__title">페이지를 찾을 수 없습니다</h1>
+        <p class="error-page__desc">
+          주소가 바뀌었거나 삭제된 페이지일 수 있어요.
+        </p>
+        <div class="error-page__actions">
+          <a class="is-primary" href="{{ site.baseurl }}/">홈으로</a>
+          <a href="{{ site.baseurl }}/#blog">Blog</a>
+          <a href="{{ site.baseurl }}/#projects">Projects</a>
+          <a href="{{ site.baseurl }}/#contact">Contact</a>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

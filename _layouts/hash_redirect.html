@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: 'ko-KR' }}">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Redirecting…</title>
+    {%- assign hash = page.redirect_hash | default: "#blog" -%}
+    {%- capture target -%}{{ site.baseurl }}/{{ hash }}{%- endcapture -%}
+    <link rel="canonical" href="{{ site.url }}{{ site.baseurl }}/{{ hash }}" />
+    <meta http-equiv="refresh" content="0;url={{ target }}" />
+  </head>
+  <body>
+    <p>
+      <a id="redir" href="{{ target }}">메인 Blog로 이동</a>
+    </p>
+    <script>
+      (function () {
+        var base = {{ site.baseurl | default: "" | jsonify }};
+        var params = new URLSearchParams(location.search);
+        var cat = params.get("category");
+        var q = params.get("q");
+        var hash = {{ hash | jsonify }};
+        if (cat) hash = "#blog/category/" + encodeURIComponent(cat);
+        else if (q) hash = "#blog/q/" + encodeURIComponent(q);
+        var url = (base || "") + "/" + hash;
+        var link = document.getElementById("redir");
+        if (link) link.href = url;
+        location.replace(url);
+      })();
+    </script>
+  </body>
+</html>

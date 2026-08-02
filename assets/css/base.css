@@ -126,6 +126,31 @@ h4 {
   border: 0;
 }
 
+.skip-link {
+  position: absolute;
+  left: 0.75rem;
+  top: 0.75rem;
+  z-index: 1000;
+  padding: 0.55rem 0.9rem;
+  font-family: var(--font-sans);
+  font-size: var(--t-sm);
+  font-weight: 600;
+  color: var(--fg);
+  text-decoration: none;
+  background: rgb(255 255 255 / 0.95);
+  border: 1px solid var(--glass-border-hi);
+  border-radius: 999px;
+  box-shadow: var(--shadow-card);
+  transform: translateY(-160%);
+  transition: transform var(--d-fast) var(--ease-out);
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+  transform: translateY(0);
+  outline: none;
+}
+
 /* ---- themed scrollbar ---- */
 .scroll-theme {
   scrollbar-width: thin;

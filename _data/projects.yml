@@ -1,17 +1,47 @@
 - title: Samuel Memorizer
-  description: 사무엘학교 성경 암송을 위한 React 웹 앱. 오프라인 지원 PWA로 만들어 설치 없이 쓸 수 있다.
+  description: 사무엘학교 성경 암송을 위한 React PWA. 오프라인 사용, 계정 동기화, 관리자 콘솔까지 한 서비스로 묶었다.
+  role: 개인 프로젝트
+  outcome: 기수별 암송 JSON을 버전으로 묶어 React PWA로 배포했고, 깨사모 로그인은 Cloudflare Worker BFF로 분리해 Pages 위에서도 로그인·관리자 회원 목록이 동작하게 했다.
   image: assets/images/memorization2.png
   repo: https://github.com/devRenio/devRenio.github.io/tree/main/samuel-memorizer-app
   demo: https://devrenio.github.io/samuel/
   year: 2026
   featured: true
-  tags: [React, PWA, Vite]
+  platforms: [웹앱 데스크탑, 웹앱 모바일]
+  tags: [React, PWA, Vite, Cloudflare]
+
+- title: devRenio Portfolio
+  description: 글래스모피즘 벤토 레이아웃 위에 Skills·Blog·Projects·Contact를 한 화면에 담은 개인 포트폴리오.
+  role: 개인 프로젝트(디자인, 프론트엔드)
+  outcome: 글래스 벤토 랜딩에 Skills·Blog·Projects·Contact를 한 화면으로 모으고, 블로그 검색·카테고리·페이지네이션·본문 읽기를 카드 안 경험으로 통합했다.
+  image: assets/images/pp.jpg
+  repo: https://github.com/devRenio/devRenio.github.io
+  demo: https://devrenio.github.io/
+  year: 2026
+  featured: true
+  platforms: [웹앱 데스크탑, 웹앱 모바일]
+  tags: [Jekyll, GSAP, CSS]
 
 - title: Bible Verse Memorization
-  description: 같은 문제를 데스크톱에서 먼저 풀어본 Python 앱. Samuel Memorizer의 전신이다.
+  description: Samuel Memorizer의 전신인 Python 데스크톱 암송 앱. 같은 학습 흐름을 먼저 로컬에서 검증했다.
+  role: 개인 프로젝트
+  outcome: 과정·모드·틀린 구절 복습 흐름을 Python 데스크톱으로 먼저 구현해 exe로 배포했고, 이후 웹 PWA로 옮기는 학습 UX의 기반이 됐다.
   image: assets/images/memorization1.png
   repo: https://github.com/devRenio/Bible-verse-memorization
   demo: https://github.com/devRenio/Bible-verse-memorization/releases/download/42SS/samuel_memorization.exe
   year: 2025
   featured: false
+  platforms: [Windows]
   tags: [Python, Desktop]
+
+- title: Ratio Layout Clock
+  description: 인지기능이 저하된 노인을 위하여 특수 목적으로 제작된 실험용 웹 시계 미니 프로젝트. 비율 기반 레이아웃으로 구성한 UI와 반응형 배치를 연습했다.
+  role: 개인 프로젝트(프론트엔드)
+  outcome: 뷰포트 비율로 날짜·시간대·시분을 배치하고, 시간대별 라이트/다크 전환과 전체화면까지 한 페이지로 구현했다.
+  image: assets/images/clock.png
+  repo: https://github.com/devRenio/devRenio.github.io/tree/main/clock
+  demo: https://devrenio.github.io/clock/
+  year: 2025
+  featured: false
+  platforms: [웹앱 데스크탑]
+  tags: [JavaScript, UI]

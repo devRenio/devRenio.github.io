@@ -113,6 +113,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .mesh__blob {
-    animation: none;
+    animation: none !important;
+    transform: none !important;
+    will-change: auto;
   }
 }
