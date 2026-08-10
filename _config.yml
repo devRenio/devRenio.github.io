@@ -22,6 +22,8 @@ kramdown:
   input: GFM
 include:
   - .nojekyll
+  - goorm/_next
+  - goorm/_not-found
 
 exclude:
   - vendor/ruby
