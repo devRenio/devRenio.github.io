@@ -3,8 +3,8 @@ self.__BUILD_MANIFEST = {
     "afterFiles": [],
     "beforeFiles": [
       {
-        "source": "/goorm//_next/:path+",
-        "destination": "/goorm/_next/:path+"
+        "source": "/goorm//next-static/:path+",
+        "destination": "/goorm/next-static/:path+"
       }
     ],
     "fallback": []
