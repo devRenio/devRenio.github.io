@@ -28,7 +28,6 @@ include:
 exclude:
   - vendor/ruby
   - vendor/bundle
-  - samuel-memorizer-app
   - node_modules
   - Gemfile
   - Gemfile.lock

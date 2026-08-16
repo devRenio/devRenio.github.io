@@ -3,7 +3,7 @@
   role: 개인 프로젝트
   outcome: 기수별 암송 JSON을 버전으로 묶어 React PWA로 배포했고, 깨사모 로그인은 Cloudflare Worker BFF로 분리해 Pages 위에서도 로그인·관리자 회원 목록이 동작하게 했다.
   image: assets/images/memorization2.png
-  repo: https://github.com/devRenio/devRenio.github.io/tree/main/samuel-memorizer-app
+  repo: https://github.com/devRenio/samuel-memorizer
   demo: https://devrenio.github.io/samuel/
   year: 2026
   featured: true
