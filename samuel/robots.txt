@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /samuel/
+
+Sitemap: https://devrenio.github.io/samuel/sitemap.xml
